@@ -11,6 +11,7 @@ public class PrintfLine extends Line{
     public PrintfLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
         t = ele[1];
+        super.addUse(t);
     }
 
     public String getT() {

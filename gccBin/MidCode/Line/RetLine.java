@@ -13,6 +13,7 @@ public class RetLine extends Line{
         if(ele.length == 2){
             exp = ele[1];
         }
+        super.addUse(exp);
     }
 
     public String getExp() {

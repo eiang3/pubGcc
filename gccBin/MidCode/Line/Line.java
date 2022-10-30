@@ -1,10 +1,8 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MIPS.tool.Scanf;
+import gccBin.MidCode.firstProcess.JudgeExpElement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class Line {
@@ -48,8 +46,22 @@ public class Line {
     }
 
     public void addGen(String name){
-        this.gen.add(name);
+        if(JudgeExpElement.isVar(name,tableSymbol)) {
+            this.gen.add(name);
+        }
     }
 
+    public void addUse(String name){
+        if(JudgeExpElement.isVar(name,tableSymbol)) {
+            this.use.add(name);
+        }
+    }
 
+    public HashSet<String> getGen() {
+        return gen;
+    }
+
+    public HashSet<String> getUse() {
+        return use;
+    }
 }

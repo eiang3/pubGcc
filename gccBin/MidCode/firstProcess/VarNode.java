@@ -16,6 +16,7 @@ public class VarNode {
     public VarNode(String name,TableSymbol tableSymbol){
         this.name = name;
         this.tableSymbol = tableSymbol;
+
         genSet = new BitSet();
         useSet = new BitSet();
         genSite = new ArrayList<>();

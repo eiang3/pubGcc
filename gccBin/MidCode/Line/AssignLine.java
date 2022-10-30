@@ -1,6 +1,7 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MidCode.firstProcess.JudgeExpElement;
 
 /**
  * 数组指针。
@@ -23,17 +24,23 @@ public class AssignLine extends Line{
     public AssignLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
         ans = ele[0];
+        super.addGen(ans);
         if(ele.length == 3){
             t1 = ele[2];
+            super.addUse(t1);
         } else if (ele.length == 4) {
             t1 = ele[3];
             op = ele[2];
+            super.addUse(t1);
         } else if(ele.length == 5){
             t1 = ele[2];
             op = ele[3];
             t2 = ele[4];
+            super.addUse(t1);
+            super.addUse(t2);
         }
     }
+
 
     public String getT1() {
         return t1;

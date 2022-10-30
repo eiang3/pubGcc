@@ -5,7 +5,7 @@ import SymbolTableBin.ElementTable;
 import SymbolTableBin.ElementVar;
 import SymbolTableBin.TableSymbol;
 
-public class judgeExpElement {
+public class JudgeExpElement {
     /**
      * 判断一个name是不是var节点
      * 需要讨论的var声明的局部变量
