@@ -1,0 +1,19 @@
+package gccBin.Lex;
+public enum Symbol {
+    //保留字
+    CONSTTK, INTTK, VOIDTK, MAINTK, IFTK, ELSETK, WHILETK,
+    BREAKTK, CONTINUETK, RETURNTK, GETINTTK, PRINTFTK,
+
+    //
+    IDENFR, INTCON, STRCON,
+    COMMA, SEMICN,
+    LBRACK, RBRACK,
+    LBRACE, RBRACE,
+    LPARENT, RPARENT,
+    PLUS, MINU, MOD, MULT, DIV,
+    LSS, LEQ, GRE, GEQ,
+    EQL, ASSIGN, NEQ, NOT, AND, OR,
+
+    //其他辅助评测
+    NOTRESERVE,NOTSYM
+}
