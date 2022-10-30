@@ -1,16 +1,14 @@
 package GramTree.Element.UnaryExp;
 
 import GramTree.Element.Exp;
-import GramTree.Element.FuncFParam;
 import GramTree.Element.FuncRParams;
 import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import SymbolTableBin.APIErrorSymTable;
-import SymbolTableBin.APIMidCodeSymTable;
 import SymbolTableBin.TypeTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
+import gccBin.MidCode.original.MidCode;
 
 import java.io.FileWriter;
 import java.io.IOException;

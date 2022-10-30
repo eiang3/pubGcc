@@ -1,7 +1,7 @@
 package GramTree.Element.cond;
 
 import GramTree.*;
-import gccBin.MidCode.MidCode;
+import gccBin.MidCode.original.MidCode;
 
 import java.io.FileWriter;
 import java.io.IOException;

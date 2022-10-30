@@ -5,7 +5,7 @@ import SymbolTableBin.APIErrorSymTable;
 import SymbolTableBin.APIMidCodeSymTable;
 import SymbolTableBin.ElementTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
+import gccBin.MidCode.original.MidCode;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -102,7 +102,7 @@ public class LVal extends TreeFatherNode {
             this.midCode = String.valueOf(APIMidCodeSymTable.getInstance().getConstNum
                     (super.getTableSymbol(), name));
         } else if (exp1 == null && exp2 == null) {
-            this.midCode = MidCode.getInstance().lValNormal(name, param);
+            this.midCode = MidCode.getInstance().lValNormal(super.getTableSymbol(),name, param);
         } else if (exp1 != null && exp2 == null) { //一维的数组
             this.midCode = MidCode.getInstance().lValNormal(name, exp1.getMidCode(), param);
         } else if (exp1 != null && exp2 != null) {

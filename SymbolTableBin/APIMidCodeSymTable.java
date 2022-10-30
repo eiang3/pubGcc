@@ -38,10 +38,10 @@ public class APIMidCodeSymTable {
         return funs.get(funcName);
     }
 
-    /*
+    /**
     从此符号表向上递归查找表项
      */
-    public ElementTable findTableElementRecur(TableSymbol table,String str){
+    public ElementTable findElementRecur(TableSymbol table, String str){
         while(table != null){
             if(table.contain(str)){
                 return table.getElement(str);
@@ -63,17 +63,17 @@ public class APIMidCodeSymTable {
      * 判断变量是否是0维常量
      */
     public boolean isConstNum(TableSymbol tableSymbol,String name){
-        ElementTable elementTable = findTableElementRecur(tableSymbol,name);
-        return elementTable.getDimension() == 0 && elementTable.getDecl() == TypeTable.CONST;
+        ElementTable elementTable = findElementRecur(tableSymbol,name);
+        return elementTable instanceof ElementConst;
     }
 
     /**
      *在isConstNum的前提下得到值
      */
     public int getConstNum(TableSymbol tableSymbol,String name){
-        ElementTable elementTable = findTableElementRecur(tableSymbol,name);
-        if(elementTable.getDimension() == 0 && elementTable.getDecl() == TypeTable.CONST){
-            return elementTable.getValue();
+        ElementTable elementTable = findElementRecur(tableSymbol,name);
+        if(elementTable instanceof ElementConst){
+            return ((ElementConst)elementTable).getValue().getNum();
         }
         return 0;
     }
@@ -82,7 +82,7 @@ public class APIMidCodeSymTable {
      *找到二维数组第2位的长度
      */
     public int findTwoDimArrayLen(TableSymbol tableSymbol,String name){
-        ElementTable elementTable = findTableElementRecur(tableSymbol,name);
+        ElementTable elementTable = findElementRecur(tableSymbol,name);
         if(elementTable instanceof ElementConstArray){
             return ((ElementConstArray) elementTable).getLen();
         } else if (elementTable instanceof ElementVarArray) {
@@ -99,8 +99,9 @@ public class APIMidCodeSymTable {
      * @return
      */
     public int findValue(TableSymbol table,String str){
-        ElementTable elementTable = findTableElementRecur(table,str);
-        if(elementTable!=null) return elementTable.getValue();
+        ElementTable elementTable = findElementRecur(table,str);
+        if(elementTable instanceof ElementConst)
+            return ((ElementConst)elementTable).getValue().getNum();
         return -1;
     }
 
@@ -112,7 +113,7 @@ public class APIMidCodeSymTable {
      * @return
      */
     public int findValue(TableSymbol table,String str,int oneDim){
-        ElementConstArray elementArray = (ElementConstArray) findTableElementRecur(table,str);
+        ElementConstArray elementArray = (ElementConstArray) findElementRecur(table,str);
         if(elementArray != null) return elementArray.getConstArrValue(oneDim);
         else return -1;
     }
@@ -126,7 +127,7 @@ public class APIMidCodeSymTable {
      * @return
      */
     public int findValue(TableSymbol table,String str,int oneDim,int twoDim){
-        ElementConstArray elementArray = (ElementConstArray) findTableElementRecur(table,str);
+        ElementConstArray elementArray = (ElementConstArray) findElementRecur(table,str);
         if(elementArray != null) return elementArray.getConstArrValue(oneDim,twoDim);
         else return -1;
     }

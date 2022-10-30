@@ -3,6 +3,7 @@ package SymbolTableBin;
 import GramTree.Element.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /*
 在语法分析过程中，建立符号表 ok
@@ -11,11 +12,14 @@ public class APIGramSymTable {
     private static APIGramSymTable instance;
 
     private TableSymbol nowTable; //目前分析到的符号表
-    private TableSymbol rootTable;
+    private TableSymbol rootTable; //根符号表
+
+    private HashMap<String, Integer> name2Times;//重命名的变量，及其重复次数
 
     private static final boolean close = false;
 
     private APIGramSymTable() {
+        this.name2Times = new HashMap<>();
     }
 
     public static APIGramSymTable getInstance() {
@@ -29,11 +33,10 @@ public class APIGramSymTable {
     public void addConstDef(ConstDef constDef) throws IOException {
         if (close) return;
         if (constDef.getDimension() == 0) {
-            ElementTable elementTable = new ElementTable(
-                    constDef.getName(), constDef.getType(), TypeTable.CONST,
-                    constDef.getDimension(), constDef.getValue());
-            this.nowTable.addElement(elementTable);
-        } else  {
+            ElementConst element = new ElementConst(
+                    constDef.getName(), constDef.getType(), constDef.getValue());
+            this.nowTable.addElement(element);
+        } else {
             ElementConstArray elementArray = new ElementConstArray(
                     constDef.getName(), constDef.getType(), TypeTable.CONST,
                     constDef.getDimension(), constDef.getArray());
@@ -44,17 +47,26 @@ public class APIGramSymTable {
     //name,type,decl,dim
     public void addVarDef(VarDef varDef) throws IOException {
         if (close) return;
-        if(varDef.getDimension() == 0) {
-            ElementTable elementTable = new ElementTable(
-                    varDef.getName(), TypeTable.INT, TypeTable.VAR, // TypeTable.INT改成get有bug
-                    varDef.getDimension());
-            this.nowTable.addElement(elementTable);
+        if (varDef.getDimension() == 0) {
+            ElementVar elementVar = new ElementVar(
+                    varDef.getName(), TypeTable.INT); // TypeTable.INT改成get有bug
+            this.nowTable.addElement(elementVar);
+
+            String name = varDef.getName();
+            if (name2Times.containsKey(name)) {
+                int times = name2Times.get(name);
+                elementVar.setSubScript(times);
+                name2Times.put(name, times + 1);
+            } else {
+                name2Times.put(name, 0);
+            }
+
         } else {
-             ElementVarArray elementVarArray = new ElementVarArray(
-                     varDef.getName(), varDef.getType(), TypeTable.VAR,
-                     varDef.getDimension(), varDef.getOneDim(),
-                     varDef.getTwoDim());
-             this.nowTable.addElement(elementVarArray);
+            ElementVarArray elementVarArray = new ElementVarArray(
+                    varDef.getName(), varDef.getType(), TypeTable.VAR,
+                    varDef.getDimension(), varDef.getOneDim(),
+                    varDef.getTwoDim());
+            this.nowTable.addElement(elementVarArray);
         }
     }
 

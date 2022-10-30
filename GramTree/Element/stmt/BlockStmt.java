@@ -3,7 +3,6 @@ package GramTree.Element.stmt;
 import GramTree.Element.Block;
 import GramTree.Param;
 import GramTree.TreeElement;
-import gccBin.MidCode.MidCode;
 
 import java.io.FileWriter;
 import java.io.IOException;

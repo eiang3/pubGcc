@@ -9,18 +9,6 @@ public class ElementTable {
     private final int dimension ; //数值.函数(0)  一维数组(1)  二维数组(2)
     //
     private final Value position; //位置 生成目标时查询
-    private final Value value;  //值 一维const拥有这个属性
-
-    public ElementTable(String name, TypeTable type, TypeTable decl,
-                        int dimension, Value value){
-        this.name = name;
-        this.type = type;
-        this.decl = decl;
-        this.dimension = dimension;
-
-        this.position  = new Value();
-        this.value = value;
-    }
 
     public ElementTable(String name, TypeTable type, TypeTable decl,
                         int dimension){
@@ -28,13 +16,7 @@ public class ElementTable {
         this.type = type;
         this.decl = decl;
         this.dimension = dimension;
-
         this.position  = new Value();
-        this.value = new Value();
-    }
-
-    public int getValue() {
-        return value.getNum();
     }
 
     public String getName() {
@@ -63,4 +45,9 @@ public class ElementTable {
         return String.format("name: %s, type: %s, kind: %s dimension: %d",
                 this.name,this.type,this.decl,this.dimension);
     }
+
+    public String getMidCodeName(){
+        return this.name;
+    }
+
 }

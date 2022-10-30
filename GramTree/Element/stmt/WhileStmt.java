@@ -5,8 +5,8 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
-import gccBin.MidCode.MidTagManage;
+import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.MidTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,11 +34,11 @@ public class WhileStmt extends Stmt {
         p.setWhileEndLabel(end_while);
         p.setCondLabel(cond_again);
 
-        MidCode.getInstance().write("# while ( ");
+        MidCode.getInstance().annotate("while");
         MidCode.getInstance().localLabel(cond_again); //    cond_again:
         this.cond.midCodeGen(fileWriter, p); //cond;
 
-        MidCode.getInstance().write(cond.toString()+")\n");
+        MidCode.getInstance().annotate("cond "+cond.toString());
 
         stmt.midCodeGen(fileWriter, p); //stmt;
         MidCode.getInstance().jump(cond_again);     // jump cond_again

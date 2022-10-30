@@ -8,8 +8,8 @@ import java.util.ArrayList;
 public class MM {
     private static MM instance;
 
-
     private boolean end;
+
     private BufferedReader br;
 
 
@@ -78,16 +78,6 @@ public class MM {
         return arr[pos].equals(str);
     }
 
-    public boolean myEqual(String[] arr, int pos, String... str) {
-        if (arr.length - 1 < pos) {
-            return false;
-        }
-        for (String s : str) {
-            if (arr[pos].equals(s)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
 }

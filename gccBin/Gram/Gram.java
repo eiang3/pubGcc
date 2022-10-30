@@ -19,7 +19,7 @@ import SymbolTableBin.TypeTable;
 import gccBin.ERROR.ErrorHandle;
 import gccBin.Lex.LexStream;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
+import gccBin.MidCode.original.MidCode;
 
 /*
 递归下降词法分析

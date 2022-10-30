@@ -2,7 +2,6 @@ package GramTree.Element;
 
 import GramTree.*;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
 
 import java.io.FileWriter;
 import java.io.IOException;

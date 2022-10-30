@@ -5,8 +5,8 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
-import gccBin.MidCode.MidTagManage;
+import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.MidTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class IfStmt extends Stmt {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().write("# if ( ");
+        MidCode.getInstance().annotate("if");
         if (elseStmt != null) {
             String start_else = MidTagManage.getInstance().newLabel();
             String end_if = MidTagManage.getInstance().newLabel();
@@ -39,13 +39,13 @@ public class IfStmt extends Stmt {
             p.setWhileOrIfEndLabel(start_else);
 
             cond.midCodeGen(fileWriter, p); //失败,跳到start_else
-            MidCode.getInstance().write(cond.toString()+" ) \n");
+            MidCode.getInstance().annotate("cond "+cond.toString());
 
             ifStmt.midCodeGen(fileWriter, p); //if stmt;
             MidCode.getInstance().jump(end_if); //jump end_if
 
             MidCode.getInstance().localLabel(start_else); // start_else:
-            MidCode.getInstance().write("# else \n");
+            MidCode.getInstance().annotate("else");
             elseStmt.midCodeGen(fileWriter, p);  //else if;
             MidCode.getInstance().localLabel(end_if); //end_if:
         } else {

@@ -1,4 +1,4 @@
-package gccBin.MidCode;
+package gccBin.MidCode.original;
 
 public class MidTagManage {
     private static MidTagManage instance;
@@ -20,7 +20,7 @@ public class MidTagManage {
     }
 
     public String newVar() {
-        return "t" + (count++);
+        return "$t" + (count++);
     }
 
     public String  newRet(){

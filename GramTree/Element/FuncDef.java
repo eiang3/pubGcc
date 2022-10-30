@@ -4,7 +4,7 @@ import GramTree.*;
 import SymbolTableBin.APIMidCodeSymTable;
 import SymbolTableBin.TypeTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.MidCode;
+import gccBin.MidCode.original.MidCode;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package gccBin.MidCode;
+package gccBin.MidCode.original;
 
 import GramTree.Element.Exp;
 import GramTree.Element.InitVal;
@@ -58,14 +58,16 @@ public class MidCode {
         }
     }
 
-    public void varDef(String name, int len, InitVal initVal) throws IOException {
+    public void varDef(TableSymbol tableSymbol,String name, int len, InitVal initVal) throws IOException {
         Param param = new Param();
         if (len <= 0) {
-            write("var int " + name + "\n");
+            String newName = APIMidCodeSymTable.getInstance()
+                    .findElementRecur(tableSymbol,name).getMidCodeName();
+            write("var int " + newName + "\n");
             if (initVal != null) {
                 ArrayList<Exp> exps = initVal.getExps();
                 exps.get(0).midCodeGen(fileWriter, param);
-                write(name + " = " + initVal.getExps().get(0).getMidCode() + "\n");
+                write(newName + " = " + initVal.getExps().get(0).getMidCode() + "\n");
             }
             return;
         }
@@ -82,9 +84,9 @@ public class MidCode {
 
     public String lValRParam(TableSymbol tableSymbol, String name) throws IOException {
         ElementTable elementTable = APIMidCodeSymTable.getInstance()
-                .findTableElementRecur(tableSymbol, name);
+                .findElementRecur(tableSymbol, name);
         if ( elementTable.getDimension() == 0 ) {  //保存的是值
-            return lValNormal(name,new Param()); //实参传值
+            return lValNormal(tableSymbol,name,new Param()); //实参传值
         } else {
             String ans = MidTagManage.getInstance().newVar();
             write(ans + " = " + name +" >> 2\n");  // 除4
@@ -94,7 +96,7 @@ public class MidCode {
 
     public String lValRParam(TableSymbol tableSymbol, String name, String one) throws IOException {
         ElementTable elementTable = APIMidCodeSymTable.getInstance()
-                .findTableElementRecur(tableSymbol, name);
+                .findElementRecur(tableSymbol, name);
 
         if (elementTable.getDimension() == 1) {  //保存的是值
             return lValNormal(name, one,new Param());
@@ -117,12 +119,14 @@ public class MidCode {
         return lValNormal(name, one, two, len,new Param());
     }
 
-    public String lValNormal(String name,Param param) throws IOException {
+    public String lValNormal(TableSymbol tableSymbol,String name,Param param) throws IOException {
+        String newName = APIMidCodeSymTable.getInstance()
+                .findElementRecur(tableSymbol,name).getMidCodeName();
         if(param.getExpKind() == InheritProp.LValAssign){
-            return  name;
+            return  newName;
         } else {
             String t1 = MidTagManage.getInstance().newVar();
-            write(t1 +" = "+name+"\n");
+            write(t1 +" = "+newName+"\n");
             return t1;
         }
     }
@@ -280,6 +284,6 @@ public class MidCode {
     }
 
     public void annotate(String str) throws IOException {
-        write("# "+str+"\n");
+        write("##"+str+"##\n");
     }
 }

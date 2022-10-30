@@ -1,4 +1,4 @@
-package gccBin.MidCode;
+package gccBin.MidCode.original;
 
 import java.io.FileWriter;
 import java.io.IOException;

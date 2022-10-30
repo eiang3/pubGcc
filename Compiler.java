@@ -7,7 +7,7 @@ import gccBin.Gram.Gram;
 import gccBin.Lex.Lex;
 import gccBin.MIPS.MM;
 import gccBin.MIPS.MIPS;
-import gccBin.MidCode.MidCode;
+import gccBin.MidCode.original.MidCode;
 
 public class Compiler {
     public static void main(String[] args)  {
@@ -26,6 +26,7 @@ public class Compiler {
             Gram.getInstance().gramStart();
             MidCode.getInstance().beginMidCodeGen();
             MidCode.getInstance().closeMidCodeWriter();
+
             MIPS.getInstance().beginTransLate();
 
             MIPS.getInstance().closeMIPSWriter();

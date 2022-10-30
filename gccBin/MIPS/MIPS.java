@@ -1,9 +1,7 @@
 package gccBin.MIPS;
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MIPS.tool.*;
-import gccBin.MidCode.MidTagManage;
-import gccBin.MidCode.PrintfFormatStringStore;
+import gccBin.MidCode.original.PrintfFormatStringStore;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -35,6 +33,9 @@ public class MIPS {
         this.fileWriter.close();
     }
 
+    public void beginTransLate(){
+
+    }
 
     public void pre() throws IOException { //先打出来
         fileWriter.write(".data\n");

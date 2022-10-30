@@ -2,6 +2,7 @@ package SymbolTableBin;
 
 import gccBin.ERROR.ErrorHandle;
 import gccBin.MIPS.MIPS;
+import gccBin.MidCode.firstProcess.MidCodeFirst;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class TableSymbol {
             APIGramSymTable.getInstance().setRootTable(this);
             APIMidCodeSymTable.getInstance().setRootTable(this);
             MIPS.getInstance().setTableSymbol(this);
+            MidCodeFirst.getInstance().setNowTable(this);
         } else {
             this.father.addChild(this);
         }

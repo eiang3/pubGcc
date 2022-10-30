@@ -42,7 +42,7 @@ public class TreeElement {
     public String toString(){
         StringBuilder sb = new StringBuilder();
         for(TreeElement treeElement : children){
-            sb.append(treeElement).append(" ");
+            sb.append(treeElement).append(' ');
         }
         return sb.toString();
     }
