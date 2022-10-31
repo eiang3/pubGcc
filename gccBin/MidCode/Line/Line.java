@@ -5,8 +5,8 @@ import gccBin.MidCode.firstProcess.JudgeExpElement;
 
 import java.util.HashSet;
 
-public class Line {
-    private String midCodeLine;
+public abstract class Line {
+    private String midCodeLine; //最初的ir。
     private TableSymbol tableSymbol;
     private int index;
 
@@ -45,16 +45,20 @@ public class Line {
         this.index = index;
     }
 
-    public void addGen(String name){
+    public boolean addGen(String name){
         if(JudgeExpElement.isVar(name,tableSymbol)) {
             this.gen = name;
+            return true;
         }
+        return false;
     }
 
-    public void addUse(String name){
+    public boolean addUse(String name){
         if(JudgeExpElement.isVar(name,tableSymbol)) {
             this.use.add(name);
+            return true;
         }
+        return false;
     }
 
     public String getGen() {
@@ -63,5 +67,22 @@ public class Line {
 
     public HashSet<String> getUse() {
         return use;
+    }
+
+    /**
+     * 对gen重命名，注意一个line的gen只有一个
+     * @param name
+     */
+    public void renameGen(String old,String name){
+        ;
+    }
+
+    /**
+     * 对use重命名，因为一个lines的use可能有多个，所以需要和oldName比较
+     * @param old
+     * @param name
+     */
+    public void renameUse(String old,String name){
+        ;
     }
 }

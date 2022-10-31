@@ -6,10 +6,18 @@ import SymbolTableBin.TableSymbol;
  * push exp
  */
 public class PushLine extends Line{
-    String exp;
+    private String exp;
+    private final boolean use;
     public PushLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
         exp = ele[1];
-        super.addUse(exp);
+        use = super.addUse(exp);
+    }
+
+    @Override
+    public void renameUse(String old,String name){
+        if(use && exp.equals(old)){
+            exp = name;
+        }
     }
 }

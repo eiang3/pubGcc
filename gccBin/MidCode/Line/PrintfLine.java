@@ -8,10 +8,19 @@ import SymbolTableBin.TableSymbol;
  */
 public class PrintfLine extends Line{
     private String t;
+    private boolean tIsUse;
+
     public PrintfLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
         t = ele[1];
-        super.addUse(t);
+        tIsUse = super.addUse(t);
+    }
+
+    @Override
+    public void renameUse(String old,String name){
+        if(tIsUse && t.equals(old)){
+            t = name;
+        }
     }
 
     public String getT() {

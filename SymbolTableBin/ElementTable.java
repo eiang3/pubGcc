@@ -8,7 +8,7 @@ public class ElementTable {
     private final TypeTable decl;  //CONST,VAR,FUNC_F_PARAM,,FUNC
     private final int dimension ; //数值.函数(0)  一维数组(1)  二维数组(2)
     //
-    private final Value position; //位置 生成目标时查询
+    private final Position position; //位置 生成目标时查询
 
     public ElementTable(String name, TypeTable type, TypeTable decl,
                         int dimension){
@@ -16,7 +16,7 @@ public class ElementTable {
         this.type = type;
         this.decl = decl;
         this.dimension = dimension;
-        this.position  = new Value();
+        this.position  = new Position();
     }
 
     public String getName() {
@@ -31,7 +31,7 @@ public class ElementTable {
         return dimension;
     }
 
-    public Value getPosition() {
+    public Position getPosition() {
         return position;
     }
 

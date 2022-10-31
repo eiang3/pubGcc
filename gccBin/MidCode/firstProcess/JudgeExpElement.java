@@ -17,6 +17,7 @@ public class JudgeExpElement {
      * @return
      */
     public static boolean isVar(String name, TableSymbol tableSymbol){ //isVarNode
+        if(name == null) return false;
         if(tableSymbol.getFather() != null && !name.contains("$")) {
             //不是根节点/不是全局变量  + 不是临时变量
             ElementTable elementTable = APIMidCodeSymTable.getInstance().

@@ -73,7 +73,7 @@ public class VarNode {
                     Iterator<Integer> it = tag.iterator();
                     while (it.hasNext()) {
                         int k = it.next();
-                        if (k != i && web.get(i).collide(web.get(k))) {
+                        if (k != i && web.get(i).canMerge(web.get(k))) {
                             web.get(i).merge(web.get(k));
                             web.remove(k);
                             it.remove();
@@ -90,11 +90,19 @@ public class VarNode {
     private boolean webDone() {
         for (int i = 0; i < web.size(); i++) {
             for (int k = i + 1; k < web.size(); k++) {
-                if (web.get(i).collide(web.get(k))) {
+                if (web.get(i).canMerge(web.get(k))) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    public HashMap<Integer, VarWeb> getWeb() {
+        return web;
+    }
+
+    public TableSymbol getTableSymbol() {
+        return tableSymbol;
     }
 }

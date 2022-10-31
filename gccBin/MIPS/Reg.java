@@ -1,5 +1,9 @@
 package gccBin.MIPS;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 public enum Reg {
     RA("$ra"),
     ZERO("$zero"),
@@ -26,11 +30,34 @@ public enum Reg {
 
     private final String name;
 
-    private Reg(String name){
+    private Reg(String name) {
         this.name = name;
     }
 
     public String getName() {
         return name;
+    }
+
+
+    //***********************************************
+    // 待续
+    public static Reg getAStoreReg(ArrayList<Reg> arr) {
+        if (!arr.contains(S0)) {
+            return S0;
+        } else if (!arr.contains(S1)) {
+
+        }
+        return S7;
+    }
+
+    //***********************************************
+    // 待续
+    public static Reg getATempReg(HashMap<Reg,String> arr) {
+        if (!arr.containsKey(T0)) {
+            return T0;
+        } else if (!arr.containsKey(T1)) {
+
+        }
+        return S7;
     }
 }

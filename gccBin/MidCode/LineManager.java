@@ -5,6 +5,7 @@ import gccBin.MidCode.Line.*;
 import gccBin.MidCode.firstProcess.MidCodeFirst;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 
 /**
  * ir ___ 中间代码
@@ -139,5 +140,29 @@ public class LineManager {
 
     public Line getLine(int index) {
         return lines.get(index);
+    }
+
+    /**
+     * 更新相应的line的名字()   Gen
+     */
+    public void reGenNameLine(BitSet a,String old,String name){
+        int start = a.nextSetBit(0);
+        for(int i = start;i<a.length();i++){
+            if(a.get(i)){
+                lines.get(i).renameGen(old,name);
+            }
+        }
+    }
+
+    /**
+     * 更新相应的line的名字() Use
+     */
+    public void reUseNameLine(BitSet a,String old,String name){
+        int start = a.nextSetBit(0);
+        for(int i = start;i<a.length();i++){
+            if(a.get(i)){
+                lines.get(i).renameUse(old,name);
+            }
+        }
     }
 }

@@ -44,6 +44,16 @@ public class MidCodeFirst {
 
         BasicBlockManager.getInstance().initAllDefUseChain();
 
+        VarNodeManager.getInstance().generateWeb();
+
+        VarNodeManager.getInstance().renewSymTableAndLine();
+
+        VarNodeManager.getInstance().getClashGraph();
+
+        RegAllocation.getInstance().setNewName2Web(
+                VarNodeManager.getInstance().getNewName2Web());
+
+
     }
 
     public void inTableSymbol() {
