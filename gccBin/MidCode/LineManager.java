@@ -7,22 +7,23 @@ import gccBin.MidCode.firstProcess.MidCodeFirst;
 import java.util.ArrayList;
 
 /**
+ * ir ___ 中间代码
  * 参数会和关键字重合吗？
  */
-public class MidCodeLines {
-    private static MidCodeLines midCodeLines;
+public class LineManager {
+    private static LineManager midCodeLines;
 
     private final ArrayList<Line> lines; //第一次扫描之后的中间代码。
     private int index ;
 
-    private MidCodeLines(){
+    private LineManager(){
         lines = new ArrayList<>();
         index = 0;
     }
 
-    public static MidCodeLines getInstance(){
+    public static LineManager getInstance(){
         if(midCodeLines == null){
-            midCodeLines = new MidCodeLines();
+            midCodeLines = new LineManager();
         }
         return midCodeLines;
     }
@@ -68,7 +69,7 @@ public class MidCodeLines {
             this.lines.add(a);
             return a;
         } else if (equ(2,elements,0,"call")) {
-            CallFunc a = new CallFunc(line,index++,tableSymbol,elements);
+            CallFuncLine a = new CallFuncLine(line,index++,tableSymbol,elements);
             this.lines.add(a);
             return a;
         } else if (isRetLine(elements)) {
@@ -136,4 +137,7 @@ public class MidCodeLines {
                 equ(2,ele,0,"ret");
     }
 
+    public Line getLine(int index) {
+        return lines.get(index);
+    }
 }

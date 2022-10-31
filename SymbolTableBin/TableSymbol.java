@@ -32,7 +32,7 @@ public class TableSymbol {
             APIGramSymTable.getInstance().setRootTable(this);
             APIMidCodeSymTable.getInstance().setRootTable(this);
             MIPS.getInstance().setTableSymbol(this);
-            MidCodeFirst.getInstance().setNowTable(this);
+            MidCodeFirst.getInstance().setRootTable(this);
         } else {
             this.father.addChild(this);
         }

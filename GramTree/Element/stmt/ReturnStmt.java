@@ -30,6 +30,8 @@ public class ReturnStmt extends Stmt {
             MidCode.getInstance().returnStmt(exp.getMidCode());
         } else if (param.getFunc() == InheritProp.Call) {
             MidCode.getInstance().returnStmt();
+        } else {
+            MidCode.getInstance().mainRetStmt();
         }
     }
 

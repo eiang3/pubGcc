@@ -10,14 +10,14 @@ public class Line {
     private TableSymbol tableSymbol;
     private int index;
 
-    private HashSet<String> gen;
-    private HashSet<String> use;
+    private String gen; //只能有一个定义
+    private HashSet<String> use; //可能有多个使用
 
     public Line(String s,int line,TableSymbol tableSymbol){
         this.midCodeLine = s;
         this.tableSymbol = tableSymbol;
         this.index = line;
-        this.gen = new HashSet<>();
+        //this.gen
         this.use = new HashSet<>();
     }
 
@@ -47,7 +47,7 @@ public class Line {
 
     public void addGen(String name){
         if(JudgeExpElement.isVar(name,tableSymbol)) {
-            this.gen.add(name);
+            this.gen = name;
         }
     }
 
@@ -57,7 +57,7 @@ public class Line {
         }
     }
 
-    public HashSet<String> getGen() {
+    public String getGen() {
         return gen;
     }
 

@@ -51,16 +51,16 @@ public class APIGramSymTable {
             ElementVar elementVar = new ElementVar(
                     varDef.getName(), TypeTable.INT); // TypeTable.INT改成get有bug
             this.nowTable.addElement(elementVar);
-
-            String name = varDef.getName();
-            if (name2Times.containsKey(name)) {
-                int times = name2Times.get(name);
-                elementVar.setSubScript(times);
-                name2Times.put(name, times + 1);
-            } else {
-                name2Times.put(name, 0);
+            if(nowTable != rootTable) {
+                String name = varDef.getName();
+                if (name2Times.containsKey(name)) {
+                    int times = name2Times.get(name);
+                    elementVar.setSubScript(times);
+                    name2Times.put(name, times + 1);
+                } else {
+                    name2Times.put(name, 0);
+                }
             }
-
         } else {
             ElementVarArray elementVarArray = new ElementVarArray(
                     varDef.getName(), varDef.getType(), TypeTable.VAR,

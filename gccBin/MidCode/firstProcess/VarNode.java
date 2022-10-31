@@ -2,32 +2,99 @@ package gccBin.MidCode.firstProcess;
 
 import SymbolTableBin.TableSymbol;
 
-import java.util.ArrayList;
-import java.util.BitSet;
+import java.util.*;
 
 public class VarNode {
-    private String name;
-    private TableSymbol tableSymbol;
+    private final String name;
+    private final TableSymbol tableSymbol;
 
-    private ArrayList<Integer> genSite;
-    private BitSet genSet;
-    private BitSet useSet;
+    private final ArrayList<Integer> genSite; //gen——line对应的标号。
 
-    public VarNode(String name,TableSymbol tableSymbol){
+    private final HashMap<Integer, BitSet> defUseChain;
+
+    private final HashMap<Integer, VarWeb> web;
+
+
+    private final BitSet genSet;
+    private final BitSet useSet;
+
+    public VarNode(String name, TableSymbol tableSymbol) {
         this.name = name;
         this.tableSymbol = tableSymbol;
-
+        web = new HashMap<>();
+        defUseChain = new HashMap<>();
         genSet = new BitSet();
         useSet = new BitSet();
         genSite = new ArrayList<>();
     }
 
-    public void addGen(int index){
+    public BitSet getGenSet() {
+        return genSet;
+    }
+
+    public void addGen(int index) {
         genSite.add(index);
+        defUseChain.put(index, new BitSet());
         genSet.set(index);
     }
 
-    public void addUse(int index){
+    public void addUse(int index) {
         useSet.set(index);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void renewUseDefChain(int index, BitSet bitSet) {
+        BitSet use = (BitSet) useSet.clone();
+        use.and(bitSet);
+        this.defUseChain.get(index).or(use);
+    }
+
+    /**
+     * 定义使用链计算完毕后，形成网。
+     * bug ？
+     */
+    public void generateWeb() {
+        for (int i : defUseChain.keySet()) {
+            BitSet def = new BitSet();
+            def.set(i);
+            BitSet use = (BitSet) defUseChain.get(i).clone();
+            web.put(i, new VarWeb(name, def, use));
+        }
+
+        ArrayList<Integer> tag = new ArrayList<>(genSite);
+        //tag 集最后应该是答案web的key集
+        //对每一个def点进行遍历，一遍会将所有与他冲突的点加入；
+        do {
+            for (int i : genSite) {
+                if (tag.contains(i)) { //说明这个def点没有被消除（加入其他web）
+                    Iterator<Integer> it = tag.iterator();
+                    while (it.hasNext()) {
+                        int k = it.next();
+                        if (k != i && web.get(i).collide(web.get(k))) {
+                            web.get(i).merge(web.get(k));
+                            web.remove(k);
+                            it.remove();
+                        }
+                    }
+                }
+            }
+        }while(webDone());
+    }
+
+    /**
+     * 判断目前的网络是否冲突
+     */
+    private boolean webDone() {
+        for (int i = 0; i < web.size(); i++) {
+            for (int k = i + 1; k < web.size(); k++) {
+                if (web.get(i).collide(web.get(k))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

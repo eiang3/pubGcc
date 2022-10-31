@@ -256,6 +256,10 @@ public class MidCode {
         write("ret" + "\n");
     }
 
+    public void mainRetStmt() throws IOException{
+        write("ret main\n");
+    }
+
     public void assignStmtScanf(String lVal) throws IOException {
         String t1 = MidTagManage.getInstance().newVar();
         write("scanf " + t1 + "\n");
