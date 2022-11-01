@@ -5,8 +5,8 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
-import gccBin.MidCode.original.MidTagManage;
+import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.original.IRTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,23 +26,23 @@ public class WhileStmt extends Stmt {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        String end_while = MidTagManage.getInstance().newLabel();
-        String cond_again = MidTagManage.getInstance().newLabel();
+        String end_while = IRTagManage.getInstance().newLabel();
+        String cond_again = IRTagManage.getInstance().newLabel();
 
         Param p = new Param(param);
         p.setWhileOrIfEndLabel(end_while);
         p.setWhileEndLabel(end_while);
         p.setCondLabel(cond_again);
 
-        MidCode.getInstance().annotate("while");
-        MidCode.getInstance().localLabel(cond_again); //    cond_again:
+        IRGenerate.getInstance().annotate("while");
+        IRGenerate.getInstance().localLabel(cond_again); //    cond_again:
         this.cond.midCodeGen(fileWriter, p); //cond;
 
-        MidCode.getInstance().annotate("cond "+cond.toString());
+        IRGenerate.getInstance().annotate("cond "+cond.toString());
 
         stmt.midCodeGen(fileWriter, p); //stmt;
-        MidCode.getInstance().jump(cond_again);     // jump cond_again
-        MidCode.getInstance().localLabel(end_while); //end_while:
+        IRGenerate.getInstance().jump(cond_again);     // jump cond_again
+        IRGenerate.getInstance().localLabel(end_while); //end_while:
     }
 
     @Override

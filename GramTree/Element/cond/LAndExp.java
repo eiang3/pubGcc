@@ -1,7 +1,7 @@
 package GramTree.Element.cond;
 
 import GramTree.*;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class LAndExp extends TreeFatherNode {
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter,param);
         if(signalExp){
-            MidCode.getInstance().LAndExpSignalExp(
+            IRGenerate.getInstance().LAndExpSignalExp(
                     eqExp.getMidCode(),param.getWhileOrIfEndLabel());
         }
     }

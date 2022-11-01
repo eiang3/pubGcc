@@ -4,7 +4,7 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,8 +22,8 @@ public class BreakStmt extends Stmt{
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().annotate(this.toString());
-        MidCode.getInstance().jump(param.getWhileEndLabel());
+        IRGenerate.getInstance().annotate(this.toString());
+        IRGenerate.getInstance().jump(param.getWhileEndLabel());
     }
 
     @Override

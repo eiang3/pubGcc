@@ -22,7 +22,7 @@ public class AssignLine extends Line{
 
     private boolean t1IsUse;
     private boolean t2IsUse;
-    private boolean ansIsGen;
+    private final boolean ansIsGen;
 
     public AssignLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
@@ -76,4 +76,6 @@ public class AssignLine extends Line{
     public String getAns() {
         return ans;
     }
+
+
 }

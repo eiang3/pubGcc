@@ -2,18 +2,18 @@ package SymbolTableBin;
 
 import java.util.HashMap;
 
-public class APIMidCodeSymTable {
-    private static APIMidCodeSymTable instance;
+public class APIIRSymTable {
+    private static APIIRSymTable instance;
 
     private TableSymbol rootTable;
 
     private HashMap<String,TableSymbol> funs = new HashMap<>();
 
-    private APIMidCodeSymTable(){}
+    private APIIRSymTable(){}
 
-    public static APIMidCodeSymTable getInstance(){
+    public static APIIRSymTable getInstance(){
         if(instance == null){
-            instance = new APIMidCodeSymTable();
+            instance = new APIIRSymTable();
         }
         return instance;
     }
@@ -52,6 +52,13 @@ public class APIMidCodeSymTable {
         return null;
     }
 
+    /**
+     * 如果传入的符号经查找是全局变量，返回查找到的表项，否则，返回null
+     */
+    public ElementTable findGlobalElement(String str){
+        if(!rootTable.contain(str)) return  null;
+        return rootTable.getElement(str);
+    }
 
     /*public int findAddress(TableSymbol tableSymbol,String name){
         ElementTable elementTable = findTableElementRecur(tableSymbol,name);

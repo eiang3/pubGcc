@@ -3,7 +3,7 @@ package GramTree.Element;
 import GramTree.*;
 import GramTree.Element.UnaryExp.UnaryExp;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -42,10 +42,10 @@ public class MulExp extends TreeFatherNode {
             }
         } else  {
             if(mulExp == null){
-                this.midCode = MidCode.getInstance().mulExpUnary(
+                this.midCode = IRGenerate.getInstance().mulExpUnary(
                         unaryExp.getMidCode(), unaryExp.getCoe(),unaryExp.getNegative());
             } else {
-                this.midCode = MidCode.getInstance().mulExpTwo(
+                this.midCode = IRGenerate.getInstance().mulExpTwo(
                         this.mulExp.getMidCode(),this.unaryExp.getMidCode(),
                         this.unaryExp.getCoe(),this.unaryExp.getNegative(),word);
             }

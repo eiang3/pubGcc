@@ -14,12 +14,12 @@ import GramTree.Element.stmt.*;
 import GramTree.TreeFatherNode;
 import GramTree.Word;
 import SymbolTableBin.APIGramSymTable;
-import SymbolTableBin.APIMidCodeSymTable;
+import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.TypeTable;
 import gccBin.ERROR.ErrorHandle;
 import gccBin.Lex.LexStream;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 /*
 递归下降词法分析
@@ -73,7 +73,7 @@ public class Gram {
     public void gramStart() throws IOException {
         getSym();
         CompUnit compUnit = compUnit();
-        MidCode.getInstance().setRoot(compUnit);
+        IRGenerate.getInstance().setRoot(compUnit);
         //compUnit.travel(fileWriter);
     }
 
@@ -216,7 +216,7 @@ public class Gram {
         //为错误处理新添的接口，如果改成符号集判断会不会好一点？ 陈
 
         APIGramSymTable.getInstance().buildTable();
-        APIMidCodeSymTable.getInstance().addFunTable(name,
+        APIIRSymTable.getInstance().addFunTable(name,
                 APIGramSymTable.getInstance().getNowTable());
 
         ErrorHandle.getInstance().entryFunc(funcDef); //void error

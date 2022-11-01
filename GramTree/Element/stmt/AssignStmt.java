@@ -5,7 +5,7 @@ import GramTree.Element.Exp;
 import GramTree.Element.LVal;
 import GramTree.Param;
 import GramTree.TreeElement;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,15 +26,15 @@ public class AssignStmt extends Stmt {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().annotate(this.toString());
+        IRGenerate.getInstance().annotate(this.toString());
         Param p = new Param(param);
         p.setExpKind(InheritProp.LValAssign);
         lVal.midCodeGen(fileWriter,p);
         if (exp != null) {
             exp.midCodeGen(fileWriter,param);
-            MidCode.getInstance().assignStmtExp(lVal.getMidCode(), exp.getMidCode());
+            IRGenerate.getInstance().assignStmtExp(lVal.getMidCode(), exp.getMidCode());
         } else {
-            MidCode.getInstance().assignStmtScanf(lVal.getMidCode());
+            IRGenerate.getInstance().assignStmtScanf(lVal.getMidCode());
         }
     }
 

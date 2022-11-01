@@ -4,7 +4,7 @@ import GramTree.*;
 import SymbolTableBin.TypeTable;
 import SymbolTableBin.Value;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,10 +49,10 @@ public class ConstDef extends TreeFatherNode {
             this.value.setNum(constInitVal.getValue());
         } else if (dimension == 1) {
             this.array.add(constInitVal.getArray().get(0));
-            MidCode.getInstance().constDefArray(name,constExpOne.getValue(),array);
+            IRGenerate.getInstance().constDefArray(name,constExpOne.getValue(),array);
         } else if (dimension == 2) {
             this.array.addAll(constInitVal.getArray());
-            MidCode.getInstance().constDefArray(name,
+            IRGenerate.getInstance().constDefArray(name,
                     constExpOne.getValue()*constExpTwo.getValue(),
                     array);
         }

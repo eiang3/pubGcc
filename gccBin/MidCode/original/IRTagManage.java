@@ -1,20 +1,20 @@
 package gccBin.MidCode.original;
 
-public class MidTagManage {
-    private static MidTagManage instance;
+public class IRTagManage {
+    private static IRTagManage instance;
     private int count;
     private int ret;
     private int label;
 
-    private MidTagManage() {
+    private IRTagManage() {
         this.count = 0;
         this.ret = 0;
         this.label = 0;
     }
 
-    public static MidTagManage getInstance() {
+    public static IRTagManage getInstance() {
         if (instance == null) {
-            instance = new MidTagManage();
+            instance = new IRTagManage();
         }
         return instance;
     }

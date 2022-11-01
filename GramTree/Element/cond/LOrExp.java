@@ -1,8 +1,8 @@
 package GramTree.Element.cond;
 
 import GramTree.*;
-import gccBin.MidCode.original.MidCode;
-import gccBin.MidCode.original.MidTagManage;
+import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.original.IRTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,12 +24,12 @@ public class LOrExp extends TreeFatherNode {
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
 
         if(lOrExp != null){
-            String nextOr = MidTagManage.getInstance().newLabel();
+            String nextOr = IRTagManage.getInstance().newLabel();
 
             Param p = new Param(param);
             p.setWhileOrIfEndLabel(nextOr);
             lOrExp.midCodeGen(fileWriter,p);
-            MidCode.getInstance().localLabel(nextOr);
+            IRGenerate.getInstance().localLabel(nextOr);
             lAndExp.midCodeGen(fileWriter,param);
         } else {
             lAndExp.midCodeGen(fileWriter,param);

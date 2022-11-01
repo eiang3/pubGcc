@@ -2,10 +2,10 @@ package GramTree.Element;
 
 import GramTree.*;
 import SymbolTableBin.APIErrorSymTable;
-import SymbolTableBin.APIMidCodeSymTable;
+import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.ElementTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -64,33 +64,33 @@ public class LVal extends TreeFatherNode {
 
     private void constOp(FileWriter fileWriter, Param param) throws IOException {
         if (exp1 == null && exp2 == null) {
-            this.value = APIMidCodeSymTable.getInstance()
+            this.value = APIIRSymTable.getInstance()
                     .findValue(super.getTableSymbol(), name);
         } else if (exp1 != null && exp2 == null) {
             exp1.midCodeGen(fileWriter, param);
-            this.value = APIMidCodeSymTable.getInstance()
+            this.value = APIIRSymTable.getInstance()
                     .findValue(super.getTableSymbol(), name, exp1.getValue());
         } else if (exp1 != null && exp2 != null) {
             exp1.midCodeGen(fileWriter, param);
             exp2.midCodeGen(fileWriter, param);
-            this.value = APIMidCodeSymTable.getInstance()
+            this.value = APIIRSymTable.getInstance()
                     .findValue(super.getTableSymbol(), name, exp1.getValue(), exp2.getValue());
         }
     }
 
     private void funcRParamOp(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter, param); //如果是函数的话，那下标里一定是数值了。
-        if (APIMidCodeSymTable.getInstance().isConstNum(super.getTableSymbol(), name)) {
-            this.midCode = String.valueOf(APIMidCodeSymTable.getInstance().getConstNum
+        if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name)) {
+            this.midCode = String.valueOf(APIIRSymTable.getInstance().getConstNum
                     (super.getTableSymbol(), name));
         } else if (exp1 == null && exp2 == null) {
-            this.midCode = MidCode.getInstance().lValRParam
+            this.midCode = IRGenerate.getInstance().lValRParam
                     (super.getTableSymbol(), name);
         } else if (exp1 != null && exp2 == null) { //一维的数组
-            this.midCode = MidCode.getInstance().lValRParam
+            this.midCode = IRGenerate.getInstance().lValRParam
                     (super.getTableSymbol(), name, exp1.getMidCode());
         } else if (exp1 != null && exp2 != null) {
-            this.midCode = MidCode.getInstance().lValRParam(
+            this.midCode = IRGenerate.getInstance().lValRParam(
                     super.getTableSymbol(), name,
                     exp1.getMidCode(), exp2.getMidCode());
         }
@@ -98,17 +98,17 @@ public class LVal extends TreeFatherNode {
 
     private void elseOp(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter, param);
-        if (APIMidCodeSymTable.getInstance().isConstNum(super.getTableSymbol(), name)) {
-            this.midCode = String.valueOf(APIMidCodeSymTable.getInstance().getConstNum
+        if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name)) {
+            this.midCode = String.valueOf(APIIRSymTable.getInstance().getConstNum
                     (super.getTableSymbol(), name));
         } else if (exp1 == null && exp2 == null) {
-            this.midCode = MidCode.getInstance().lValNormal(super.getTableSymbol(),name, param);
+            this.midCode = IRGenerate.getInstance().lValNormal(super.getTableSymbol(),name, param);
         } else if (exp1 != null && exp2 == null) { //一维的数组
-            this.midCode = MidCode.getInstance().lValNormal(name, exp1.getMidCode(), param);
+            this.midCode = IRGenerate.getInstance().lValNormal(name, exp1.getMidCode(), param);
         } else if (exp1 != null && exp2 != null) {
-            int len = APIMidCodeSymTable.getInstance().findTwoDimArrayLen(
+            int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
                     super.getTableSymbol(), this.name);
-            this.midCode = MidCode.getInstance().lValNormal(name,
+            this.midCode = IRGenerate.getInstance().lValNormal(name,
                     exp1.getMidCode(), exp2.getMidCode(), len, param);
         }
     }

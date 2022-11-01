@@ -4,7 +4,6 @@ import gccBin.ERROR.ErrorHandle;
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.firstProcess.MidCodeFirst;
 
-import javax.xml.bind.Element;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +31,7 @@ public class TableSymbol {
         if(this.father == null) {  //记录根节点
             APIErrorSymTable.getInstance().setFatherTable(this);
             APIGramSymTable.getInstance().setRootTable(this);
-            APIMidCodeSymTable.getInstance().setRootTable(this);
+            APIIRSymTable.getInstance().setRootTable(this);
             MIPS.getInstance().setTableSymbol(this);
             MidCodeFirst.getInstance().setRootTable(this);
         } else {

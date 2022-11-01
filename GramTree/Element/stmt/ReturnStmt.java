@@ -6,7 +6,7 @@ import GramTree.InheritProp;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,14 +24,14 @@ public class ReturnStmt extends Stmt {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().annotate(this.toString());
+        IRGenerate.getInstance().annotate(this.toString());
         if (param.getFunc() == InheritProp.Call && exp != null) {
             super.ergodicMidCode(fileWriter, param);
-            MidCode.getInstance().returnStmt(exp.getMidCode());
+            IRGenerate.getInstance().returnStmt(exp.getMidCode());
         } else if (param.getFunc() == InheritProp.Call) {
-            MidCode.getInstance().returnStmt();
+            IRGenerate.getInstance().returnStmt();
         } else {
-            MidCode.getInstance().mainRetStmt();
+            IRGenerate.getInstance().mainRetStmt();
         }
     }
 

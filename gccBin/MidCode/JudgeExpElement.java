@@ -1,6 +1,6 @@
-package gccBin.MidCode.firstProcess;
+package gccBin.MidCode;
 
-import SymbolTableBin.APIMidCodeSymTable;
+import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.ElementTable;
 import SymbolTableBin.ElementVar;
 import SymbolTableBin.TableSymbol;
@@ -18,9 +18,9 @@ public class JudgeExpElement {
      */
     public static boolean isVar(String name, TableSymbol tableSymbol){ //isVarNode
         if(name == null) return false;
-        if(tableSymbol.getFather() != null && !name.contains("$")) {
+        if(tableSymbol.getFather() != null && !(name.charAt(0) =='$')) {
             //不是根节点/不是全局变量  + 不是临时变量
-            ElementTable elementTable = APIMidCodeSymTable.getInstance().
+            ElementTable elementTable = APIIRSymTable.getInstance().
                     findElementRecur(tableSymbol,name);
             return elementTable instanceof ElementVar;
         }

@@ -38,26 +38,49 @@ public enum Reg {
         return name;
     }
 
-
-    //***********************************************
-    // 待续
     public static Reg getAStoreReg(ArrayList<Reg> arr) {
         if (!arr.contains(S0)) {
             return S0;
         } else if (!arr.contains(S1)) {
-
+            return S1;
+        } else if (!arr.contains(S2)) {
+            return S2;
+        } else if (!arr.contains(S3)) {
+            return S3;
+        } else if (!arr.contains(S4)) {
+            return S4;
+        } else if (!arr.contains(S5)) {
+            return S5;
+        } else if (!arr.contains(S6)) {
+            return S6;
+        } else if (!arr.contains(S7)) {
+            return S7;
         }
-        return S7;
+        return null;
     }
 
-    //***********************************************
-    // 待续
     public static Reg getATempReg(HashMap<Reg,String> arr) {
         if (!arr.containsKey(T0)) {
             return T0;
         } else if (!arr.containsKey(T1)) {
-
+            return T1;
+        } else if (!arr.containsKey(T2)) {
+            return T2;
+        } else if (!arr.containsKey(T3)) {
+            return T3;
+        } else if (!arr.containsKey(T4)) {
+            return T4;
+        } else if (!arr.containsKey(T5)) {
+            return T5;
+        } else if (!arr.containsKey(T6)) {
+            return T6;
+        } else if (!arr.containsKey(T7)) {
+            return T7;
+        } else if (!arr.containsKey(T8)) {
+            return T8;
+        } else if (!arr.containsKey(T9)) {
+            return T9;
         }
-        return S7;
+        return null;
     }
 }

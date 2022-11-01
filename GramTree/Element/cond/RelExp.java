@@ -2,7 +2,7 @@ package GramTree.Element.cond;
 
 import GramTree.*;
 import GramTree.Element.AddExp;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class RelExp extends TreeFatherNode {
         if(relExp != null){
             String t1 = relExp.getMidCode();
             String t2 = addExp.getMidCode();
-            MidCode.getInstance().condJump(t1,word,t2, param.getWhileOrIfEndLabel());
+            IRGenerate.getInstance().condJump(t1,word,t2, param.getWhileOrIfEndLabel());
         } else {
             if(super.getFather() instanceof EqExp){
                 ((EqExp)super.getFather()).setSignalExp(true);

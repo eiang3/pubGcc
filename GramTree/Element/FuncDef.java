@@ -1,10 +1,10 @@
 package GramTree.Element;
 
 import GramTree.*;
-import SymbolTableBin.APIMidCodeSymTable;
+import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.TypeTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,16 +34,16 @@ public class FuncDef extends TreeFatherNode {
         p.setFunc(InheritProp.Call);
 
         funcType.midCodeGen(fileWriter, p);
-        MidCode.getInstance().funcDef(returnType, name);
-        MidCode.getInstance().inBlock();
+        IRGenerate.getInstance().funcDef(returnType, name);
+        IRGenerate.getInstance().inBlock();
 
         if (funcFParams != null) funcFParams.midCodeGen(fileWriter, p);
         block.midCodeGen(fileWriter, p);
-        if (APIMidCodeSymTable.getInstance().getFuncElement(name).getReturnType()
+        if (APIIRSymTable.getInstance().getFuncElement(name).getReturnType()
                 == TypeTable.VOID) {
             fileWriter.write("ret\n");
         }   //如果返回类型是void 不论是否有返回语句，最后都要有返回语句
-        MidCode.getInstance().leaveBlock();
+        IRGenerate.getInstance().leaveBlock();
     }
 
     @Override

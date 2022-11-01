@@ -1,6 +1,6 @@
 package gccBin.MidCode.firstProcess;
 
-import SymbolTableBin.APIMidCodeSymTable;
+import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.ElementVar;
 import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Line.Line;
@@ -92,7 +92,7 @@ public class VarNodeManager {
             TableSymbol tableSymbol = node.getTableSymbol();
             // bug ? 不存在?
             ElementVar elementVar = (ElementVar)
-                    APIMidCodeSymTable.getInstance().findElementRecur(tableSymbol, name);
+                    APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
 
             int now = 0;
             for (int key : web.keySet()) {

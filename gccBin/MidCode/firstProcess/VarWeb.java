@@ -106,7 +106,6 @@ public class VarWeb {
     public void setReg(ArrayList<VarWeb> leave){
         ArrayList<Reg> arr = new ArrayList<>();
         for(VarWeb varWeb:clash){
-            // 待续  clashSub?
             if(leave.contains(varWeb)){
                 arr.add(varWeb.getReg());
             }

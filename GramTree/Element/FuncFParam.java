@@ -3,7 +3,7 @@ package GramTree.Element;
 import GramTree.*;
 import SymbolTableBin.TypeTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class FuncFParam extends TreeFatherNode {
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter,param);
-        MidCode.getInstance().funcFParam(type,name,dimension);
+        IRGenerate.getInstance().funcFParam(type,name,dimension);
     }
 
     @Override

@@ -5,7 +5,7 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 import gccBin.MidCode.original.PrintfFormatStringStore;
 
 import java.io.FileWriter;
@@ -26,7 +26,7 @@ public class PrintfStmt extends Stmt {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().annotate(this.toString());
+        IRGenerate.getInstance().annotate(this.toString());
         for(Exp exp:exps){
             exp.midCodeGen(fileWriter,param);
         }

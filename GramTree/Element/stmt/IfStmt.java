@@ -5,8 +5,8 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
-import gccBin.MidCode.original.MidTagManage;
+import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.original.IRTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,32 +30,32 @@ public class IfStmt extends Stmt {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().annotate("if");
+        IRGenerate.getInstance().annotate("if");
         if (elseStmt != null) {
-            String start_else = MidTagManage.getInstance().newLabel();
-            String end_if = MidTagManage.getInstance().newLabel();
+            String start_else = IRTagManage.getInstance().newLabel();
+            String end_if = IRTagManage.getInstance().newLabel();
 
             Param p = new Param(param);
             p.setWhileOrIfEndLabel(start_else);
 
             cond.midCodeGen(fileWriter, p); //失败,跳到start_else
-            MidCode.getInstance().annotate("cond "+cond.toString());
+            IRGenerate.getInstance().annotate("cond "+cond.toString());
 
             ifStmt.midCodeGen(fileWriter, p); //if stmt;
-            MidCode.getInstance().jump(end_if); //jump end_if
+            IRGenerate.getInstance().jump(end_if); //jump end_if
 
-            MidCode.getInstance().localLabel(start_else); // start_else:
-            MidCode.getInstance().annotate("else");
+            IRGenerate.getInstance().localLabel(start_else); // start_else:
+            IRGenerate.getInstance().annotate("else");
             elseStmt.midCodeGen(fileWriter, p);  //else if;
-            MidCode.getInstance().localLabel(end_if); //end_if:
+            IRGenerate.getInstance().localLabel(end_if); //end_if:
         } else {
-            String end_if = MidTagManage.getInstance().newLabel();
+            String end_if = IRTagManage.getInstance().newLabel();
             Param p = new Param(param);
             p.setWhileOrIfEndLabel(end_if);
 
             cond.midCodeGen(fileWriter, p); //失败，end_if
             ifStmt.midCodeGen(fileWriter, p); //if stmt;
-            MidCode.getInstance().localLabel(end_if); //end_if
+            IRGenerate.getInstance().localLabel(end_if); //end_if
         }
 
     }

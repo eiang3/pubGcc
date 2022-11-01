@@ -1,11 +1,11 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MidCode.firstProcess.JudgeExpElement;
+import gccBin.MidCode.JudgeExpElement;
 
 import java.util.HashSet;
 
-public abstract class Line {
+public class Line {
     private String midCodeLine; //最初的ir。
     private TableSymbol tableSymbol;
     private int index;

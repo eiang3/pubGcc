@@ -7,7 +7,7 @@ import gccBin.Gram.Gram;
 import gccBin.Lex.Lex;
 import gccBin.MIPS.MM;
 import gccBin.MIPS.MIPS;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 public class Compiler {
     public static void main(String[] args)  {
@@ -19,13 +19,13 @@ public class Compiler {
             Lex.getInstance().initialLexInput(input);
             Gram.getInstance().initialGramOutFile();
             ErrorHandle.getInstance().open();
-            MidCode.getInstance().openMidCodeWriter();
+            IRGenerate.getInstance().openMidCodeWriter();
             MM.get().open();
             MIPS.getInstance().openMipsWriter();
 
             Gram.getInstance().gramStart();
-            MidCode.getInstance().beginMidCodeGen();
-            MidCode.getInstance().closeMidCodeWriter();
+            IRGenerate.getInstance().beginMidCodeGen();
+            IRGenerate.getInstance().closeMidCodeWriter();
 
             MIPS.getInstance().beginTransLate();
 

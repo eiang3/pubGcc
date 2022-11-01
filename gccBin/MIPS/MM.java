@@ -24,7 +24,9 @@ public class MM {
         return instance;
     }
 
-    public void open() throws IOException {
+
+
+    /*public void open() throws IOException {
         File inputFile = new File("midCode.txt");
         br = new BufferedReader(
                 new InputStreamReader(
@@ -76,7 +78,7 @@ public class MM {
             return false;
         }
         return arr[pos].equals(str);
-    }
+    }*/
 
 
 

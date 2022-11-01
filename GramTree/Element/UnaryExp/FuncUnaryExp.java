@@ -8,7 +8,7 @@ import GramTree.Word;
 import SymbolTableBin.APIErrorSymTable;
 import SymbolTableBin.TypeTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,10 +30,10 @@ public class FuncUnaryExp extends UnaryExp { //不会有函数调用？
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter, param);
         if (funcRParams != null) {
-            super.setMidCode(MidCode.getInstance().funcCall(ident.getToken(),
+            super.setMidCode(IRGenerate.getInstance().funcCall(ident.getToken(),
                     funcRParams.getExps()));
         } else {
-            super.setMidCode(MidCode.getInstance().funcCall(ident.getToken()));
+            super.setMidCode(IRGenerate.getInstance().funcCall(ident.getToken()));
         }
     }
 

@@ -2,7 +2,7 @@ package GramTree.Element;
 
 import GramTree.*;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class AddExp extends TreeFatherNode {
             }
         } else  {
             if (this.addExp != null) {
-                this.midCode = MidCode.getInstance().addExpTwo(
+                this.midCode = IRGenerate.getInstance().addExpTwo(
                         this.addExp.getMidCode(), this.mulExp.getMidCode(),
                         word);
             } else {

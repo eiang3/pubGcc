@@ -1,7 +1,7 @@
 package GramTree.Element;
 
 import GramTree.*;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class Exp extends TreeFatherNode {
             if(param.getFParamDim() == 0) {
                 this.midCode = this.addExp.getMidCode();
             } else {
-                this.midCode = MidCode.getInstance().mulFour(this.addExp.getMidCode());
+                this.midCode = IRGenerate.getInstance().mulFour(this.addExp.getMidCode());
             }
         }
         else  if(param.getInitial() == InheritProp.NULL) {

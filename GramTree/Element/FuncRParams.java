@@ -2,7 +2,7 @@ package GramTree.Element;
 
 import GramTree.*;
 import GramTree.Element.UnaryExp.FuncUnaryExp;
-import SymbolTableBin.APIMidCodeSymTable;
+import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.ElementFunc;
 
 import java.io.FileWriter;
@@ -30,7 +30,7 @@ public class FuncRParams extends TreeFatherNode {
         if (treeFatherNode instanceof FuncUnaryExp) {
             this.funcName = ((FuncUnaryExp) treeFatherNode).getFuncName();
         }
-        ElementFunc elementFunc = APIMidCodeSymTable.getInstance().getFuncElement(funcName);
+        ElementFunc elementFunc = APIIRSymTable.getInstance().getFuncElement(funcName);
         ArrayList<FuncFParam> fParams = elementFunc.getParams();
         int index = 0;
         for (Exp exp : exps) {

@@ -3,7 +3,7 @@ package GramTree.Element.stmt;
 import GramTree.Element.Exp;
 import GramTree.Param;
 import GramTree.TreeElement;
-import gccBin.MidCode.original.MidCode;
+import gccBin.MidCode.original.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class ExpStmt extends Stmt{
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        MidCode.getInstance().annotate(this.toString());
+        IRGenerate.getInstance().annotate(this.toString());
         super.ergodicMidCode(fileWriter, param);
     }
 
