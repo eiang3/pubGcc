@@ -11,4 +11,8 @@ public class ScanfLine extends Line{
         super(s,line,tableSymbol);
         t = ele[1];
     }
+
+    public String getT() {
+        return t;
+    }
 }

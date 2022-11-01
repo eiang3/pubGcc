@@ -23,10 +23,6 @@ public class IRTagManage {
         return "$t" + (count++);
     }
 
-    public String  newRet(){
-        return "RET";
-    }
-
     public String newLabel(){
         return "label" + (label++);
     }

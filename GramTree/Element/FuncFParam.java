@@ -19,10 +19,12 @@ public class FuncFParam extends TreeFatherNode {
     private ConstExp constExpTwo;
     private int dimension;
 
+    private int index; //函数的第x个参数。
     public FuncFParam(){
         super();
         super.setLabel(Label.FuncFParam);
         this.dimension = 0;
+        index = 0;
     }
 
     @Override
@@ -58,5 +60,20 @@ public class FuncFParam extends TreeFatherNode {
 
     public int getDimension() {
         return dimension;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public static int getOff(int index){
+        if(index > 4){
+            return (index - 4) * 4;
+        }
+        return -1;
     }
 }

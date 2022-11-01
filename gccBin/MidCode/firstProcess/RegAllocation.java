@@ -1,6 +1,6 @@
 package gccBin.MidCode.firstProcess;
 
-import gccBin.MIPS.Reg;
+import gccBin.MIPS.tool.Reg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,8 +46,7 @@ public class RegAllocation {
         }while (leave.size()!=1);
 
         VarWeb lastOne = leave.get(0);
-        lastOne.setReg(Reg.S0);
-
+        lastOne.setReg(Reg.$s0);
         for(int i = orderUse.size()-1;i>=0;i--){
             VarWeb varWeb = orderUse.get(i);
             varWeb.setReg(leave);

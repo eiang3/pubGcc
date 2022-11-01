@@ -2,7 +2,7 @@ package gccBin.MidCode.firstProcess;
 
 import SymbolTableBin.ElementTable;
 import SymbolTableBin.TableSymbol;
-import gccBin.MIPS.Reg;
+import gccBin.MIPS.tool.Reg;
 
 import java.util.ArrayList;
 import java.util.BitSet;

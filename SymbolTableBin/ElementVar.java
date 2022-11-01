@@ -8,7 +8,7 @@ public class ElementVar extends ElementTable{
 
     public ElementVar(String name, TypeTable type){
         super(name,type,TypeTable.VAR,0);
-        this.subScript = -1;
+        this.subScript = 0;
         this.type = type;
     }
 

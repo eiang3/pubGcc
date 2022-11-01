@@ -1,8 +1,6 @@
 package gccBin.MIPS.tool;
 
 import gccBin.MIPS.Operand;
-import gccBin.MIPS.Reg;
-import gccBin.MIPS.tool.Compute;
 
 import java.io.FileWriter;
 import java.io.IOException;

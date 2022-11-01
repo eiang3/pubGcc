@@ -41,6 +41,7 @@ public class APIGramSymTable {
                     constDef.getName(), constDef.getType(), TypeTable.CONST,
                     constDef.getDimension(), constDef.getArray());
             this.nowTable.addElement(elementArray);
+            if(this.nowTable == rootTable) elementArray.setGlobal(true);
         }
     }
 
@@ -60,6 +61,8 @@ public class APIGramSymTable {
                 } else {
                     name2Times.put(name, 0);
                 }
+            } else {
+                elementVar.setGlobal(true);
             }
         } else {
             ElementVarArray elementVarArray = new ElementVarArray(
@@ -67,16 +70,18 @@ public class APIGramSymTable {
                     varDef.getDimension(), varDef.getOneDim(),
                     varDef.getTwoDim());
             this.nowTable.addElement(elementVarArray);
+            if(this.nowTable == rootTable) elementVarArray.setGlobal(true);
         }
     }
 
     //name,type,decl,dim
     public void addFuncFParam(FuncFParam funcFParam) throws IOException {
         if (close) return;
-        ElementTable elementTable = new ElementTable(
+        ElementFParam elementFParam = new ElementFParam(
                 funcFParam.getName(), funcFParam.getType(),
-                TypeTable.FUNC_F_PARAM, funcFParam.getDimension());
-        this.nowTable.addElement(elementTable);
+                TypeTable.FUNC_F_PARAM, funcFParam.getDimension(),
+                funcFParam.getIndex());
+        this.nowTable.addElement(elementFParam);
     }
 
     //name,type,decl,dim

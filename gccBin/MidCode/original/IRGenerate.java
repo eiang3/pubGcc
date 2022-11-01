@@ -71,6 +71,7 @@ public class IRGenerate {
             }
             return;
         }
+
         write("arr int " + name + "[" + len + "]\n");
         int index = 0;
         if (initVal != null) {
@@ -90,7 +91,7 @@ public class IRGenerate {
         } else {
             String ans = IRTagManage.getInstance().newVar();
             write(ans + " = " + name +" >> 2\n");  // 除4
-            return name;
+            return ans;
         }
     }
 
@@ -105,9 +106,10 @@ public class IRGenerate {
                     tableSymbol, name);
             String t1 = IRTagManage.getInstance().newVar();
             write(t1 + " = " + one + " * " + len + "\n");
+            String t2 = IRTagManage.getInstance().newVar();
             String ans = IRTagManage.getInstance().newVar();
-            write(ans + " = " + name +  " >> 2" + "\n"); // 除4
-            write(ans + " = " + t1 + " + " + ans + "\n");
+            write(t2 + " = " + name +  " >> 2" + "\n"); // 除4
+            write(ans + " = " + t1 + " + " + t2 + "\n");
             return ans;
         } else return null;
     }
@@ -126,7 +128,7 @@ public class IRGenerate {
             return  newName;
         } else {
             String t1 = IRTagManage.getInstance().newVar();
-            write(t1 +" = "+newName+"\n");
+            write(t1 +" = "+ newName+"\n");
             return t1;
         }
     }
@@ -241,7 +243,7 @@ public class IRGenerate {
         ElementFunc elementFunc = APIIRSymTable.getInstance().getFuncElement(funcName);
         if(elementFunc.getReturnType() == TypeTable.INT) {
             String t1 = IRTagManage.getInstance().newVar();
-            write(t1 + " = RET\n");
+            write(t1 + " = $RET\n");
             return t1;
         }
         return null;

@@ -20,22 +20,33 @@ public class AssignLine extends Line{
     private String op;
     private String ans;
 
-    private boolean t1IsUse;
+    private boolean t1IsUse; //代表着是非全局var,以后可以直接用
     private boolean t2IsUse;
     private final boolean ansIsGen;
 
+    private boolean pureAssign; //x = y;
+    private boolean oneOpr ; // x = - | ! y
+    private boolean twoOpr ; // x = y (+-*/%>><<) w
+
+
     public AssignLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
+        pureAssign = false;
+        oneOpr = false;
+        twoOpr = false;
         ans = ele[0];
         ansIsGen = super.addGen(ans);
         if(ele.length == 3){
+            pureAssign = true;
             t1 = ele[2];
             t1IsUse = super.addUse(t1);
         } else if (ele.length == 4) {
+            oneOpr = true;
             t1 = ele[3];
             op = ele[2];
             t1IsUse = super.addUse(t1);
         } else if(ele.length == 5){
+            twoOpr = true;
             t1 = ele[2];
             op = ele[3];
             t2 = ele[4];
@@ -77,5 +88,15 @@ public class AssignLine extends Line{
         return ans;
     }
 
+    public boolean isPureAssign() {
+        return pureAssign;
+    }
 
+    public boolean isOneOpr() {
+        return oneOpr;
+    }
+
+    public boolean isTwoOpr() {
+        return twoOpr;
+    }
 }

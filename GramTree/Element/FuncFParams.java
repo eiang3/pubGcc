@@ -21,6 +21,17 @@ public class FuncFParams extends TreeFatherNode {
     }
 
     @Override
+    public void midCodeGen(FileWriter fileWriter,Param param) throws IOException {
+        for(TreeElement treeElement:super.getChildren()){
+            treeElement.midCodeGen(fileWriter,param);
+        }
+        int i = 1;
+        for(FuncFParam fParam:params){
+            fParam.setIndex(i++);
+        }
+    }
+
+    @Override
     public void addChildOperate(TreeElement treeElement) {
         if(treeElement instanceof FuncFParam){
             this.params.add((FuncFParam) treeElement);

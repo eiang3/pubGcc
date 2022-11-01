@@ -5,7 +5,6 @@ import java.io.PushbackInputStream;
 import gccBin.ERROR.ErrorHandle;
 import gccBin.Gram.Gram;
 import gccBin.Lex.Lex;
-import gccBin.MIPS.MM;
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.original.IRGenerate;
 
@@ -20,7 +19,7 @@ public class Compiler {
             Gram.getInstance().initialGramOutFile();
             ErrorHandle.getInstance().open();
             IRGenerate.getInstance().openMidCodeWriter();
-            MM.get().open();
+            //MIPS.get().open();
             MIPS.getInstance().openMipsWriter();
 
             Gram.getInstance().gramStart();
@@ -30,7 +29,7 @@ public class Compiler {
             MIPS.getInstance().beginTransLate();
 
             MIPS.getInstance().closeMIPSWriter();
-            MM.get().close();
+            //MIPS.get().close();
             fileInputStream.close();//关闭文件
             Gram.getInstance().closeGramOutFile();
             ErrorHandle.getInstance().close();

@@ -1,4 +1,7 @@
 package SymbolTableBin;
+
+import gccBin.MIPS.tool.Reg;
+
 /*
 符号表基本元素 ok
  */
@@ -9,6 +12,7 @@ public class ElementTable {
     private final int dimension ; //数值.函数(0)  一维数组(1)  二维数组(2)
     //
     private final Position position; //位置 生成目标时查询
+    private boolean global;
 
     public ElementTable(String name, TypeTable type, TypeTable decl,
                         int dimension){
@@ -17,6 +21,7 @@ public class ElementTable {
         this.decl = decl;
         this.dimension = dimension;
         this.position  = new Position();
+        this.global = false;
     }
 
     public String getName() {
@@ -50,4 +55,29 @@ public class ElementTable {
         return this.name;
     }
 
+    public void setMemOff(int off){
+        position.setOff(off);
+    }
+
+    public int getMemOff(){
+        if(isHasReg()) return -1;
+        return position.getOff();
+    }
+
+    public Reg getReg(){
+        if(isHasReg()) return position.getReg();
+        return null;
+    }
+
+    public boolean isHasReg(){
+        return position.isHasReg();
+    }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
+    }
 }
