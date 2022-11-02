@@ -13,8 +13,8 @@ public class RegAllocation {
      */
     private HashMap<String, VarWeb> newName2Web; //最后保存下来的全部冲突变量z
 
-    private ArrayList<VarWeb> orderUse = new ArrayList<>();
-    private HashSet<VarWeb> orderSearch = new HashSet<>();
+    private final ArrayList<VarWeb> orderUse = new ArrayList<>();
+    private final HashSet<VarWeb> orderSearch = new HashSet<>();
 
     private ArrayList<VarWeb> leave;
 

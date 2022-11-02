@@ -55,7 +55,7 @@ public class LexStream {
         while (ret != 0) {
             ret = Lex.getInstance().getSym();
             if (ret == -2) {
-                Lex.getInstance().closeInputFile();
+                Lex.getInstance().close();
                 return;
             }
         }

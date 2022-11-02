@@ -2,7 +2,6 @@ package gccBin.MidCode.Line;
 
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MidCode.firstProcess.MidCodeFirst;
 import gccBin.MidCode.firstProcess.VarNodeManager;
 
 /**

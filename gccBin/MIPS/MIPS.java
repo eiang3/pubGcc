@@ -26,16 +26,16 @@ public class MIPS {
         return instance;
     }
 
-    public void openMipsWriter() throws IOException {
+    public void open() throws IOException {
         File file = new File("mips.txt");
         this.fileWriter = new FileWriter(file.getName());
     }
 
-    public void closeMIPSWriter() throws IOException {
+    public void close() throws IOException {
         this.fileWriter.close();
     }
 
-    public void beginTransLate() throws IOException {
+    public void begin() throws IOException {
         LineManager.getInstance().beginErgodic();
         do {
             Line line = LineManager.getInstance().nextLine();

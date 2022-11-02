@@ -30,12 +30,12 @@ public class IRGenerate {
         return instance;
     }
 
-    public void openMidCodeWriter() throws IOException {
+    public void open() throws IOException {
         File file = new File("midCode.txt");
         this.fileWriter = new FileWriter(file.getName());
     }
 
-    public void closeMidCodeWriter() throws IOException {
+    public void close() throws IOException {
         this.fileWriter.close();
     }
 
@@ -43,7 +43,7 @@ public class IRGenerate {
         this.root = root;
     }
 
-    public void beginMidCodeGen() throws IOException {
+    public void begin() throws IOException {
         Param param = new Param();
         this.root.midCodeGen(this.fileWriter, param);
     }

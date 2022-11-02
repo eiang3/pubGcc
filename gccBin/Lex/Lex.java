@@ -1,9 +1,7 @@
 package gccBin.Lex;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PushbackInputStream;
+import java.io.*;
+
 /*
 词法分析 + 注释处理
  */
@@ -29,11 +27,15 @@ public class Lex {  //单例模式的词法分析器
         return instance;
     }
 
-    public void initialLexInput(PushbackInputStream inputStream) {
-        this.inputStream = inputStream;
+    private FileInputStream fileInputStream;
+    public void open() throws FileNotFoundException {
+        File inputFile = new File("testfile.txt");
+        fileInputStream = new FileInputStream(inputFile);
+        PushbackInputStream input = new PushbackInputStream(fileInputStream);
+        this.inputStream = input;
     }
 
-    public void lexAnalysisStart() { //单用于词法分析作业，输出单词
+    public void lexStart() { //单用于词法分析作业，输出单词
         try {
             File file = new File("output.txt");
             FileWriter fileWriter = new FileWriter(file.getName());
@@ -317,7 +319,8 @@ public class Lex {  //单例模式的词法分析器
         return row;
     }
 
-    public void closeInputFile() throws IOException {
+    public void close() throws IOException {
+        this.fileInputStream.close();
         this.inputStream.close();
     }
 }

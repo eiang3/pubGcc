@@ -2,7 +2,7 @@ package gccBin.MidCode;
 
 import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Line.*;
-import gccBin.MidCode.firstProcess.MidCodeFirst;
+import gccBin.MidCode.firstProcess.IRFirst;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -73,10 +73,10 @@ public class LineManager {
             this.lines.add(a);
             return a;
         } else if (line.equals("{")) {
-            MidCodeFirst.getInstance().inTableSymbol();
+            IRFirst.getInstance().inTableSymbol();
             return null;
         } else if (line.equals("}")) {
-            MidCodeFirst.getInstance().leaveTableSymbol();
+            IRFirst.getInstance().leaveTableSymbol();
             return null;
         } else if (equ(2, elements, 0, "b", "bge", "ble", "bgt", "blt", "bne", "beq")) {
             BLine a = new BLine(line, numLine++, tableSymbol, elements);

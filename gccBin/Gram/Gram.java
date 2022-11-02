@@ -43,12 +43,12 @@ public class Gram {
         return instance;
     }
 
-    public void initialGramOutFile() throws IOException {
+    public void open() throws IOException {
         File file = new File("output.txt");
         fileWriter = new FileWriter(file.getName());
     }
 
-    public void closeGramOutFile() throws IOException {
+    public void close() throws IOException {
         fileWriter.close();
     }
 
@@ -70,7 +70,7 @@ public class Gram {
     }
 
 
-    public void gramStart() throws IOException {
+    public void start() throws IOException {
         getSym();
         CompUnit compUnit = compUnit();
         IRGenerate.getInstance().setRoot(compUnit);

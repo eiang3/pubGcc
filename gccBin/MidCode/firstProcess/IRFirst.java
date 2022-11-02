@@ -14,8 +14,8 @@ import java.nio.file.Files;
  * 主要是进行冲突图的构建工作
  */
 
-public class MidCodeFirst {
-    private static MidCodeFirst midCodeFirst;
+public class IRFirst {
+    private static IRFirst midCodeFirst;
 
     private BufferedReader bufferedReader;
 
@@ -23,10 +23,16 @@ public class MidCodeFirst {
 
     private String rLine;
 
-    private MidCodeFirst() {
+    private IRFirst() {
     }
 
-    public void beginFirstScan() throws IOException {
+    /**
+     * 分析original IR
+     * ①对有不同网变量进行重命名，
+     * ②得到全局寄存器分配方案
+     * @throws IOException
+     */
+    public void begin() throws IOException {
         readLine();
         //第一遍：得到line基本信息，创建基本块，将定义点使用点分发到相应变量。
         while (rLine != null) {
@@ -53,7 +59,7 @@ public class MidCodeFirst {
         RegAllocation.getInstance().setNewName2Web(
                 VarNodeManager.getInstance().getNewName2Web());
 
-
+        RegAllocation.getInstance().finishRegAllocation();
     }
 
     public void inTableSymbol() {
@@ -74,9 +80,9 @@ public class MidCodeFirst {
     }
 
 ////////////////////////////以下是单例模式基本功能////////////////////////////////////////////
-    public static MidCodeFirst getInstance() {
+    public static IRFirst getInstance() {
         if (midCodeFirst == null) {
-            midCodeFirst = new MidCodeFirst();
+            midCodeFirst = new IRFirst();
         }
         return midCodeFirst;
     }
