@@ -20,6 +20,11 @@ public class VarNode {
     private final BitSet genSet;
     private final BitSet useSet;
 
+    /**
+     * 节点的活跃范围
+     */
+    private final BitSet activeScope;
+
     public VarNode(String name, TableSymbol tableSymbol) {
         this.name = name;
         this.tableSymbol = tableSymbol;
@@ -28,6 +33,19 @@ public class VarNode {
         genSet = new BitSet();
         useSet = new BitSet();
         genSite = new ArrayList<>();
+        activeScope = new BitSet();
+    }
+
+    /**
+     * 扩展节点活跃范围
+     * @param bitSet
+     */
+    public void extendActiveScope(BitSet bitSet){
+        activeScope.or(bitSet);
+    }
+
+    public BitSet getActiveScope() {
+        return (BitSet) activeScope.clone();
     }
 
     public BitSet getGenSet() {

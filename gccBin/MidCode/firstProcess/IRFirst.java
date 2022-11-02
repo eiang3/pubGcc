@@ -50,17 +50,24 @@ public class IRFirst {
 
         BasicBlockManager.getInstance().initAllDefUseChain();
 
-        //顺便把只定义不使用的变量移去
+        //每个节点建网
         VarNodeManager.getInstance().generateWeb();
 
+        //对每个节点建的网进行处理
         VarNodeManager.getInstance().renewSymTableAndLine();
 
-        //这里出错了。
+        //基本块活跃变量分析
+        BasicBlockManager.getInstance().blockActiveVarAnalysis();
+
+        //新节点的活跃范围分析
+        BasicBlockManager.getInstance().varNodeActiveScopeAnalysis();
+
+        //得到变量冲突图
         VarNodeManager.getInstance().getClashGraph();
 
         //
         RegAllocation.getInstance().addNodeToLeaveSet(
-                VarNodeManager.getInstance().getNewName2Web());
+                VarNodeManager.getInstance().getName2Web_readyToFormClash());
 
         RegAllocation.getInstance().finishRegAllocation();
     }

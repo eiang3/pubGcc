@@ -177,6 +177,7 @@ public class LineManager {
      */
     public void reGenNameLine(BitSet a, String old, String name) {
         int start = a.nextSetBit(0);
+        if(start < 0) return;
         for (int i = start; i < a.length(); i++) {
             if (a.get(i)) {
                 lines.get(i).renameGen(old, name);

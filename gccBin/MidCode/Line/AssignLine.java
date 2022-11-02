@@ -59,6 +59,7 @@ public class AssignLine extends Line{
     public void renameGen(String old,String name){
         if(ansIsGen && ans.equals(old)){
             ans = name;
+            super.setGen(name);
         }
     }
 
@@ -66,9 +67,11 @@ public class AssignLine extends Line{
     public void renameUse(String old,String name){
         if(t1IsUse && t1.equals(old)){
             t1 = name;
+            super.replaceOneUse(old,name);
         }
         if(t2IsUse && t2.equals(old)){
             t2 = name;
+            super.replaceOneUse(old,name);
         }
     }
 

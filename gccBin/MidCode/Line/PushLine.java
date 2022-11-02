@@ -20,6 +20,7 @@ public class PushLine extends Line{
     public void renameUse(String old,String name){
         if(use && exp.equals(old)){
             exp = name;
+            super.replaceOneUse(old,name);
         }
     }
 

@@ -13,13 +13,14 @@ public class Line {
     private String gen; //只能有一个定义
     private final HashSet<String> use; //可能有多个使用
 
-    public Line(String s,int line,TableSymbol tableSymbol){
+    public Line(String s, int line, TableSymbol tableSymbol) {
         this.midCodeLine = s;
         this.tableSymbol = tableSymbol;
         this.index = line;
         //this.gen
         this.use = new HashSet<>();
     }
+
 
     public void setMidCodeLine(String midCodeLine) {
         this.midCodeLine = midCodeLine;
@@ -46,16 +47,16 @@ public class Line {
         this.index = index;
     }
 
-    public boolean addGen(String name){
-        if(JudgeExpElement.isVar(name,tableSymbol)) {
+    public boolean addGen(String name) {
+        if (JudgeExpElement.isVar(name, tableSymbol)) {
             this.gen = name;
             return true;
         }
         return false;
     }
 
-    public boolean addUse(String name){
-        if(JudgeExpElement.isVar(name,tableSymbol)) {
+    public boolean addUse(String name) {
+        if (JudgeExpElement.isVar(name, tableSymbol)) {
             this.use.add(name);
             return true;
         }
@@ -72,18 +73,29 @@ public class Line {
 
     /**
      * 对gen重命名，注意一个line的gen只有一个
+     *
      * @param name
      */
-    public void renameGen(String old,String name){
+    public void renameGen(String old, String name) {
         ;
+    }
+
+    public void setGen(String gen) {
+        this.gen = gen;
     }
 
     /**
      * 对use重命名，因为一个lines的use可能有多个，所以需要和oldName比较
+     *
      * @param old
      * @param name
      */
-    public void renameUse(String old,String name){
+    public void renameUse(String old, String name) {
         ;
+    }
+
+    public void replaceOneUse(String old, String last) {
+        this.use.remove(old);
+        this.use.add(last);
     }
 }

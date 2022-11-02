@@ -20,6 +20,7 @@ public class PrintfLine extends Line{
     public void renameUse(String old,String name){
         if(tIsUse && t.equals(old)){
             t = name;
+            super.replaceOneUse(old,name);
         }
     }
 
