@@ -1,6 +1,9 @@
 package gccBin.MidCode.firstProcess;
 
+import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;
+import gccBin.MIPS.MIPS;
+import gccBin.MidCode.LineManager;
 
 import java.util.*;
 
@@ -13,7 +16,6 @@ public class VarNode {
     private final HashMap<Integer, BitSet> defUseChain;
 
     private final HashMap<Integer, VarWeb> web;
-
 
     private final BitSet genSet;
     private final BitSet useSet;
@@ -46,7 +48,13 @@ public class VarNode {
         return name;
     }
 
+    /**
+     *
+     * @param index
+     * @param bitSet
+     */
     public void renewUseDefChain(int index, BitSet bitSet) {
+        LineManager.getInstance().doNothing();
         BitSet use = (BitSet) useSet.clone();
         use.and(bitSet);
         this.defUseChain.get(index).or(use);
@@ -57,6 +65,13 @@ public class VarNode {
      * bug ？
      */
     public void generateWeb() {
+        if(defUseChain.size() == 0){
+            ElementTable elementTable = tableSymbol.getElement(name);
+            elementTable.setUseless(true);
+            VarNodeManager.getInstance().removeVarNode(name);
+            return;
+        }
+
         for (int i : defUseChain.keySet()) {
             BitSet def = new BitSet();
             def.set(i);
@@ -81,7 +96,7 @@ public class VarNode {
                     }
                 }
             }
-        }while(webDone());
+        }while(!webDone());
     }
 
     /**

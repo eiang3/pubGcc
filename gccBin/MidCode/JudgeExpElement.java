@@ -1,11 +1,9 @@
 package gccBin.MidCode;
 
 import SymbolTableBin.APIIRSymTable;
-import SymbolTableBin.ElementTable;
-import SymbolTableBin.ElementVar;
+import SymbolTableBin.Element.ElementTable;
+import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
-
-import javax.xml.bind.Element;
 
 public class JudgeExpElement {
     /**

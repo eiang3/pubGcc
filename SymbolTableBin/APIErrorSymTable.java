@@ -1,6 +1,8 @@
 package SymbolTableBin;
 
 import GramTree.Element.FuncFParam;
+import SymbolTableBin.Element.ElementFunc;
+import SymbolTableBin.Element.ElementTable;
 
 import java.util.ArrayList;
 

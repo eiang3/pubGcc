@@ -2,6 +2,8 @@ package gccBin.MIPS.tool;
 
 import GramTree.Element.FuncFParam;
 import SymbolTableBin.*;
+import SymbolTableBin.Element.ElementFParam;
+import SymbolTableBin.Element.ElementTable;
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.JudgeExpElement;
 
@@ -210,11 +212,24 @@ public class MIPSHelper {
         allocTempAndInit(ans, Reg.rightTwo);
     }
 
-
-    public void storeTempToVar(String var, String temp, TableSymbol tableSymbol) throws IOException {
+    /**
+     * pre：temp是临时变量或者数字
+     * @param var 数组名（包括下标）
+     * @param temp number 或者 temp
+     * @param tableSymbol 符号表
+     * @throws IOException
+     */
+    public void storeTempOrNumberToVar(String var, String temp, TableSymbol tableSymbol) throws IOException {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
-        Reg value = TempRegPool.getInstance().getTempInReg(Reg.rightOne, temp);
+        Reg value = null;
+        if(JudgeExpElement.isTemp(temp)) {
+            value = TempRegPool.getInstance().getTempInReg(Reg.rightOne, temp);
+        }
         if (elementTable.getDimension() != 0) {
+            if(value == null){ //说明要先把数字存到一个寄存器
+                MIPSIns.li(Reg.rightOne,Integer.parseInt(temp));
+                value = Reg.rightOne;
+            }
             String arrSub = getArrSubscript(temp);
             String arrName = getArrName(temp);
             if (elementTable.isGlobal()) {
@@ -229,9 +244,14 @@ public class MIPSHelper {
         } else {
             if (elementTable.isHasReg()) {
                 Reg reg = elementTable.getReg();
-                MIPSIns.move(reg, value);
+                if(value != null) MIPSIns.move(reg, value);
+                else MIPSIns.li(reg,Integer.parseInt(temp));
             } else {
                 int off = elementTable.getMemOff();
+                if(value == null){ //说明要先把数字存到一个寄存器
+                    MIPSIns.li(Reg.rightOne,Integer.parseInt(temp));
+                    value = Reg.rightOne;
+                }
                 MIPSIns.sw_number_reg(value, off, Reg.$fp);
             }
         }

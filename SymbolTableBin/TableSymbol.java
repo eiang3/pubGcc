@@ -1,5 +1,6 @@
 package SymbolTableBin;
 
+import SymbolTableBin.Element.ElementTable;
 import gccBin.ERROR.ErrorHandle;
 import gccBin.MidCode.firstProcess.IRFirst;
 
@@ -41,13 +42,11 @@ public class TableSymbol {
 
     //向符号表中添加元素
     public void addElement(ElementTable elementTable) throws IOException {
-        ErrorHandle.getInstance().BNameRedefinition(elementTable.getName());
-
-        this.elements.put(elementTable.getName(),elementTable);
-        /*for(int i = 0;i < level;i++){
-            System.out.print("  ");
+        //ErrorHandle.getInstance().BNameRedefinition(elementTable.getName());
+        if(this.elements.containsKey(elementTable.getName())){
+            ErrorHandle.getInstance().BNameRedefinition();
         }
-        System.out.println(elementTable);*/
+        this.elements.put(elementTable.getName(),elementTable);
     }
 
     public TableSymbol getFather() {

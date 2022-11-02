@@ -11,7 +11,7 @@ public class Line {
     private int index;
 
     private String gen; //只能有一个定义
-    private HashSet<String> use; //可能有多个使用
+    private final HashSet<String> use; //可能有多个使用
 
     public Line(String s,int line,TableSymbol tableSymbol){
         this.midCodeLine = s;
@@ -25,9 +25,10 @@ public class Line {
         this.midCodeLine = midCodeLine;
     }
 
-    public String getMidCodeLine() {
-        return midCodeLine;
+    public int getOriginalLine() {
+        return midCodeLine.length();
     }
+
 
     public void setTableSymbol(TableSymbol tableSymbol) {
         this.tableSymbol = tableSymbol;

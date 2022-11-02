@@ -32,61 +32,63 @@ public class BasicBlockManager {
         call2nextBlockId = new HashMap<>();
     }
 
-    public static BasicBlockManager getInstance(){
-        if(basicBlockManager == null){
+    public static BasicBlockManager getInstance() {
+        if (basicBlockManager == null) {
             basicBlockManager = new BasicBlockManager();
         }
         return basicBlockManager;
     }
 
-    public void computeInAndOut(){
+    public void computeInAndOut() {
         boolean myContinue = true;
-        while(myContinue) {
+        while (myContinue) {
             myContinue = false;
             for (int i = 0; i < basicBlockNum; i++) {
                 BasicBlock block = basicBlocks.get(i);
                 block.renewIn();
                 boolean change = block.renewOut();
-                if(change) myContinue = true;
+                if (change) myContinue = true;
             }
         }
     }
 
 
     public void createBlockAndInitGneOp(Line line) {
-        if(nowBlock!=null){
-            nowBlock.parseLine(line);
-        }
-        if (nowBlock == null) { //刚开始的语句|跳转语句下一句
+        if (line == null || line.getOriginalLine() == 0) return;
+        if (line instanceof LabelLine) { //以label开始的基本块
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum, nowBlock);
             basicBlockNum++;
             nowBlock.parseLine(line);
-        } else if (line instanceof LabelLine) { //以label开始的基本块
-            nowBlock = new BasicBlock(basicBlockNum);
-            basicBlocks.put(basicBlockNum, nowBlock);
-            basicBlockNum++;
 
             LabelLine labelLine = (LabelLine) line;
             label2Block.put(labelLine.getLabel(), nowBlock);
         } else if (line instanceof FuncDefLine) { //以int|void func ()开始的基本块
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum, nowBlock);
+            nowBlock.parseLine(line);
             basicBlockNum++;
+
             funcName = ((FuncDefLine) line).getName();
             funcName2Block.put(funcName, nowBlock);
+        } if (nowBlock == null) { //刚开始的语句|跳转语句下一句
+            nowBlock = new BasicBlock(basicBlockNum);
+            basicBlocks.put(basicBlockNum, nowBlock);
+            basicBlockNum++;
+            nowBlock.parseLine(line);
         } else if (line instanceof BLine) { //跳转函数
             BLine bLine = (BLine) line;
+            nowBlock.parseLine(line);
 
             nowBlock.setLabel(bLine.getLabel());
             nowBlock.setJump(bLine.getB());
             nowBlock = null;
 
-            basicBlockNum++;
         } else if (line instanceof CallFuncLine) {  //跳转到函数定义call
             CallFuncLine callFuncLine = (CallFuncLine) line;
-            nowBlock.setFunc(callFuncLine.getFuncName());
+            nowBlock.parseLine(line);
 
+            nowBlock.setFunc(callFuncLine.getFuncName());
             if (call2nextBlockId.containsKey(callFuncLine.getFuncName())) {
                 call2nextBlockId.get(callFuncLine.getFuncName()).add(nowBlock.getIndex() + 1);
             } else {
@@ -95,16 +97,18 @@ public class BasicBlockManager {
                 call2nextBlockId.put(callFuncLine.getFuncName(), arr);
             }
             nowBlock = null;
-            basicBlockNum++;
+
         } else if (line instanceof RetLine) { //返回到call语句的下一个block
+            nowBlock.parseLine(line);
             nowBlock.setRetFunc(funcName);
             ((RetLine) line).setFuncName(funcName);
             nowBlock = null;
-            basicBlockNum++;
+        } else {
+            nowBlock.parseLine(line);
         }
     }
 
-    public void connectAllAndInitKill(){
+    public void connectAllAndInitKill() {
         for (int i = 0; i < basicBlocks.size() - 1; i++) {
             BasicBlock b = basicBlocks.get(i);
             connectBlockAndInitKill(b);
@@ -140,28 +144,29 @@ public class BasicBlockManager {
     /**
      * 获得所有变量的定义——使用链
      */
-    public void initAllDefUseChain(){
-        for(int i = 0;i < basicBlockNum;i++){
+    public void initAllDefUseChain() {
+        for (int i = 0; i < basicBlockNum; i++) {
             BasicBlock block = basicBlocks.get(i);
-            if(block.getSum().length() == 0) continue; //空的基本块
+            if (block.getSum().length() == 0) continue; //空的基本块
 
             BitSet in = block.getIn(); //首先判断in集
-            for(int j = block.getSum().nextSetBit(0); j < in.length();j++){
-                if(in.get(j)){ //如果这一位是1说明该位有定义
+            for (int j = block.getSum().nextSetBit(0); j < in.length() && j >= 0; j++) {
+                if (in.get(j)) { //如果这一位是1说明该位有定义
                     Line line = LineManager.getInstance().getLine(j);
                     VarNode varNode = VarNodeManager.getInstance().getOneVar(line.getGen());
                     BitSet mayUse = block.getUseFromStart(varNode.getName());
-                    varNode.renewUseDefChain(j,mayUse);
+                    varNode.renewUseDefChain(j, mayUse);
                 }
             }
+
             //再判断gen集。
             BitSet genSum = block.getGenSum();
-            for(int j = genSum.nextSetBit(0);j<genSum.length();j++){
-                if(genSum.get(j)){
+            for (int j = genSum.nextSetBit(0); j < genSum.length() && j >= 0; j++) {
+                if (genSum.get(j)) {
                     Line line = LineManager.getInstance().getLine(j);
                     VarNode varNode = VarNodeManager.getInstance().getOneVar(line.getGen());
-                    BitSet mayUse = block.getUseFromMid(varNode.getName(),j);
-                    varNode.renewUseDefChain(j,mayUse);
+                    BitSet mayUse = block.getUseFromMid(varNode.getName(), j);
+                    varNode.renewUseDefChain(j, mayUse);
                 }
             }
         }

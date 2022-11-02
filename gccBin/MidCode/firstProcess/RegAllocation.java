@@ -36,10 +36,13 @@ public class RegAllocation {
     }
 
     public void finishRegAllocation() {
+        if(leave.size() == 0) return; //没有网
+
         do {
             VarWeb varWeb = getOneNode();
             if (varWeb != null) {
                 add(varWeb);
+                this.leave.remove(varWeb);
             } else {
                 selectOneNodeInMem();
             }
@@ -49,7 +52,7 @@ public class RegAllocation {
         lastOne.setReg(Reg.$s0);
         for(int i = orderUse.size()-1;i>=0;i--){
             VarWeb varWeb = orderUse.get(i);
-            varWeb.setReg(leave);
+            varWeb.allocReg(leave);
             this.leave.add(varWeb);
         }
     }
@@ -75,7 +78,11 @@ public class RegAllocation {
         varWeb.removeFromGraph();
     }
 
-    public void setNewName2Web(HashMap<String, VarWeb> newName2Web) {
+    /**
+     * 变量名和对应的变量
+     * @param newName2Web
+     */
+    public void addNodeToLeaveSet(HashMap<String, VarWeb> newName2Web) {
         this.newName2Web = newName2Web;
         // bug ?
         this.leave = new ArrayList<>(newName2Web.values());

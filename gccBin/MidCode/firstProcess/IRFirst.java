@@ -50,13 +50,16 @@ public class IRFirst {
 
         BasicBlockManager.getInstance().initAllDefUseChain();
 
+        //顺便把只定义不使用的变量移去
         VarNodeManager.getInstance().generateWeb();
 
         VarNodeManager.getInstance().renewSymTableAndLine();
 
+        //这里出错了。
         VarNodeManager.getInstance().getClashGraph();
 
-        RegAllocation.getInstance().setNewName2Web(
+        //
+        RegAllocation.getInstance().addNodeToLeaveSet(
                 VarNodeManager.getInstance().getNewName2Web());
 
         RegAllocation.getInstance().finishRegAllocation();

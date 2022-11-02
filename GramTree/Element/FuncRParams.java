@@ -3,7 +3,7 @@ package GramTree.Element;
 import GramTree.*;
 import GramTree.Element.UnaryExp.FuncUnaryExp;
 import SymbolTableBin.APIIRSymTable;
-import SymbolTableBin.ElementFunc;
+import SymbolTableBin.Element.ElementFunc;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -153,6 +153,7 @@ public class LineManager {
     }
 
     private boolean isLabel(String s) {
+        if(s == null || s.length() == 0) return false;
         return s.charAt(s.length() - 1) == ':';
     }
 
@@ -197,5 +198,8 @@ public class LineManager {
 
     public Line getLine(int index) {
         return lines.get(index);
+    }
+
+    public void doNothing(){
     }
 }

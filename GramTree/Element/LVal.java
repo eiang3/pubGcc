@@ -3,7 +3,7 @@ package GramTree.Element;
 import GramTree.*;
 import SymbolTableBin.APIErrorSymTable;
 import SymbolTableBin.APIIRSymTable;
-import SymbolTableBin.ElementTable;
+import SymbolTableBin.Element.ElementTable;
 import gccBin.Lex.Symbol;
 import gccBin.MidCode.original.IRGenerate;
 

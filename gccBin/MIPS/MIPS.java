@@ -1,6 +1,9 @@
 package gccBin.MIPS;
 
 import SymbolTableBin.*;
+import SymbolTableBin.Element.ElementConstArray;
+import SymbolTableBin.Element.ElementTable;
+import SymbolTableBin.Element.ElementVarArray;
 import gccBin.MIPS.tool.*;
 import gccBin.MidCode.JudgeExpElement;
 import gccBin.MidCode.Line.*;
@@ -146,10 +149,11 @@ public class MIPS {
     public void scanfLineTrans(ScanfLine scanfLine) throws IOException {
         String t = scanfLine.getT();
         MIPSIns.scanfInt();
-        MIPSHelper.get().allocTempAndInit(t, Reg.$a0);
+        MIPSHelper.get().allocTempAndInit(t, Reg.$v0);
     }
 
     public void retLineTrans(RetLine retLine) throws IOException {
+        if (retLine.isGotoExit()) return;
         String exp = retLine.getExp();
         if (!retLine.isGotoExit() && exp != null) {
             if (JudgeExpElement.isTemp(exp)) {
@@ -209,9 +213,8 @@ public class MIPS {
         String t2 = assignLine.getT2();
         String op = assignLine.getOp();
         if (assignLine.isPureAssign()) {
-            if (JudgeExpElement.isTemp(t1) ||
-                    JudgeExpElement.isNumber(t1)) {
-                MIPSHelper.get().storeTempToVar(ans, t1, tableSymbol);
+            if (JudgeExpElement.isTemp(t1) || JudgeExpElement.isNumber(t1)) {
+                MIPSHelper.get().storeTempOrNumberToVar(ans, t1, tableSymbol);
             } else {
                 MIPSHelper.get().assignVarToTemp(ans, t1, tableSymbol);
             }
@@ -233,6 +236,7 @@ public class MIPS {
             i++;
         }
         fileWriter.write(".text\n");
+        fileWriter.write("li $fp,0x10040000\n");
     }
 
     public String annotate(String s) {
@@ -241,10 +245,12 @@ public class MIPS {
 
     public void write(String s) throws IOException {
         fileWriter.write(s + "\n");
+        System.out.println(s);
     }
 
     public void writeNotNext(String s) throws IOException {
-        fileWriter.write(s + "\n");
+        fileWriter.write(s);
+        System.out.print(s);
     }
 
 }

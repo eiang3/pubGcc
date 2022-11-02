@@ -1,8 +1,9 @@
-package SymbolTableBin;
+package SymbolTableBin.Element;
 
-import javax.xml.bind.Element;
+import SymbolTableBin.TypeTable;
+import SymbolTableBin.Value;
 
-public class ElementConst extends ElementTable{
+public class ElementConst extends ElementTable {
     private final Value value;  //值 一维const拥有这个属性
 
     public ElementConst(String name, TypeTable type, Value value){

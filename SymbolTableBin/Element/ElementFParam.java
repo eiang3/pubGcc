@@ -1,11 +1,11 @@
-package SymbolTableBin;
+package SymbolTableBin.Element;
 
-import javax.xml.bind.Element;
+import SymbolTableBin.TypeTable;
 
-public class ElementFParam extends ElementTable{
+public class ElementFParam extends ElementTable {
     private final int index;
     public ElementFParam(String name, TypeTable type, TypeTable decl,
-                         int dimension,int index){
+                         int dimension, int index){
         super(name,type,decl,dimension);
         this.index = index;
     }

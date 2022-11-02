@@ -7,6 +7,8 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import SymbolTableBin.*;
+import SymbolTableBin.Element.ElementFunc;
+import SymbolTableBin.Element.ElementTable;
 import gccBin.Lex.Symbol;
 
 import java.io.File;
@@ -62,7 +64,7 @@ public class IRGenerate {
         Param param = new Param();
         if (len <= 0) {
             String newName = APIIRSymTable.getInstance()
-                    .findElementRecur(tableSymbol,name).getMidCodeName();
+                    .findElementRecur(tableSymbol,name).getIRName();
             write("var int " + newName + "\n");
             if (initVal != null) {
                 ArrayList<Exp> exps = initVal.getExps();
@@ -123,7 +125,7 @@ public class IRGenerate {
 
     public String lValNormal(TableSymbol tableSymbol,String name,Param param) throws IOException {
         String newName = APIIRSymTable.getInstance()
-                .findElementRecur(tableSymbol,name).getMidCodeName();
+                .findElementRecur(tableSymbol,name).getIRName();
         if(param.getExpKind() == InheritProp.LValAssign){
             return  newName;
         } else {
@@ -274,7 +276,7 @@ public class IRGenerate {
 
     public void write(String str) throws IOException {
         fileWriter.write(str);
-        System.out.print(str);
+        //System.out.print(str);
     }
 
     public void LAndExpSignalExp(String t0, String endLabel) throws IOException {

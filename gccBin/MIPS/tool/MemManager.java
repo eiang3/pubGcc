@@ -1,7 +1,7 @@
 package gccBin.MIPS.tool;
 
 import SymbolTableBin.APIIRSymTable;
-import SymbolTableBin.ElementTable;
+import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;
 
 import java.io.IOException;
@@ -77,6 +77,9 @@ public class MemManager {
 
     public void allocationVarMem(String name, TableSymbol tableSymbol) {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+        if (elementTable.isUseless()) {
+            return;
+        }
         if (elementTable != null && !elementTable.isHasReg()) {
             elementTable.setMemOff(fpOff);
             addFpOff(1);

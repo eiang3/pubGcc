@@ -21,6 +21,7 @@ public class RetLine extends Line {
         if (ele.length == 2) {
             if(ele[1].equals("main")){
                 gotoExit = true;
+                exp = ele[1];
             } else {
                 exp = ele[1];
             }

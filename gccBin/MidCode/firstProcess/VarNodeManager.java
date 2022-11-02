@@ -1,7 +1,7 @@
 package gccBin.MidCode.firstProcess;
 
 import SymbolTableBin.APIIRSymTable;
-import SymbolTableBin.ElementVar;
+import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Line.Line;
 import gccBin.MidCode.LineManager;
@@ -27,16 +27,17 @@ public class VarNodeManager {
     }
 
     public void distributeGenAndUseToVar(Line line) {
-        if (line.getGen() != null) {
-            name2Node.get(line.getGen()).addGen(line.getIndex());
-        }
-        for (String name : line.getUse()) {
-            name2Node.get(name).addUse(line.getIndex());
+        if (line != null) {
+            if (line.getGen() != null) {
+                name2Node.get(line.getGen()).addGen(line.getIndex());
+            }
+            for (String name : line.getUse()) {
+                name2Node.get(name).addUse(line.getIndex());
+            }
         }
     }
 
     /**
-     * 在分析到VarDefLine使用
      *
      * @param name
      * @param tableSymbol
@@ -46,6 +47,13 @@ public class VarNodeManager {
         this.name2Node.put(name, node);
     }
 
+    /**
+     * 将只定义不使用的变量移去
+     * @param name
+     */
+    public void removeVarNode(String name){
+        this.name2Node.remove(name);
+    }
     /**
      * 交互，得到一各Var的gen集
      *
@@ -90,6 +98,13 @@ public class VarNodeManager {
             VarNode node = name2Node.get(name);
             HashMap<Integer, VarWeb> web = node.getWeb();
             TableSymbol tableSymbol = node.getTableSymbol();
+            if(web.size() == 1) {
+                ArrayList<VarWeb> webs = new ArrayList<>(web.values());
+                webs.get(0).setTableSymbol(tableSymbol);
+                newName2Web.put(name,webs.get(0));
+                continue;
+            }
+
             // bug ? 不存在?
             ElementVar elementVar = (ElementVar)
                     APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
@@ -97,7 +112,7 @@ public class VarNodeManager {
             int now = 0;
             for (int key : web.keySet()) {
                 VarWeb varWeb = web.get(key); //一个web就是一个新变量
-                String newName = elementVar.getMidCodeName() + "$$" + now;
+                String newName = elementVar.getName() + "$$" + now;
                 //变量的新名字 这个变量可能之前就被重命名过一次
                 varWeb.setTableSymbol(tableSymbol);
                 varWeb.setName(newName); //对web网进行重命名。

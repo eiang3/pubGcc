@@ -1,6 +1,7 @@
 package SymbolTableBin;
 
 import GramTree.Element.*;
+import SymbolTableBin.Element.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ public class APIGramSymTable {
     private TableSymbol nowTable; //目前分析到的符号表
     private TableSymbol rootTable; //根符号表
 
-    private HashMap<String, Integer> name2Times;//重命名的变量，及其重复次数
+    private final HashMap<String, Integer> name2Times;//重命名的变量，及其重复次数
 
     private static final boolean close = false;
 
@@ -41,7 +42,7 @@ public class APIGramSymTable {
                     constDef.getName(), constDef.getType(), TypeTable.CONST,
                     constDef.getDimension(), constDef.getArray());
             this.nowTable.addElement(elementArray);
-            if(this.nowTable == rootTable) elementArray.setGlobal(true);
+            if (this.nowTable == rootTable) elementArray.setGlobal(true);
         }
     }
 
@@ -52,12 +53,14 @@ public class APIGramSymTable {
             ElementVar elementVar = new ElementVar(
                     varDef.getName(), TypeTable.INT); // TypeTable.INT改成get有bug
             this.nowTable.addElement(elementVar);
-            if(nowTable != rootTable) {
+
+            if (nowTable != rootTable) {
                 String name = varDef.getName();
                 if (name2Times.containsKey(name)) {
                     int times = name2Times.get(name);
                     elementVar.setSubScript(times);
                     name2Times.put(name, times + 1);
+                    APIIRSymTable.getInstance().addToRedefineElement(elementVar,nowTable);
                 } else {
                     name2Times.put(name, 0);
                 }
@@ -70,7 +73,7 @@ public class APIGramSymTable {
                     varDef.getDimension(), varDef.getOneDim(),
                     varDef.getTwoDim());
             this.nowTable.addElement(elementVarArray);
-            if(this.nowTable == rootTable) elementVarArray.setGlobal(true);
+            if (this.nowTable == rootTable) elementVarArray.setGlobal(true);
         }
     }
 

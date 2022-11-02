@@ -1,6 +1,6 @@
 package gccBin.MidCode.firstProcess;
 
-import SymbolTableBin.ElementTable;
+import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;
 import gccBin.MIPS.tool.Reg;
 
@@ -9,12 +9,12 @@ import java.util.BitSet;
 import java.util.HashSet;
 
 public class VarWeb {
-    private static BitSet zero = new BitSet();
+    private static final BitSet zero = new BitSet();
     private TableSymbol tableSymbol;
 
     private String name;
-    private BitSet def;
-    private BitSet use;
+    private final BitSet def;
+    private final BitSet use;
 
     private final HashSet<VarWeb> clash;
     /////////////////////////////////////为了图着色算法
@@ -103,7 +103,7 @@ public class VarWeb {
         return reg;
     }
 
-    public void setReg(ArrayList<VarWeb> leave){
+    public void allocReg(ArrayList<VarWeb> leave){
         ArrayList<Reg> arr = new ArrayList<>();
         for(VarWeb varWeb:clash){
             if(leave.contains(varWeb)){

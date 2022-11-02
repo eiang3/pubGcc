@@ -1,4 +1,6 @@
-package SymbolTableBin;
+package SymbolTableBin.Element;
+
+import SymbolTableBin.TypeTable;
 
 import java.util.ArrayList;
 

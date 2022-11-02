@@ -1,6 +1,10 @@
-package SymbolTableBin;
+package SymbolTableBin.Element;
 
-public class ElementVarArray extends ElementTable{
+import SymbolTableBin.Element.ElementTable;
+import SymbolTableBin.TypeTable;
+import SymbolTableBin.Value;
+
+public class ElementVarArray extends ElementTable {
     private Value oneDim; //一维
     private final Value twoDim; //二维
 

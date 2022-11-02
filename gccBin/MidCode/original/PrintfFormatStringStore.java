@@ -1,5 +1,7 @@
 package gccBin.MidCode.original;
 
+import gccBin.MidCode.JudgeExpElement;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,7 +45,7 @@ public class PrintfFormatStringStore {
     public void midCodePrintf(FileWriter fileWriter, String str) throws IOException {
         if (str.equals("\n")) {
             fileWriter.write("printf str_" + "\n");
-        } else if (str.equals("%d")) {
+        } else if (JudgeExpElement.isExp(str)) {
             fileWriter.write("printf " + str + "\n");
         } else {
             fileWriter.write("printf str_" + i + "\n");

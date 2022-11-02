@@ -6,6 +6,7 @@ import GramTree.Element.stmt.PrintfStmt;
 import GramTree.Element.stmt.ReturnStmt;
 import GramTree.Word;
 import SymbolTableBin.*;
+import SymbolTableBin.Element.ElementTable;
 import gccBin.Gram.Gram;
 
 
@@ -64,7 +65,7 @@ public class ErrorHandle {
                 char c = str.charAt(i);
                 if (!(c == '%' && (i + 1) < len && str.charAt(i + 1) == 'd') &&
                         !(c == '\\' && (i + 1) < len && str.charAt(i + 1) == 'n') &&
-                        !(c == 32 || c == 33 || c >= 40 && c <= 126 && c != 92)){
+                        !(c == 32 || c == 33 || c >= 40 && c <= 126 && c != 92)) {
                     printError('a', formatString.getRow());
                     return true;
                 }
@@ -79,6 +80,10 @@ public class ErrorHandle {
         if (APIErrorSymTable.getInstance().isNameReDefined(name)) {
             printError('b');
         }
+    }
+
+    public void BNameRedefinition() throws IOException {
+        printError('b');
     }
 
     //未定义的名字 c

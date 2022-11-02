@@ -1,3 +1,5 @@
+import SymbolTableBin.APIGramSymTable;
+import SymbolTableBin.APIIRSymTable;
 import gccBin.ERROR.ErrorHandle;
 import gccBin.Gram.Gram;
 import gccBin.Lex.Lex;
@@ -25,6 +27,12 @@ public class Compiler {
             IRGenerate.getInstance().open();
             IRGenerate.getInstance().begin();
             IRGenerate.getInstance().close();
+
+            APIIRSymTable.getInstance().getRootTable();
+
+            APIIRSymTable.getInstance().refreshTable();
+
+            APIIRSymTable.getInstance().getRootTable();
 
             //第一次处理IR，得到全局寄存器分配，对符号表和一些变量进行重命名//
             IRFirst.getInstance().open();

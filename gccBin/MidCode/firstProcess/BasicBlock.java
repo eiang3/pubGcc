@@ -67,7 +67,7 @@ public class BasicBlock {
         BitSet preOut = (BitSet) out.clone();
         out.or(genSum);
         out.or(inMinusKill);
-        return out.equals(preOut);
+        return !out.equals(preOut);
     }
 
     public void finishKill() {
@@ -80,24 +80,25 @@ public class BasicBlock {
     }
 
     public void parseLine(Line line) {
-        if (line.getGen() != null) {
+        if (line != null && line.getGen() != null) {
             int index = line.getIndex();
             String name = line.getGen();
             genSum.set(index);
             this.genVarNames.add(name);
-            if(varName2DefX.containsKey(name)){
+            if (varName2DefX.containsKey(name)) {
                 varName2DefX.get(name).add(index);
             } else {
                 ArrayList<Integer> arr = new ArrayList<>();
                 arr.add(index);
-                varName2DefX.put(name,arr);
+                varName2DefX.put(name, arr);
             }
         }
-        sum.set(line.getIndex());
+        if (line != null) sum.set(line.getIndex());
     }
 
     /**
      * 如果一个var在in集中，这里得到这个var可能的use集（到下一个定义）(包括)
+     *
      * @param name
      * @return
      */
@@ -106,7 +107,7 @@ public class BasicBlock {
             int firstDef = varName2DefX.get(name).get(0);
             BitSet ret = (BitSet) sum.clone();
             int length = ret.length();
-            ret.clear(firstDef+1,length);
+            ret.clear(firstDef + 1, length);
             //firstDef是从0开始定义的，所以其必定<length
             return ret;
         } else {
@@ -115,21 +116,21 @@ public class BasicBlock {
     }
 
     /**
-     *如果一个var在gen集中，找到这个def点（不包括）到下一个def点（包括）的位置集
+     * 如果一个var在gen集中，找到这个def点（不包括）到下一个def点（包括）的位置集
      */
-    public BitSet getUseFromMid(String var,int index){
+    public BitSet getUseFromMid(String var, int index) {
         BitSet ret = (BitSet) sum.clone();
         int start = ret.nextSetBit(0);
         int end = ret.length();
 
-        ret.clear(start,index+1); //不包括
+        ret.clear(start, index + 1); //不包括
         ArrayList<Integer> arr = varName2DefX.get(var);
         int i = arr.indexOf(index);
-        if(i == arr.size()-1){  //var在这个块里的最后一个定义点
+        if (i == arr.size() - 1) {  //var在这个块里的最后一个定义点
             return ret;
         }
-        int next = arr.get(i+1);
-        ret.clear(next+1,end); //包括
+        int next = arr.get(i + 1);
+        ret.clear(next + 1, end); //包括
         return ret;
     }
 
