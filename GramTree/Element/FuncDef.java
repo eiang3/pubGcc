@@ -41,7 +41,7 @@ public class FuncDef extends TreeFatherNode {
         block.midCodeGen(fileWriter, p);
         if (APIIRSymTable.getInstance().getFuncElement(name).getReturnType()
                 == TypeTable.VOID) {
-            fileWriter.write("ret\n");
+            fileWriter.write("&ret\n");
         }   //如果返回类型是void 不论是否有返回语句，最后都要有返回语句
         IRGenerate.getInstance().leaveBlock();
     }

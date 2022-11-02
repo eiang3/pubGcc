@@ -43,18 +43,24 @@ public class IRFirst {
             }
             readLine();
         }
+        LineManager.getInstance().printfLine();
+
         BasicBlockManager.getInstance().setBExit();
         BasicBlockManager.getInstance().connectAllAndInitKill();
 
         BasicBlockManager.getInstance().computeInAndOut();
-
+        BasicBlockManager.getInstance().printfBlockMessage();
         BasicBlockManager.getInstance().initAllDefUseChain();
+
+        //VarNodeManager.getInstance().printfVarNodeMessage();
 
         //每个节点建网
         VarNodeManager.getInstance().generateWeb();
 
         //对每个节点建的网进行处理
         VarNodeManager.getInstance().renewSymTableAndLine();
+
+        //
 
         //基本块活跃变量分析
         BasicBlockManager.getInstance().blockActiveVarAnalysis();
@@ -67,7 +73,7 @@ public class IRFirst {
 
         //
         RegAllocation.getInstance().addNodeToLeaveSet(
-                VarNodeManager.getInstance().getName2Web_readyToFormClash());
+                VarNodeManager.getInstance().getName2Web());
 
         RegAllocation.getInstance().finishRegAllocation();
     }

@@ -21,12 +21,31 @@ public class VarWeb {
     private final HashSet<VarWeb> clashSub;
 
     private Reg reg;
+
+    /**
+     * 节点的活跃范围
+     */
+    private final BitSet activeScope;
+
     public VarWeb(String name,BitSet def,BitSet use) {
         this.name = name;
         this.def = def;
         this.use = use;
         this.clash = new HashSet<>();
         this.clashSub = new HashSet<>();
+        this.activeScope = new BitSet();
+    }
+
+    /**
+     * 扩展节点活跃范围
+     * @param bitSet
+     */
+    public void extendActiveScope(BitSet bitSet){
+        activeScope.or(bitSet);
+    }
+
+    public BitSet getActiveScope() {
+        return (BitSet) activeScope.clone();
     }
 
     /**
@@ -42,11 +61,11 @@ public class VarWeb {
     //private static WebManager
 
     public boolean collide(VarWeb varWeb){
-        BitSet otherUse = varWeb.getUse();
+        BitSet otherActive = varWeb.getActiveScope();
         BitSet otherDef = varWeb.getDef();
-        otherUse.and(getUse());
+        otherActive.and(getUse());
         otherDef.and(getDef());
-        return !(otherDef.equals(zero) && otherUse.equals(zero));
+        return !(otherDef.equals(zero) && otherActive.equals(zero));
     }
 
     public void addClash(VarWeb varWeb){

@@ -1,5 +1,6 @@
 package gccBin.MidCode.firstProcess;
 
+import GramTree.Element.Block;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
 
@@ -53,14 +54,14 @@ public class BasicBlockManager {
         for (BasicBlock block : basicBlocks.values()) {
             HashSet<String> inOverlapOut = block.inOverlapOut();
             for (String var : inOverlapOut) {
-                VarNode varNode = VarNodeManager.getInstance().getOneVar(var);
-                varNode.extendActiveScope(block.getSum());
+                VarWeb varWeb = VarNodeManager.getInstance().getOneVarWeb(var);
+                varWeb.extendActiveScope(block.getSum());
             }
 
             HashSet<String> inMinusOut = block.inMinusOut();
             for (String var : inMinusOut) {
-                VarNode varNode = VarNodeManager.getInstance().getOneVar(var);
-                varNode.extendActiveScope(block.activeScopeFormStartToLastUse(var));
+                VarWeb varWeb = VarNodeManager.getInstance().getOneVarWeb(var);
+                varWeb.extendActiveScope(block.activeScopeFormStartToLastUse(var));
             }
 
             block.extendVarOnlyActiveInBlock();
@@ -204,7 +205,11 @@ public class BasicBlockManager {
             if (block.getSum().length() == 0) continue; //空的基本块
 
             BitSet in = block.getIn_def(); //首先判断in集
-            for (int j = block.getSum().nextSetBit(0); j < in.length() && j >= 0; j++) {
+            /*if(i == 9){
+                int a = 2;
+            }*/
+            //  bug
+            for (int j = block.getIn_def().nextSetBit(0); j < in.length() && j >= 0; j++) {
                 if (in.get(j)) { //如果这一位是1说明该位有定义
                     Line line = LineManager.getInstance().getLine(j);
                     VarNode varNode = VarNodeManager.getInstance().getOneVar(line.getGen());
@@ -223,6 +228,17 @@ public class BasicBlockManager {
                     varNode.renewUseDefChain(j, mayUse);
                 }
             }
+        }
+    }
+
+    public void printfBlockMessage(){
+        for(int key:basicBlocks.keySet()){
+            BasicBlock block = basicBlocks.get(key);
+            System.out.println("index "+block.getIndex());
+            System.out.println(block.getSum());
+            System.out.println("in :"+block.getIn_def());
+            System.out.println("gen "+block.getGen());
+            System.out.println();
         }
     }
 }

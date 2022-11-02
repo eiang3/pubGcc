@@ -4,6 +4,8 @@ import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.firstProcess.IRFirst;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 
@@ -168,8 +170,8 @@ public class LineManager {
     }
 
     private boolean isRetLine(String[] ele) {
-        return equ(1, ele, 0, "ret") ||
-                equ(2, ele, 0, "ret");
+        return equ(1, ele, 0, "&ret") ||
+                equ(2, ele, 0, "&ret");
     }
 
     /**
@@ -178,7 +180,7 @@ public class LineManager {
     public void reGenNameLine(BitSet a, String old, String name) {
         int start = a.nextSetBit(0);
         if(start < 0) return;
-        for (int i = start; i < a.length(); i++) {
+        for (int i = start; i < a.length() && i>=0; i++) {
             if (a.get(i)) {
                 lines.get(i).renameGen(old, name);
             }
@@ -190,7 +192,7 @@ public class LineManager {
      */
     public void reUseNameLine(BitSet a, String old, String name) {
         int start = a.nextSetBit(0);
-        for (int i = start; i < a.length(); i++) {
+        for (int i = start; i < a.length() && i >=0; i++) {
             if (a.get(i)) {
                 lines.get(i).renameUse(old, name);
             }
@@ -201,6 +203,11 @@ public class LineManager {
         return lines.get(index);
     }
 
-    public void doNothing(){
+    public void printfLine() throws IOException {
+        FileWriter fileWriter = new FileWriter("midcodeLinesSet");
+        for(Line line:lines){
+            fileWriter.write(line.getMidCodeLine()+"\n");
+        }
+        fileWriter.close();
     }
 }

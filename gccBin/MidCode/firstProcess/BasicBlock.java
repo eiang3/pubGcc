@@ -1,6 +1,5 @@
 package gccBin.MidCode.firstProcess;
 
-import gccBin.MIPS.tool.MemManager;
 import gccBin.MidCode.Line.Line;
 
 import java.util.ArrayList;
@@ -34,10 +33,10 @@ public class BasicBlock {
      * 以下是活跃变量分析
      * 下半部分是辅助分析变量
      */
-    private HashSet<String> use; //使用先于定义
-    private HashSet<String> def;
+    private final HashSet<String> use_active; //使用先于定义
+    private final HashSet<String> def_active;
     private HashSet<String> in_active;
-    private HashSet<String> out_active;
+    private final HashSet<String> out_active;
 
     private final HashMap<String, Integer> varName2lastUse;
     private final HashMap<String, Integer> varName2Ptr;
@@ -60,8 +59,8 @@ public class BasicBlock {
         in_def = new BitSet();
         out_def = new BitSet();
 
-        use = new HashSet<>();
-        def = new HashSet<>();
+        use_active = new HashSet<>();
+        def_active = new HashSet<>();
         in_active = new HashSet<>();
         out_active = new HashSet<>();
 
@@ -83,34 +82,39 @@ public class BasicBlock {
     public void parseLine_active(Line line) {
         if (line != null) {
             int index = line.getIndex();
-            String d = line.getGen();
-            HashSet<String> u = line.getUse();
+            String lineDef = line.getGen();
+            HashSet<String> lineUse = line.getUse();
 
-            for (String var : u) {
-                if (!def.contains(var)) {
-                    use.add(var);
+            /*if (lineDef!=null && lineDef.equals("ret") || lineUse.contains("ret")) {
+                int a = line.getIndex();
+                line.getIndex();
+            }*/
+
+            for (String var : lineUse) {
+                if (!def_active.contains(var)) {
+                    use_active.add(var);
                 }
                 varName2lastUse.put(var, index);
             }
 
-            if (use.contains(d)) {
-                def.add(d);
+            if (lineDef != null && !use_active.contains(lineDef)) {
+                def_active.add(lineDef);
             }
             /**
              *
              */
-            if (d != null && !u.contains(d)){
-                varName2Ptr.put(d,index);
-                varName2ActiveScope.put(d,new BitSet());
+            if (lineDef != null && !lineUse.contains(lineDef)) {
+                varName2Ptr.put(lineDef, index);
+                varName2ActiveScope.put(lineDef, new BitSet());
             }
 
-            for (String var : u) {
-                if(varName2Ptr.containsKey(var)) {
+            for (String var : lineUse) {
+                if (varName2Ptr.containsKey(var)) {
                     int pre = varName2Ptr.get(var);
                     BitSet extend = new BitSet();
-                    extend.set(pre,index+1);
+                    extend.set(pre, index + 1);
                     varName2ActiveScope.get(var).or(extend);
-                    varName2Ptr.put(var,index);
+                    varName2Ptr.put(var, index);
                 }
             }
         }
@@ -119,11 +123,11 @@ public class BasicBlock {
     /**
      * 将只在基本块内活跃的变量的 活跃点extend
      */
-    public void extendVarOnlyActiveInBlock(){
-        for(String var:varName2ActiveScope.keySet()){
-            if(!in_active.contains(var)){
-                VarNode varNode = VarNodeManager.getInstance().getOneVar(var);
-                varNode.extendActiveScope(varName2ActiveScope.get(var));
+    public void extendVarOnlyActiveInBlock() {
+        for (String var : varName2ActiveScope.keySet()) {
+            if (!in_active.contains(var)) {
+                VarWeb varWeb = VarNodeManager.getInstance().getOneVarWeb(var);
+                varWeb.extendActiveScope(varName2ActiveScope.get(var));
             }
         }
     }
@@ -158,7 +162,7 @@ public class BasicBlock {
      */
     public boolean renewIn_active() {
         HashSet<String> old = new HashSet<>(in_active);
-        in_active = SetOp.streamSet(use, out_active, def);
+        in_active = SetOp.streamSet(use_active, out_active, def_active);
         return !old.equals(in_active);
     }
 
@@ -235,6 +239,7 @@ public class BasicBlock {
         BitSet ret = (BitSet) sum.clone();
         int start = ret.nextSetBit(0);
         int end = ret.length();
+        if (start < 0) return new BitSet();
 
         ret.clear(start, index + 1); //不包括
         ArrayList<Integer> arr = varName2DefX.get(var);

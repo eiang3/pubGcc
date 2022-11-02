@@ -65,6 +65,7 @@ public class MIPSHelper {
                 MIPSIns.srl(Reg.rightOne,reg1,2);
             }
         }
+        allocTempAndInit(ans,Reg.rightOne);
     }
 
     /**
@@ -82,7 +83,7 @@ public class MIPSHelper {
         } else if (JudgeExpElement.isNumber(s)) {
             irType = IRType.Number;
             MIPSIns.li(ans,Integer.parseInt(s));
-            return null;
+            return ans;
         } else {
             ElementTable elementTable =  APIIRSymTable.
                     getInstance().findElementRecur(tableSymbol,s);

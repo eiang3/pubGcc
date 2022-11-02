@@ -253,15 +253,15 @@ public class IRGenerate {
 
 
     public void returnStmt(String exp) throws IOException {
-        write("ret " + exp + "\n");
+        write("&ret " + exp + "\n");
     }
 
     public void returnStmt() throws IOException {
-        write("ret" + "\n");
+        write("&ret" + "\n");
     }
 
     public void mainRetStmt() throws IOException{
-        write("ret main\n");
+        write("&ret main\n");
     }
 
     public void assignStmtScanf(String lVal) throws IOException {

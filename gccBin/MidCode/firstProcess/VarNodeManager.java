@@ -16,7 +16,7 @@ public class VarNodeManager {
 
     private VarNodeManager() {
         name2Node = new HashMap<>();
-        name2Web_readyToFormClash = new HashMap<>();
+        name2Web = new HashMap<>();
     }
 
     public static VarNodeManager getInstance() {
@@ -84,11 +84,12 @@ public class VarNodeManager {
     /***
      * 加入未划分的冲突图，ok更新符号表表项，ok对相应lines和进行重命名。
      */
-    private final HashMap<String, VarWeb> name2Web_readyToFormClash; //最后保存下来的全部冲突变量
+    private final HashMap<String, VarWeb> name2Web; //最后保存下来的全部冲突变量
 
-    public HashMap<String, VarWeb> getName2Web_readyToFormClash() {
-        return name2Web_readyToFormClash;
+    public HashMap<String, VarWeb> getName2Web() {
+        return name2Web;
     }
+
 
     public void renewSymTableAndLine() throws IOException {
         // bug ? 不会用
@@ -103,7 +104,7 @@ public class VarNodeManager {
             if (web.size() == 1) {
                 ArrayList<VarWeb> webs = new ArrayList<>(web.values());
                 webs.get(0).setTableSymbol(tableSymbol);
-                name2Web_readyToFormClash.put(name, webs.get(0));
+                name2Web.put(name, webs.get(0));
                 continue;
             }
 
@@ -118,6 +119,7 @@ public class VarNodeManager {
                 //变量的新名字 这个变量可能之前就被重命名过一次
                 varWeb.setTableSymbol(tableSymbol);
                 varWeb.setName(newName); //对web网进行重命名。
+
                 now++;
                 //对相应lines和进行重命名
                 LineManager.getInstance().reGenNameLine(
@@ -129,7 +131,7 @@ public class VarNodeManager {
                 ElementVar t1 = elementVar.myCopy(newName);
                 tableSymbol.addElement(t1);
                 //加入未划分的冲突图
-                name2Web_readyToFormClash.put(newName, varWeb);
+                name2Web.put(newName, varWeb);
             }
             tableSymbol.remove(elementVar);
         }
@@ -140,17 +142,14 @@ public class VarNodeManager {
      */
     public void getClashGraph() {
         // 优化 ？
-        ArrayList<String> varNames = new ArrayList<>(name2Web_readyToFormClash.keySet());
+        ArrayList<String> varNames = new ArrayList<>(name2Web.keySet());
         for (int i = 0; i < varNames.size(); i++) {
             for (int j = i+1; j < varNames.size(); j++){
                 String name1 = varNames.get(i);
                 String name2 = varNames.get(j);
-                VarNode x = VarNodeManager.getInstance().getOneVar(name1);
-                VarNode y = VarNodeManager.getInstance().getOneVar(name2);
-                VarWeb xx = name2Web_readyToFormClash.get(name1);
-                VarWeb yy = name2Web_readyToFormClash.get(name2);
-                if(varNodeClashVarWeb(x,yy) ||
-                varNodeClashVarWeb(y,xx)){
+                VarWeb xx = name2Web.get(name1);
+                VarWeb yy = name2Web.get(name2);
+                if(xx.collide(yy)){
                     xx.addClash(yy);
                     yy.addClash(xx);
                 }
@@ -158,11 +157,20 @@ public class VarNodeManager {
         }
     }
 
-    private static final BitSet zero = new BitSet();
-    private boolean varNodeClashVarWeb(VarNode node,VarWeb web){
-        BitSet active = node.getActiveScope();
-        BitSet def = web.getDef();
-        active.and(def);
-        return !active.equals(zero);
+    public VarWeb getOneVarWeb(String name){
+        return  name2Web.get(name);
+    }
+
+    public void printfVarNodeMessage(){
+        for(String var:name2Node.keySet()){
+            VarNode varNode = name2Node.get(var);
+            HashMap<Integer, BitSet> defUseChain = varNode.getDefUseChain();
+            System.out.println(var);
+            for(int i: defUseChain.keySet()){
+                System.out.println(i);
+                System.out.println(defUseChain.get(i));
+            }
+            System.out.println();
+        }
     }
 }

@@ -23,7 +23,7 @@ public class VarNode {
     /**
      * 节点的活跃范围
      */
-    private final BitSet activeScope;
+    //private final BitSet activeScope;
 
     public VarNode(String name, TableSymbol tableSymbol) {
         this.name = name;
@@ -33,20 +33,10 @@ public class VarNode {
         genSet = new BitSet();
         useSet = new BitSet();
         genSite = new ArrayList<>();
-        activeScope = new BitSet();
+        //activeScope = new BitSet();
     }
 
-    /**
-     * 扩展节点活跃范围
-     * @param bitSet
-     */
-    public void extendActiveScope(BitSet bitSet){
-        activeScope.or(bitSet);
-    }
 
-    public BitSet getActiveScope() {
-        return (BitSet) activeScope.clone();
-    }
 
     public BitSet getGenSet() {
         return genSet;
@@ -72,7 +62,6 @@ public class VarNode {
      * @param bitSet
      */
     public void renewUseDefChain(int index, BitSet bitSet) {
-        LineManager.getInstance().doNothing();
         BitSet use = (BitSet) useSet.clone();
         use.and(bitSet);
         this.defUseChain.get(index).or(use);
@@ -121,6 +110,7 @@ public class VarNode {
      * 判断目前的网络是否冲突
      */
     private boolean webDone() {
+        ArrayList<VarWeb> web = new ArrayList<>(this.web.values());
         for (int i = 0; i < web.size(); i++) {
             for (int k = i + 1; k < web.size(); k++) {
                 if (web.get(i).canMerge(web.get(k))) {
@@ -137,5 +127,9 @@ public class VarNode {
 
     public TableSymbol getTableSymbol() {
         return tableSymbol;
+    }
+
+    public HashMap<Integer, BitSet> getDefUseChain() {
+        return defUseChain;
     }
 }

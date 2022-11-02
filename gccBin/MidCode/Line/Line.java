@@ -21,6 +21,9 @@ public class Line {
         this.use = new HashSet<>();
     }
 
+    public String getMidCodeLine() {
+        return midCodeLine;
+    }
 
     public void setMidCodeLine(String midCodeLine) {
         this.midCodeLine = midCodeLine;
