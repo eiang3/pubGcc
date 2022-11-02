@@ -31,14 +31,36 @@ public class LineManager {
 
     private int ergodicIndex;
 
+    /**
+     * 对line的一个遍历方法
+     */
     public void beginErgodic() {
         ergodicIndex = 0;
     }
 
+    /**
+     * 下一条line
+     *
+     * @return 下一条line
+     */
     public Line nextLine() {
         return lines.get(ergodicIndex++);
     }
 
+    /**
+     * 回退一条line
+     */
+    public void retract() {
+        ergodicIndex--;
+    }
+
+    /**
+     * 判断是否遍历完毕
+     * @return 返回是否遍历完毕
+     */
+    public boolean hasNext(){
+        return ergodicIndex < numLine;
+    }
 
     public Line addLines(String line, TableSymbol tableSymbol) {
         String[] elements = line.split(" ");
@@ -149,10 +171,6 @@ public class LineManager {
                 equ(2, ele, 0, "ret");
     }
 
-    public Line getLine(int index) {
-        return lines.get(index);
-    }
-
     /**
      * 更新相应的line的名字()   Gen
      */
@@ -175,5 +193,9 @@ public class LineManager {
                 lines.get(i).renameUse(old, name);
             }
         }
+    }
+
+    public Line getLine(int index) {
+        return lines.get(index);
     }
 }

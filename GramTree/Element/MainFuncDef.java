@@ -18,7 +18,7 @@ public class MainFuncDef extends TreeFatherNode {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        fileWriter.write("\nfunc_main: \n");
+        fileWriter.write("\nint main ()\n");
         for (TreeElement treeElement : super.getChildren()) {
             treeElement.midCodeGen(fileWriter,param);
         }

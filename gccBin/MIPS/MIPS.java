@@ -36,12 +36,36 @@ public class MIPS {
     }
 
     public void beginTransLate() throws IOException {
-        write(".data");
         LineManager.getInstance().beginErgodic();
-        Line line = LineManager.getInstance().nextLine();
-        TableSymbol tableSymbol = line.getTableSymbol();
-
-
+        do {
+            Line line = LineManager.getInstance().nextLine();
+            TableSymbol tableSymbol = line.getTableSymbol();
+            if (line instanceof ArrayDefLine) {
+                arrayLineTranslate(tableSymbol, (ArrayDefLine) line);
+            } else if (line instanceof AssignLine) {
+                assignLineTrans(tableSymbol, (AssignLine) line);
+            } else if (line instanceof CmpLine) {
+                cmpLineTrans(tableSymbol, (CmpLine) line);
+            } else if (line instanceof FParamDefLine) {
+                fParamDefLineTrans((FParamDefLine) line);
+            } else if (line instanceof FuncDefLine) {
+                funcDefLineTrans((FuncDefLine) line);
+            } else if (line instanceof LabelLine) {
+                labelLineTrans((LabelLine) line);
+            } else if (line instanceof PrintfLine) {
+                printfLineTrans((PrintfLine) line);
+            } else if (line instanceof PushLine) {
+                pushLineLineTrnas((PushLine) line);
+            } else if (line instanceof RetLine) {
+                retLineTrans((RetLine) line);
+            } else if (line instanceof ScanfLine) {
+                scanfLineTrans((ScanfLine) line);
+            } else if (line instanceof VarDeclLine) {
+                varDeclLineTrans(tableSymbol, (VarDeclLine) line);
+            } else if (line instanceof CallFuncLine) {
+                callFuncLineTrans((CallFuncLine) line);
+            }
+        } while (LineManager.getInstance().hasNext());
     }
 
 
@@ -52,15 +76,61 @@ public class MIPS {
         MIPSIns.bCond(bLine.getB(), reg1, reg2, bLine.getLabel());
     }
 
-    public void callFuncLineTrans(TableSymbol tableSymbol, CallFuncLine callFuncLine) {
-
+    /**
+     * @param callFuncLine
+     * @throws IOException
+     */
+    public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
+        MemManager.getInstance().pushSReg();
+        MIPSIns.sub_reg_o(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
+        MIPSIns.jalLabel(callFuncLine.getFuncName());
+        MIPSIns.add_reg_o(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
+        MemManager.getInstance().popSReg();
     }
 
-    public void labelLineTrans(TableSymbol tableSymbol, LabelLine labelLine) throws IOException {
+    public void fParamDefLineTrans(FParamDefLine fParamDefLine) {
+        int index = 1;
+        Line line;
+        do {
+            if (index > 4) {
+                MemManager.getInstance().addFpOff(1);
+            }
+            line = LineManager.getInstance().nextLine();
+            index++;
+        } while (line instanceof FParamDefLine);
+        LineManager.getInstance().retract();
+    }
+
+    public void pushLineLineTrnas(PushLine pushLine) throws IOException {
+        int index = 1;
+        Line line;
+        int off = MemManager.getInstance().getFpOff();
+        do {
+            Reg temp = TempRegPool.getInstance().getTempInReg(Reg.rightOne, pushLine.getExp());
+            if (index <= 4) {
+                Reg reg = Reg.getFParamReg(index);
+                MIPSIns.move(reg, temp);
+            } else {
+                MIPSIns.sw_number_reg(temp, off, Reg.$fp);
+                off = off + 4;
+            }
+            line = LineManager.getInstance().nextLine();
+            index++;
+        } while (line instanceof PushLine);
+        LineManager.getInstance().retract();
+    }
+
+    public void funcDefLineTrans(FuncDefLine funcDefLine) throws IOException {
+        pre();
+        write(funcDefLine.getName() + ":");
+        MemManager.getInstance().enterANewFunc();
+    }
+
+    public void labelLineTrans(LabelLine labelLine) throws IOException {
         write(labelLine.getLabel() + ":");
     }
 
-    public void printfLineTrans(TableSymbol tableSymbol, PrintfLine printfLine) throws IOException {
+    public void printfLineTrans(PrintfLine printfLine) throws IOException {
         String s = printfLine.getT();
         if (JudgeExpElement.isTemp(s)) {
             Reg reg = TempRegPool.getInstance().getTempInReg(Reg.rightOne, s);
@@ -82,13 +152,14 @@ public class MIPS {
     public void retLineTrans(RetLine retLine) throws IOException {
         String exp = retLine.getExp();
         if (!retLine.isGotoExit() && exp != null) {
-            if (JudgeExpElement.isTemp(exp)){
-                Reg t = TempRegPool.getInstance().getTempInReg(Reg.rightOne,exp);
-                MIPSIns.move(Reg.$v0,t);
-            } else if(JudgeExpElement.isNumber(exp)){
-                MIPSIns.li(Reg.$v0,Integer.parseInt(exp));
+            if (JudgeExpElement.isTemp(exp)) {
+                Reg t = TempRegPool.getInstance().getTempInReg(Reg.rightOne, exp);
+                MIPSIns.move(Reg.$v0, t);
+            } else if (JudgeExpElement.isNumber(exp)) {
+                MIPSIns.li(Reg.$v0, Integer.parseInt(exp));
             }
         }
+        MIPSIns.jr(Reg.$ra);
     }
 
     public void arrayLineTranslate(TableSymbol tableSymbol, ArrayDefLine arrayDefLine) throws IOException {
@@ -99,6 +170,7 @@ public class MIPS {
                     arrayDefLine.getName());
             writeNotNext("  " + arrName + ":");
             if (elementTable instanceof ElementConstArray) {
+                write(".data");
                 writeNotNext(".word ");
                 for (int i = 0; i < len; i++) {
                     AssignLine assignLine = (AssignLine) LineManager.
@@ -106,8 +178,11 @@ public class MIPS {
                     writeNotNext(assignLine.getT1() + ",");
                 }
                 writeNotNext("\n");
+                write(".text");
             } else if (elementTable instanceof ElementVarArray) {
+                write(".data");
                 write(".space " + len * 4); //先分配地址 等着
+                write(".text");
             }
         } else {
             //在fp上为数组分配合适的空间
@@ -118,8 +193,10 @@ public class MIPS {
     private void varDeclLineTrans(TableSymbol tableSymbol, VarDeclLine varDeclLine) throws IOException {
         String name = varDeclLine.getName();
         if (tableSymbol.getFather() == null) {
+            write(".data");
             writeNotNext("  " + name + ":");
             write(".space 4");
+            write(".text");
         } else {
             MemManager.getInstance().allocationVarMem(name, tableSymbol);
         }
@@ -147,7 +224,8 @@ public class MIPS {
 
 
     public void pre() throws IOException { //先打出来
-        //fileWriter.write(".data\n");
+
+        fileWriter.write(".data\n");
         fileWriter.write("str_ : .asciiz \"\\n\"\n");
         int i = 0;
         for (String str : PrintfFormatStringStore.getInstance().getFormatsStrings()) {

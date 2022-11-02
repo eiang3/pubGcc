@@ -141,6 +141,19 @@ public class MIPSIns {
         li(Reg.$v0,5);
         write("syscall");
     }
+
+    public static void bLabel(String label) throws IOException {
+        write("b "+ label);
+    }
+
+    public static void jalLabel(String label) throws IOException {
+        write("jal "+ label);
+    }
+
+    public static void jr(Reg reg) throws IOException {
+        write("jr "+reg);
+    }
+
     public static void write(String s) throws IOException {
         MIPS.getInstance().write(s);
     }

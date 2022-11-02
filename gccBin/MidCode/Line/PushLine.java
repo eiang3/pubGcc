@@ -8,6 +8,8 @@ import SymbolTableBin.TableSymbol;
 public class PushLine extends Line{
     private String exp;
     private final boolean use;
+
+    private int index;
     public PushLine(String s, int line,TableSymbol tableSymbol,String[] ele){
         super(s,line,tableSymbol);
         exp = ele[1];
@@ -19,5 +21,9 @@ public class PushLine extends Line{
         if(use && exp.equals(old)){
             exp = name;
         }
+    }
+
+    public String getExp() {
+        return exp;
     }
 }
