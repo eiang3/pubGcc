@@ -49,7 +49,7 @@ public class IRFirst {
         BasicBlockManager.getInstance().connectAllAndInitKill();
 
         BasicBlockManager.getInstance().computeInAndOut();
-        BasicBlockManager.getInstance().printfBlockMessage();
+        //BasicBlockManager.getInstance().printfBlockMessage();
         BasicBlockManager.getInstance().initAllDefUseChain();
 
         //VarNodeManager.getInstance().printfVarNodeMessage();

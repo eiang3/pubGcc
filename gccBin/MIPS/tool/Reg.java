@@ -1,7 +1,7 @@
 package gccBin.MIPS.tool;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 
 public enum Reg {
     $ra("$ra"),
@@ -36,10 +36,10 @@ public enum Reg {
     private final String name;
     public static final int tempNum = 6;
 
-    public static Reg leftOne = $t6;
-    public static Reg leftTwo = $t7;
-    public static Reg rightOne = $t8;
-    public static Reg rightTwo = $t9;
+    public static final Reg l1 = $t6;
+    public static final Reg l2 = $t7;
+    public static final Reg r1 = $t8;
+    public static final Reg r2 = $t9;
 
     private Reg(String name) {
         this.name = name;
@@ -66,18 +66,18 @@ public enum Reg {
         return null;
     }
 
-    public static Reg getATempReg(HashMap<Reg, String> arr) {
-        if (!arr.containsKey($t0)) {
+    public static Reg getFreeTempReg(HashSet<Reg> arr) {
+        if (!arr.contains($t0)) {
             return $t0;
-        } else if (!arr.containsKey($t1)) {
+        } else if (!arr.contains($t1)) {
             return $t1;
-        } else if (!arr.containsKey($t2)) {
+        } else if (!arr.contains($t2)) {
             return $t2;
-        } else if (!arr.containsKey($t3)) {
+        } else if (!arr.contains($t3)) {
             return $t3;
-        } else if (!arr.containsKey($t4)) {
+        } else if (!arr.contains($t4)) {
             return $t4;
-        } else if (!arr.containsKey($t5)) {
+        } else if (!arr.contains($t5)) {
             return $t5;
         } //t6，t7，t8，t9给我倒腾使用
         return null;

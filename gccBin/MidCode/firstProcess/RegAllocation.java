@@ -36,9 +36,10 @@ public class RegAllocation {
     }
 
     public void finishRegAllocation() {
-        if(leave.size() == 0) return; //没有网
+        if (leave.size() == 0) return; //没有网
 
-        do {
+
+        while (leave.size() != 1) {
             VarWeb varWeb = getOneNode();
             if (varWeb != null) {
                 add(varWeb);
@@ -46,11 +47,11 @@ public class RegAllocation {
             } else {
                 selectOneNodeInMem();
             }
-        }while (leave.size()!=1);
+        }
 
         VarWeb lastOne = leave.get(0);
         lastOne.setReg(Reg.$s0);
-        for(int i = orderUse.size()-1;i>=0;i--){
+        for (int i = orderUse.size() - 1; i >= 0; i--) {
             VarWeb varWeb = orderUse.get(i);
             varWeb.allocReg(leave);
             this.leave.add(varWeb);
@@ -80,6 +81,7 @@ public class RegAllocation {
 
     /**
      * 变量名和对应的变量
+     *
      * @param newName2Web
      */
     public void addNodeToLeaveSet(HashMap<String, VarWeb> newName2Web) {

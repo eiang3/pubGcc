@@ -75,7 +75,8 @@ public class VarNodeManager {
     }
 
     public void generateWeb() {
-        for (String name : name2Node.keySet()) {
+        ArrayList<String> names = new ArrayList<>(name2Node.keySet());
+        for (String name : names) {
             name2Node.get(name).generateWeb();
         }
     }

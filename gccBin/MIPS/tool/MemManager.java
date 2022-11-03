@@ -3,6 +3,7 @@ package gccBin.MIPS.tool;
 import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;
+import gccBin.UnExpect;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,30 +26,26 @@ public class MemManager {
         return memManager;
     }
 
-    public void addRegToStore(Reg reg) {
-        regNeedToStore.add(reg);
-    }
-
     public void pushSReg() throws IOException {
         int number = regNeedToStore.size();
         int count = 0;
         for (Reg reg : regNeedToStore) {
-            MIPSIns.sw_number_reg(reg, count * 4, Reg.$sp);
+            mipsIns.sw_number_reg(reg, count * 4, Reg.$sp);
             count++;
         }
-        MIPSIns.sw_number_reg(Reg.$ra, count * 4, Reg.$sp);
-        MIPSIns.add_reg_o(Reg.$sp, Reg.$sp, (number + 1) * 4);
+        mipsIns.sw_number_reg(Reg.$ra, count * 4, Reg.$sp);
+        mipsIns.add_reg_o(Reg.$sp, Reg.$sp, (number + 1) * 4);
     }
 
     public void popSReg() throws IOException {
         int number = regNeedToStore.size();
-        MIPSIns.sub_reg_o(Reg.$sp, Reg.$sp, (number + 1) * 4);
+        mipsIns.sub_reg_o(Reg.$sp, Reg.$sp, (number + 1) * 4);
         int count = 0;
         for (Reg reg : regNeedToStore) {
-            MIPSIns.lw_number_reg(reg, count * 4, Reg.$sp);
+            mipsIns.lw_number_reg(reg, count * 4, Reg.$sp);
             count++;
         }
-        MIPSIns.lw_number_reg(Reg.$ra, count * 4, Reg.$sp);
+        mipsIns.lw_number_reg(Reg.$ra, count * 4, Reg.$sp);
     }
 
     public void enterANewFunc() {
@@ -75,21 +72,35 @@ public class MemManager {
         }
     }
 
-    public void allocationVarMem(String name, TableSymbol tableSymbol) {
+    /**
+     * 1.将没有分配到寄存器的变量分配活动记录空间
+     * 2.分配到寄存器的变量加入调用函数时要保存的寄存器
+     * 3.无用的变量抛弃
+     *
+     * @param name        变量的名字
+     * @param tableSymbol 变量对应的符号表项
+     */
+    public void handleVar(String name, TableSymbol tableSymbol) {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+
+        if (elementTable == null) {
+            UnExpect.error();
+        }
+
         if (elementTable.isUseless()) {
             return;
         }
-        if (elementTable != null && !elementTable.isHasReg()) {
+
+        if (!elementTable.isHasReg()) {
             elementTable.setMemOff(fpOff);
             addFpOff(1);
-        } else if (elementTable != null && elementTable.isHasReg()) {
+        } else if (elementTable.isHasReg()) {
             Reg reg = elementTable.getReg();
             this.regNeedToStore.add(reg);
         }
     }
 
-    public int allocationTempMem() {
+    public int allocation_A_Temp_Mem() {
         int ret = fpOff;
         addFpOff(1);
         return ret;

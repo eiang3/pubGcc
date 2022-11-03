@@ -24,7 +24,6 @@ public class VarNode {
      * 节点的活跃范围
      */
     //private final BitSet activeScope;
-
     public VarNode(String name, TableSymbol tableSymbol) {
         this.name = name;
         this.tableSymbol = tableSymbol;
@@ -35,7 +34,6 @@ public class VarNode {
         genSite = new ArrayList<>();
         //activeScope = new BitSet();
     }
-
 
 
     public BitSet getGenSet() {
@@ -57,7 +55,6 @@ public class VarNode {
     }
 
     /**
-     *
      * @param index
      * @param bitSet
      */
@@ -72,7 +69,7 @@ public class VarNode {
      * bug ？
      */
     public void generateWeb() {
-        if(defUseChain.size() == 0){
+        if (defUseChain.size() == 0) {
             ElementTable elementTable = tableSymbol.getElement(name);
             elementTable.setUseless(true);
             VarNodeManager.getInstance().removeVarNode(name);
@@ -89,7 +86,7 @@ public class VarNode {
         ArrayList<Integer> tag = new ArrayList<>(genSite);
         //tag 集最后应该是答案web的key集
         //对每一个def点进行遍历，一遍会将所有与他冲突的点加入；
-        do {
+        while (!webDone()) {
             for (int i : genSite) {
                 if (tag.contains(i)) { //说明这个def点没有被消除（加入其他web）
                     Iterator<Integer> it = tag.iterator();
@@ -103,7 +100,7 @@ public class VarNode {
                     }
                 }
             }
-        }while(!webDone());
+        }
     }
 
     /**
