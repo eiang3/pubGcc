@@ -15,7 +15,24 @@ public class UnExpect {
         System.out.println(temp + "is a temp not in mem or reg");
     }
 
-    public static void unexpect(String s){
-        System.out.println("unexpect error in "+ s);
+    public static void unexpect(String s) {
+        System.out.println("unexpect error in " + s);
+    }
+
+    public static void varNotInTable(String s) {
+        System.out.println("cannot find " + s + " in tableSymbol");
+    }
+
+    /**
+     * s is not global,local or fParam
+     *
+     * @param s *
+     */
+    public static void elementNotAnything(String s) {
+        System.out.println(s + " is not global,local or fParam");
+    }
+
+    public static void negOff(String s){
+        System.out.println("neg off in "+s);
     }
 }

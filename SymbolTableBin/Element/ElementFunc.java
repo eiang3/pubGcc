@@ -15,6 +15,7 @@ public class ElementFunc extends ElementTable {
                        int dimension){
         super(name,type,decl,dimension);
         this.params = new ArrayList<>();
+        super.setGlobal(true);
     }
 
     public void addParameters(ArrayList<FuncFParam> params){

@@ -7,23 +7,12 @@ import SymbolTableBin.Element.ElementTable;
 import gccBin.MIPS.MIPS;
 import gccBin.MIPS.SubOp;
 import gccBin.MidCode.Judge;
+import gccBin.MidCode.Line.AssignLine;
 import gccBin.UnExpect;
 
 import java.io.IOException;
 
 public class MIPSHelper {
-    private static MIPSHelper mipsHelper;
-
-    private MIPSHelper() {
-    }
-
-    public static MIPSHelper get() {
-        if (mipsHelper == null) {
-            mipsHelper = new MIPSHelper();
-        }
-        return mipsHelper;
-    }
-
     /**
      * 并将应该写入mips的信息传出,将取出相应的数到特定的寄存器，但是对于数字的话，不需要存到
      * 寄存器里，因为数字可以直接计算
@@ -32,7 +21,7 @@ public class MIPSHelper {
      *
      * @num:是右侧表达式的第几个操作数
      */
-    public Reg getValue(Reg ans, TableSymbol tableSymbol, String s) throws IOException {
+    public static Reg getValue(Reg ans, TableSymbol tableSymbol, String s) throws IOException {
         ElementTable elementTable = APIIRSymTable.
                 getInstance().findElementRecur(tableSymbol, s);
         if (Judge.isAddr(elementTable, s)) {
@@ -40,333 +29,414 @@ public class MIPSHelper {
                 arrAddrGlobal(ans, s);
             } else if (elementTable instanceof ElementFParam) {
                 ElementFParam elementFParam = (ElementFParam) elementTable;
-                arrAddrPara(ans, s, elementFParam.getIndex());
+                Reg reg = AssignLine.getFParamInReg(elementTable,ans);
+
             } else {
                 arrAddrNormal(ans, elementTable.getMemOff());
             }
         }
         return ans;
-
     }
 
+    // next is static handle for mips generate
 
     /**
-     * 操作数是数组地址，说明只能是右操作数
+     * t1 = a[exp]
      *
-     * @param ans 是返回的寄存器（一般为rightOne或rightTwo）
-     * @return
+     * @param answer      *
+     * @param array       *
+     * @param tableSymbol *
      */
-    private void arrAddrGlobal(Reg ans, String arr) throws IOException {
-        mipsIns.la_label(ans, arr);
-    }
-
-    private void arrAddrPara(Reg ans, String arr, int index) throws IOException {
-        if (index <= 4) {
-            Reg reg = Reg.getFParamReg(index);
-            mipsIns.move(ans, reg);
+    public static void assignArrToTemp(String answer, String array, TableSymbol tableSymbol) throws IOException {
+        String arrName = SubOp.getArrName(array);
+        String arrSub = SubOp.getArrSubscript(array);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
+        if (TempRegPool.getInstance().inReg(arrSub)) { //arr下标在reg里
+            Reg arraySubReg = TempRegPool.getInstance().getReg(arrSub);
+            get_Array_Value_In_Reg(arraySubReg, array, elementTable);
+            TempRegPool.getInstance().replace(answer, arrSub);
         } else {
-            int off = FuncFParam.getOff(index);
-            mipsIns.lw_number_reg(ans, off, Reg.$fp);
-        }
-    }
-
-    private void arrAddrNormal(Reg ans, int off) throws IOException {
-        mipsIns.add_reg_o(ans, Reg.$fp, off);
-    }
-
-
-    /**
-     * @param ans
-     * @param name
-     * @param tableSymbol
-     */
-    public void assignSomeToTemp(String ans, String name, TableSymbol tableSymbol) throws IOException {
-        if (Judge.isRET(name)) {
-            allocTempAndInit(ans, Reg.$v0);
-            return;
-        }
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
-        if (elementTable.getDimension() != 0) {
-            String arrSub = getArrSubscript(name);
-            String arrName = getArrName(name);
-            if (elementTable.isGlobal()) {
-                lwArrGlobal(ans, arrName, arrSub);
-            } else if (elementTable instanceof ElementFParam) {
-                ElementFParam elementFParam = (ElementFParam) elementTable;
-                lwArrPara(ans, arrSub, elementFParam.getIndex());
+            Reg obj = TempRegPool.getInstance().addToPool(answer);
+            if (TempRegPool.getInstance().inReg(answer)) {
+                get_Array_Value_In_Reg(obj, array, elementTable);
             } else {
-                int off = elementTable.getMemOff();
-                lwArrNormal(ans, arrSub, off);
-            }
-        } else {
-            if (elementTable.isHasReg()) {
-                Reg reg = elementTable.getReg();
-                allocTempAndInit(ans, reg);
-            } else {
-                int off = elementTable.getMemOff();
-                mipsIns.lw_number_reg(Reg.r1, off, Reg.$fp);
-                allocTempAndInit(ans, Reg.r1);
+                get_Array_Value_In_Reg(Reg.l1, array, elementTable);
+                TempRegPool.getInstance().storeToMem(Reg.l1, answer);
             }
         }
+        TempRegPool.getInstance().delete(arrSub);
     }
 
     /**
-     * 当右值是数组时，说明只有一个操作数，就是数组
-     * 所以右侧的寄存器可以随意用，
-     * 按照中间代码的设计，左侧只能是临时寄存器
-     * 可以临时申请
-     */
-    private void lwArrGlobal(String ans, String arr, String sub) throws IOException {
-        if (Judge.isTemp(sub)) {
-            Reg reg = TempRegPool.getInstance().getTempInReg(Reg.r1, sub);
-            mipsIns.sll(Reg.r1, reg, 2);
-            mipsIns.lw_label_reg(Reg.r1, arr, Reg.r1);
-        } else {  //assert number
-            int number = Integer.parseInt(sub);
-            number = number * 4;
-            mipsIns.lw_label_number(Reg.r1, arr, number);
-        }
-        allocTempAndInit(ans, Reg.r1);
-    }
-
-    /**
-     * 当右值是数组时，说明只有一个操作数，就是数组
-     * 所以右侧的寄存器可以随意用，
-     * 按照中间代码的设计，左侧只能是临时寄存器
-     * 可以临时申请
-     */
-    private void lwArrPara(String ans, String sub, int index) throws IOException {
-        Reg regAddr;
-        if (index <= 4) {
-            regAddr = Reg.getFParamReg(index);
-        } else {
-            int off = FuncFParam.getOff(index);
-            mipsIns.lw_number_reg(Reg.r1, off, Reg.$fp);
-            regAddr = Reg.r1;
-        }
-        lwArrValueInRegTwo(sub, regAddr);
-        allocTempAndInit(ans, Reg.r2);
-    }
-
-    /**
-     * 当右值是数组时，说明只有一个操作数，就是数组
-     * 所以右侧的寄存器可以随意用，
-     * 按照中间代码的设计，左侧只能是临时寄存器
-     * 可以临时申请
-     */
-    private void lwArrNormal(String ans, String sub, int off) throws IOException {
-        mipsIns.add_reg_o(Reg.r1, Reg.$fp, off);
-        lwArrValueInRegTwo(sub, Reg.r1);
-        allocTempAndInit(ans, Reg.r2);
-    }
-
-    /**
-     * pre：temp是临时变量或者数字
+     * load array[exp]_value in ans_reg
+     * afloat-reg：r1,r2
+     * <p>
+     * for t = a[exp] use
      *
-     * @param var         数组名（包括下标）
-     * @param temp        number 或者 temp
-     * @param tableSymbol 符号表
-     * @throws IOException
+     * @param ansReg       *
+     * @param array        *
+     * @param elementTable *
      */
-    public void assignExpToVar(String var, String temp, TableSymbol tableSymbol) throws IOException {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
-        Reg value = null;
-        if (Judge.isTemp(temp)) {
-            value = TempRegPool.getInstance().getTempInReg(Reg.r1, temp);
-        }
-        if (elementTable.getDimension() != 0) {
-            if (value == null) { //说明要先把数字存到一个寄存器
-                mipsIns.li(Reg.r1, Integer.parseInt(temp));
-                value = Reg.r1;
-            }
-            String arrSub = getArrSubscript(temp);
-            String arrName = getArrName(temp);
-            if (elementTable.isGlobal()) {
-                swArrGlobal(arrName, arrSub, value);
-            } else if (elementTable instanceof ElementFParam) {
-                ElementFParam elementFParam = (ElementFParam) elementTable;
-                swArrPara(arrSub, elementFParam.getIndex(), value);
+    public static void get_Array_Value_In_Reg(Reg ansReg, String array, ElementTable elementTable) throws IOException {
+        String arrName = SubOp.getArrName(array);
+        String arrSub = SubOp.getArrSubscript(array);
+        Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.r2, arrSub);
+
+        if (elementTable.isGlobal()) {
+            if (Judge.isNumber(arrSub)) {
+                MipsIns.lw_ans_label_num(ansReg, arrName, Integer.parseInt(arrSub));
             } else {
-                int off = elementTable.getMemOff();
-                swArrNormal(arrSub, off, value);
+                MipsIns.lw_ans_label_base(ansReg, arrName, subReg);
             }
-        } else {
-            if (elementTable.isGlobal()) {
-                storeVarGlobal(var, value, temp);
-            } else if (elementTable instanceof ElementFParam) {
-                ElementFParam elementFParam = (ElementFParam) elementTable;
-                storeVarPara(elementFParam.getIndex(), value, temp);
+        } else if (Judge.isFParam(elementTable)) {
+            Reg address = getFParamInReg(elementTable, Reg.r1);
+            if (Judge.isNumber(arrSub)) {
+                MipsIns.lw_ans_num_baseReg(ansReg, Integer.parseInt(arrSub), address);
             } else {
-                storeVar(elementTable, value, temp);
+                MipsIns.add_ans_reg_regOrNum(subReg, subReg, address); //地址
+                MipsIns.lw_ans_num_baseReg(ansReg, 0, subReg);
             }
-        }
+        } else if (Judge.isLocal(elementTable)) {
+            int arrOff = elementTable.getMemOff();
+            if (Judge.isNumber(arrSub)) {
+                MipsIns.lw_ans_num_baseReg(ansReg, Integer.parseInt(arrSub) + arrOff, Reg.$fp);
+            } else {
+                MipsIns.add_ans_reg_regOrNum(subReg, subReg, Reg.$fp); //地址
+                MipsIns.lw_ans_num_baseReg(ansReg, 0, subReg);
+            }
+        } else UnExpect.unexpect("assignArrToTemp 1");
     }
 
     /**
-     * 将值存到参数里
+     * if(FParam in ax) return ax
+     * else get FParam_Value in afloat ,return afloat
      *
-     * @param index 参数索引 1 - 4+
-     * @param value 如果是temp是临时寄存器的话，保存临时寄存器的值，否则是null(数字)
-     * @throws IOException
+     * @param elementTable *
+     * @param afloat       *
+     * @return *
+     * @throws IOException *
      */
-    private void storeVarPara(int index, Reg value, String temp) throws IOException {
-        if (index <= 4) {
-            Reg reg = Reg.getFParamReg(index);
-            if (value == null) mipsIns.li(reg, Integer.parseInt(temp));
-            else mipsIns.move(reg, value);
-        } else {
-            int off = FuncFParam.getOff(index);
-            if (value == null) {
-                mipsIns.li(Reg.r1, Integer.parseInt(temp));
-                mipsIns.sw_number_reg(Reg.r1, off, Reg.$fp);
-            } else {
-                mipsIns.sw_number_reg(value, off, Reg.$fp);
-            }
+    public static Reg getFParamInReg(ElementTable elementTable, Reg afloat) throws IOException {
+        if (!Judge.isFParam(elementTable)) {
+            UnExpect.unexpect("getFParamInReg: not a FParam");
+            return null;
         }
-    }
-
-    /**
-     * 把数据存到一个数中
-     *
-     * @param elementTable
-     * @param value
-     * @param temp
-     * @throws IOException
-     */
-    public void storeVar(ElementTable elementTable, Reg value, String temp) throws IOException {
+        Reg ret;
         if (elementTable.isHasReg()) {
-            Reg reg = elementTable.getReg();
-            if (value != null) mipsIns.move(reg, value);
-            else mipsIns.li(reg, Integer.parseInt(temp));
+            ret = elementTable.getReg();
         } else {
             int off = elementTable.getMemOff();
-            if (value == null) { //说明要先把数字存到一个寄存器
-                mipsIns.li(Reg.r1, Integer.parseInt(temp));
-                value = Reg.r1;
-            }
-            mipsIns.sw_number_reg(value, off, Reg.$fp);
+            MipsIns.lw_ans_num_baseReg(afloat, off, Reg.$fp);
+            ret = afloat;
         }
+        return ret;
     }
 
     /**
-     * 对全局变量存值
+     * a[exp] = exp
      *
-     * @param var
-     * @param value
-     * @throws IOException
+     * @param answer      *
+     * @param exp         *
+     * @param tableSymbol *
+     * @throws IOException *
      */
-    public void storeVarGlobal(String var, Reg value, String temp) throws IOException {
-        if (value == null) { //说明要先把数字存到一个寄存器
-            mipsIns.li(Reg.r1, Integer.parseInt(temp));
+    public static void assignExpToArr(String answer, String exp, TableSymbol tableSymbol) throws IOException {
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
+        String arrName = SubOp.getArrName(answer);
+        String arrSub = SubOp.getArrSubscript(answer);
+        //get value in reg.r1
+        Reg value = null;
+        if (Judge.isTemp(exp)) {
+            value = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
+        } else if (Judge.isNumber(exp)) {
             value = Reg.r1;
-        }
-        mipsIns.sw_label_number(value, var, 0);
+            MipsIns.li_ans_num(Reg.r1, Integer.parseInt(exp));
+        } else UnExpect.unexpect("assignExpToArr 1");
+
+        //getAddress
+        if (elementTable.isGlobal()) {
+            if (Judge.isNumber(arrSub)) {
+                MipsIns.sw_value_label_num(value, arrName, Integer.parseInt(arrSub));
+            } else if (Judge.isTemp(arrSub)) {
+                Reg arrOff = TempRegPool.getInstance().getTempInReg(Reg.l1, arrSub);
+                MipsIns.sw_value_label_base(value, arrName, arrOff);
+            } else UnExpect.unexpect("assignExpToArr 2");
+        } else if (Judge.isLocal(elementTable)) {
+            int ansOff = elementTable.getMemOff();
+            if (Judge.isNumber(arrSub)) {
+                ansOff = ansOff + Integer.parseInt(arrSub);
+                MipsIns.sw_value_num_baseReg(value, ansOff, Reg.$fp);
+            } else if (Judge.isTemp(arrSub)) {
+                Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.l1, arrSub);
+                MipsIns.add_ans_reg_regOrNum(subReg, subReg, Reg.$fp);
+                MipsIns.sw_value_base(value, subReg);
+            } else UnExpect.unexpect("assignExpToArr 3");
+        } else if (Judge.isFParam(elementTable)) {
+            Reg address = getFParamInReg(elementTable, Reg.l1);
+            if (Judge.isNumber(arrSub)) {
+                MipsIns.sw_value_num_baseReg(value, Integer.parseInt(arrSub), address);
+            } else if (Judge.isTemp(arrSub)) {
+                Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.l2, arrSub);
+                MipsIns.add_ans_reg_regOrNum(subReg, subReg, address);
+                MipsIns.sw_value_base(value, subReg);
+            } else UnExpect.unexpect("assignExpToArr 5");
+        } else UnExpect.unexpect("assignExpToArr 4");
+        TempRegPool.getInstance().delete(arrSub);
+        TempRegPool.getInstance().delete(exp);
     }
 
     /**
-     * 当右值是数组时，说明只有一个操作数，就是数组
-     * 所以右侧的寄存器可以随意用，
-     * 按照中间代码的设计，左侧只能是临时寄存器
-     * 可以临时申请
+     * a = exp
+     *
+     * @param answer      *
+     * @param exp         *
+     * @param tableSymbol *
      */
-    private void swArrGlobal(String arr, String sub, Reg regValue) throws IOException {
-        if (Judge.isTemp(sub)) {
-            Reg reg = TempRegPool.getInstance().getTempInReg(Reg.l2, sub);
-            mipsIns.sll(Reg.l2, reg, 2);
-            mipsIns.sw_label_reg(regValue, arr, Reg.l2);
-        } else {  //assert number
-            int number = Integer.parseInt(sub);
-            number = number * 4;
-            mipsIns.sw_label_number(regValue, arr, number);
-        }
-    }
-
-    /**
-     * 当右值是数组时，说明只有一个操作数，就是数组
-     * 所以右侧的寄存器可以随意用，
-     * 按照中间代码的设计，左侧只能是临时寄存器
-     * 可以临时申请
-     */
-    private void swArrPara(String sub, int index, Reg value) throws IOException {
-        Reg regAddr;
-        if (index <= 4) {
-            regAddr = Reg.getFParamReg(index);
+    public static void assignExpToVar(String answer, String exp, TableSymbol tableSymbol) throws IOException {
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
+        if (elementTable.isHasReg()) {
+            Reg ans = elementTable.getReg();
+            if (TempRegPool.getInstance().inReg(exp)) {
+                Reg t = TempRegPool.getInstance().getReg(exp);
+                MipsIns.move_reg_reg(ans, t);
+            } else if (TempRegPool.getInstance().inMem(exp)) {
+                int off = TempRegPool.getInstance().getOff(exp);
+                MipsIns.lw_ans_num_baseReg(ans, off, Reg.$fp);
+            } else if (Judge.isNumber(exp)) {
+                MipsIns.li_ans_num(ans, Integer.parseInt(exp));
+            } else UnExpect.unexpect("assignExpToVar 1");
         } else {
-            int off = FuncFParam.getOff(index);
-            mipsIns.lw_number_reg(Reg.l1, off, Reg.$fp);
-            regAddr = Reg.l1;
+            if (elementTable.isGlobal()) {
+                if (Judge.isTemp(exp)) {
+                    Reg value = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
+                    MipsIns.sw_value_label(value, answer);
+                } else if (Judge.isNumber(exp)) {
+                    MipsIns.li_ans_num(Reg.r1, Integer.parseInt(exp));
+                    MipsIns.sw_value_label(Reg.r1, answer);
+                } else UnExpect.unexpect("assignExpToVar 2");
+            } else {
+                int ansOff = elementTable.getMemOff();
+                if (Judge.isTemp(exp)) {
+                    Reg value = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
+                    MipsIns.sw_value_num_baseReg(value, ansOff, Reg.$fp);
+                } else if (Judge.isNumber(exp)) {
+                    MipsIns.li_ans_num(Reg.r1, Integer.parseInt(exp));
+                    MipsIns.sw_value_num_baseReg(Reg.r1, ansOff, Reg.$fp);
+                } else UnExpect.unexpect("assignExpToVar 1");
+            }
         }
-        swArrValue(value, regAddr, sub);
+        TempRegPool.getInstance().delete(exp);
     }
 
     /**
-     * 当右值是数组时，说明只有一个操作数，就是数组
-     * 所以右侧的寄存器可以随意用，
-     * 按照中间代码的设计，左侧只能是临时寄存器
-     * 可以临时申请
-     */
-    private void swArrNormal(String sub, int off, Reg value) throws IOException {
-        mipsIns.add_reg_o(Reg.l1, Reg.$fp, off);
-        swArrValue(value, Reg.l1, sub);
-    }
-
-    /**
-     * 会改变regTwo的值
+     * t = a
+     * <p>
+     * 不存在a是数组地址的情况
+     * ir中，这种情况都为 t = array_address >> 2
      *
-     * @param sub     数组的下标
-     * @param regAddr 数组的基地址
-     * @throws IOException
+     * @param temp        *
+     * @param var         *
+     * @param tableSymbol *
      */
-    public void lwArrValueInRegTwo(String sub, Reg regAddr) throws IOException {
-        if (Judge.isTemp(sub)) {
-            Reg temp = TempRegPool.getInstance().getTempInReg(Reg.r2, sub);
-            mipsIns.sll(Reg.r2, temp, 2);
-            mipsIns.add_reg_o(Reg.r2, Reg.r2, regAddr);
-            mipsIns.lw_reg(Reg.r2, Reg.r2);
-        } else { // assert number
-            int number = Integer.parseInt(sub);
-            number = number * 4;
-            mipsIns.lw_number_reg(Reg.r2, number, regAddr);
-        }
-    }
-
-    /**
-     * 会改变regTwo的值
-     *
-     * @param sub     数组的下标
-     * @param regAddr 数组的基地址
-     * @throws IOException
-     */
-    public void swArrValue(Reg regValue, Reg regAddr, String sub) throws IOException {
-        if (Judge.isTemp(sub)) {
-            Reg temp = TempRegPool.getInstance().getTempInReg(Reg.l2, sub);
-            mipsIns.sll(Reg.l2, temp, 2);
-            mipsIns.add_reg_o(Reg.l2, Reg.l2, regAddr);
-            mipsIns.sw_reg(regValue, Reg.l2);
-        } else { // assert number
-            int number = Integer.parseInt(sub);
-            number = number * 4;
-            mipsIns.sw_number_reg(regValue, number, regAddr);
-        }
-    }
-
-    /**
-     * 当temp出现在等式左边时，说明这是temp的第一次定义/使用，
-     * 需要分配新的temp空间（地址或者是t寄存器）
-     *
-     * @param tempName
-     * @param regValue
-     * @throws IOException
-     */
-    public void allocTempAndInit(String tempName, Reg regValue) throws IOException {
-        Reg reg = TempRegPool.getInstance().addToPool(tempName);
-        if (reg == null) {
-            TempRegPool.getInstance().storeToMem(regValue, tempName);
+    public static void assignVarToTemp(String temp, String var, TableSymbol tableSymbol) throws IOException {
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
+        TempRegPool.getInstance().addToPool(temp);
+        if (elementTable.isHasReg()) {
+            Reg varReg = elementTable.getReg();
+            if (TempRegPool.getInstance().inReg(temp)) {
+                Reg reg = TempRegPool.getInstance().getReg(temp);
+                MipsIns.move_reg_reg(reg, varReg);
+            } else if (TempRegPool.getInstance().inMem(temp)) {
+                TempRegPool.getInstance().storeToMem(varReg, temp);
+            } else UnExpect.unexpect("assignVarToTemp 1");
         } else {
-            mipsIns.move(reg, regValue);
+            if (elementTable.isGlobal()) {
+                if (TempRegPool.getInstance().inReg(temp)) {
+                    Reg reg = TempRegPool.getInstance().getReg(temp);
+                    MipsIns.lw_ans_label(reg, var);
+                } else if (TempRegPool.getInstance().inMem(temp)) {
+                    MipsIns.lw_ans_label(Reg.r1, var);
+                    TempRegPool.getInstance().storeToMem(Reg.r1, temp);
+                } else UnExpect.unexpect("assignVarToTemp 1");
+            } else {
+                int varOff = elementTable.getMemOff();
+                if (TempRegPool.getInstance().inReg(temp)) {
+                    Reg reg = TempRegPool.getInstance().getReg(temp);
+                    MipsIns.lw_ans_num_baseReg(reg, varOff, Reg.$fp);
+                } else if (TempRegPool.getInstance().inMem(temp)) {
+                    MipsIns.lw_ans_num_baseReg(Reg.r1, varOff, Reg.$fp);
+                    TempRegPool.getInstance().storeToMem(Reg.r1, temp);
+                } else UnExpect.unexpect("assignVarToTemp 1");
+            }
         }
     }
 
+    //*********************************************************************************/
+
+    /**
+     * ok
+     * temp1 = (-|!) temp2
+     *
+     * @param answer temp1
+     * @param op     -|!
+     * @param temp   temp2
+     * @throws IOException e
+     */
+    public static void assignOne(String answer, String op, String temp) throws IOException {
+        if (TempRegPool.getInstance().inReg(temp)) { //temp in reg
+            Reg ans = TempRegPool.getInstance().replace(answer, temp); // replace
+            MipsIns.negOrNot_ans(op, ans);
+        } else if (TempRegPool.getInstance().inMem(temp)) { // temp in mem
+            Reg ans = TempRegPool.getInstance().addToPool(answer);
+            if (ans == null) { //ans-reg in mem
+                TempRegPool.getInstance().moveFromMem(Reg.r1, temp);
+                MipsIns.negOrNot_ans(op, Reg.r1);
+                TempRegPool.getInstance().storeToMem(Reg.r1, answer);
+            } else { //ans in reg
+                TempRegPool.getInstance().moveFromMem(ans, temp);
+                MipsIns.negOrNot_ans(op, ans);
+            }
+        } else UnExpect.printf(temp + " is a temp not in reg and mem");
+
+        TempRegPool.getInstance().delete(temp);
+    }
+
+    /**
+     * t1 = (-|!) number
+     *
+     * @param answer t1
+     * @param op     -|!
+     * @param number number
+     * @throws IOException e
+     */
+    public static void assignOne(String answer, String op, int number) throws IOException {
+        Reg ans = TempRegPool.getInstance().addToPool(answer);
+        if (ans != null) {
+            assignOneSubHandle(ans, op, number);
+        } else {
+            assignOneSubHandle(Reg.l1, op, number);
+            TempRegPool.getInstance().storeToMem(Reg.l1, answer);
+        }
+    }
+
+    private static void assignOneSubHandle(Reg ans, String op, int number) throws IOException {
+        if (op.equals("-")) {
+            MipsIns.li_ans_num(ans, number * -1);
+        } else if (op.equals("!")) {
+            number = (number == 0) ? 1 : 0;
+            MipsIns.li_ans_num(ans, number);
+        } else UnExpect.printf(op + " is not ! or -");
+    }
+
+    /**
+     * ans = address >> 2
+     * ans = t1 << 2
+     * ans = exp1 +-/*% exp2
+     *
+     * @param answer      ans
+     * @param temp1       temp1
+     * @param op          op
+     * @param temp2       temp2
+     * @param tableSymbol table
+     * @throws IOException e
+     */
+    public static void assignTwo(String answer, String temp1, String op, String temp2, TableSymbol tableSymbol) throws IOException {
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, temp1);
+        if (Judge.isAddr(elementTable, temp1)) { //assert ans = address >> 2
+            Reg ans = TempRegPool.getInstance().addToPool(answer);
+            int off = elementTable.getMemOff();
+            if (TempRegPool.getInstance().inReg(answer)) {
+                MipsIns.address_srl_2(ans, off);
+            } else if (TempRegPool.getInstance().inMem(answer)) {
+                MipsIns.address_srl_2(Reg.l1, off);
+                TempRegPool.getInstance().storeToMem(Reg.l1, answer);
+            } else UnExpect.tempNotInMemAndReg(answer);
+            return;
+        }
+        int num1 = (Judge.isNumber(temp1)) ? Integer.parseInt(temp1) : 0;
+        int num2 = (Judge.isNumber(temp2)) ? Integer.parseInt(temp2) : 0;
+        if (Judge.isNumber(temp1) && Judge.isNumber(temp2)) {
+            assignTwo_TwoNumber(answer, num1, op, num2);
+        } else if (Judge.isTemp(temp1) && Judge.isNumber(temp2)) {
+            assignTwo_Temp_Number(answer, temp1, op, num2);
+        } else if (Judge.isNumber(temp1) && Judge.isTemp(temp2)) {
+            assignTwo_Number_Temp(answer, num1, op, temp2);
+        } else if (Judge.isTemp(temp1) && Judge.isTemp(temp2)) {
+            assignTwo_TwoTemp(answer, temp1, op, temp2);
+        } else UnExpect.unexpect("assignTwo");
+    }
+
+    public static void assignTwo_TwoTemp(String answer, String temp1, String op, String temp2) throws IOException {
+        Reg t1 = TempRegPool.getInstance().getTempInReg(Reg.r1, temp1);
+        Reg t2 = TempRegPool.getInstance().getTempInReg(Reg.r2, temp2);
+        if (TempRegPool.getInstance().inMem(temp1) && TempRegPool.getInstance().inMem(temp2)) {
+            Reg reg = TempRegPool.getInstance().addToPool(answer);
+            if (TempRegPool.getInstance().inReg(answer)) {
+                MipsIns.compute_ans_r1_op_r2(reg, t1, op, t2);
+            } else if (TempRegPool.getInstance().inMem(answer)) {
+                MipsIns.compute_ans_r1_op_r2(Reg.l1, t1, op, t2);
+                TempRegPool.getInstance().storeToMem(Reg.l1, answer);
+            } else UnExpect.tempNotInMemAndReg(answer);
+        } else if (TempRegPool.getInstance().inReg(temp1)) {
+            MipsIns.compute_first(op, t1, t2);
+            TempRegPool.getInstance().replace(answer, temp1);
+        } else if (TempRegPool.getInstance().inReg(temp2)) {
+            MipsIns.compute_second(op, t1, t2);
+            TempRegPool.getInstance().replace(answer, temp2);
+        } else UnExpect.printf("strange error!");
+        TempRegPool.getInstance().delete(temp1);
+        TempRegPool.getInstance().delete(temp2);
+    }
+
+    public static void assignTwo_TwoNumber(String answer, int num1, String op, int num2) throws IOException {
+        Reg ans = TempRegPool.getInstance().addToPool(answer);
+        int result = SubOp.compute(num1, op, num2);
+        if (TempRegPool.getInstance().inReg(answer)) {
+            MipsIns.li_ans_num(ans, result);
+        } else if (TempRegPool.getInstance().inMem(answer)) {
+            MipsIns.li_ans_num(Reg.l1, result);
+            TempRegPool.getInstance().storeToMem(Reg.l1, answer);
+        } else UnExpect.tempNotInMemAndReg(answer);
+    }
+
+    public static void assignTwo_Temp_Number(String answer, String temp1, String op, int number) throws IOException {
+        Reg t1 = TempRegPool.getInstance().getTempInReg(Reg.r1, temp1);
+        if (TempRegPool.getInstance().inReg(temp1)) {
+            MipsIns.compute_first(op, t1, number, Reg.r2);
+            TempRegPool.getInstance().replace(answer, temp1);
+        } else if (TempRegPool.getInstance().inMem(temp1)) {
+            Reg ans = TempRegPool.getInstance().addToPool(answer);
+            if (TempRegPool.getInstance().inReg(answer)) {
+                MipsIns.compute(ans, t1, op, number, Reg.r2);
+            } else if (TempRegPool.getInstance().inMem(answer)) {
+                MipsIns.compute_first(op, t1, number, Reg.r2);
+                TempRegPool.getInstance().storeToMem(t1, answer);
+            } else UnExpect.tempNotInMemAndReg(answer);
+        } else UnExpect.tempNotInMemAndReg(temp1);
+        TempRegPool.getInstance().delete(temp1);
+    }
+
+    public static void assignTwo_Number_Temp(String answer, int num1, String op, String temp2) throws IOException {
+        Reg t2 = TempRegPool.getInstance().getTempInReg(Reg.r2, temp2);
+        if (Judge.isPlus(op)) {
+            assignTwo_Temp_Number(answer, temp2, op, num1);
+        } else {
+            MipsIns.li_ans_num(Reg.r1, num1);
+            if (TempRegPool.getInstance().inReg(temp2)) {
+                MipsIns.compute_second(op, Reg.r1, t2);
+                TempRegPool.getInstance().replace(answer, temp2);
+            } else if (TempRegPool.getInstance().inMem(temp2)) {
+                Reg ans = TempRegPool.getInstance().addToPool(answer);
+                if (TempRegPool.getInstance().inReg(answer)) {
+                    MipsIns.compute_ans_r1_op_r2(ans, Reg.r1, op, t2);
+                } else if (TempRegPool.getInstance().inMem(answer)) {
+                    MipsIns.compute_first(op, Reg.r1, t2);
+                    TempRegPool.getInstance().storeToMem(Reg.r1, answer);
+                } else UnExpect.tempNotInMemAndReg(answer);
+            } else UnExpect.tempNotInMemAndReg(temp2);
+        }
+        TempRegPool.getInstance().delete(temp2);
+    }
 
     public void write(String s) throws IOException {
         MIPS.getInstance().write(s);
@@ -374,20 +444,6 @@ public class MIPSHelper {
 
     public void writeNotNext(String s) throws IOException {
         MIPS.getInstance().writeNotNext(s);
-    }
-
-    public String getArrName(String s) {
-        if (!s.contains("[")) return s;
-        int l = s.indexOf('[');
-        int r = s.indexOf(']');
-        return s.substring(0, l);
-    }
-
-    public String getArrSubscript(String s) {
-        if (!s.contains("[")) return null;
-        int l = s.indexOf('[');
-        int r = s.indexOf(']');
-        return s.substring(l + 1, r);
     }
 
 }

@@ -30,22 +30,22 @@ public class MemManager {
         int number = regNeedToStore.size();
         int count = 0;
         for (Reg reg : regNeedToStore) {
-            mipsIns.sw_number_reg(reg, count * 4, Reg.$sp);
+            MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
-        mipsIns.sw_number_reg(Reg.$ra, count * 4, Reg.$sp);
-        mipsIns.add_reg_o(Reg.$sp, Reg.$sp, (number + 1) * 4);
+        MipsIns.sw_value_num_baseReg(Reg.$ra, count * 4, Reg.$sp);
+        MipsIns.add_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
     }
 
     public void popSReg() throws IOException {
         int number = regNeedToStore.size();
-        mipsIns.sub_reg_o(Reg.$sp, Reg.$sp, (number + 1) * 4);
+        MipsIns.sub_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
         int count = 0;
         for (Reg reg : regNeedToStore) {
-            mipsIns.lw_number_reg(reg, count * 4, Reg.$sp);
+            MipsIns.lw_ans_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
-        mipsIns.lw_number_reg(Reg.$ra, count * 4, Reg.$sp);
+        MipsIns.lw_ans_num_baseReg(Reg.$ra, count * 4, Reg.$sp);
     }
 
     public void enterANewFunc() {

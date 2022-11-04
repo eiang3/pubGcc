@@ -9,6 +9,7 @@ public class Position {
     private int off;
     public Position() {
         hasReg = false;
+        this.off = -1;
     }
 
     public void setReg(Reg reg) {

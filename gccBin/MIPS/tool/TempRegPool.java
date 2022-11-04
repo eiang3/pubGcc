@@ -71,15 +71,15 @@ public class TempRegPool {
      * @param afloat 如果是temp是，存在内存中，则加载至此寄存器
      * @param temp   temp name
      * @return afloat || t-reg
-     * @throws IOException
+     * @throws IOException *
      */
     public Reg getTempInReg(Reg afloat, String temp) throws IOException {
         if (temp2Reg.containsKey(temp)) {
             return temp2Reg.get(temp);
-        } else {
-            mipsIns.lw_number_reg(afloat, temp2off.get(temp), Reg.$fp);
+        } else if (temp2off.containsKey(temp)) {
+            MipsIns.lw_ans_num_baseReg(afloat, temp2off.get(temp), Reg.$fp);
             return afloat;
-        }
+        } else return null;
     }
 
     /**
@@ -95,7 +95,7 @@ public class TempRegPool {
             return;
         }
         int off = temp2off.get(temp);
-        mipsIns.sw_number_reg(operand, off, Reg.$fp);
+        MipsIns.sw_value_num_baseReg(operand, off, Reg.$fp);
     }
 
     /**
@@ -111,7 +111,7 @@ public class TempRegPool {
             return;
         }
         int off = temp2off.get(temp);
-        mipsIns.lw_number_reg(reg, off, Reg.$fp);
+        MipsIns.lw_ans_num_baseReg(reg, off, Reg.$fp);
     }
 
     /**
@@ -143,6 +143,14 @@ public class TempRegPool {
         return this.temp2Reg.containsKey(temp);
     }
 
+    public Reg getReg(String temp) {
+        if (inMem(temp)) {
+            return temp2Reg.get(temp);
+        }
+        UnExpect.unexpect(temp + " not in reg");
+        return null;
+    }
+
     /**
      * 判断temp是否在mem里
      *
@@ -151,6 +159,20 @@ public class TempRegPool {
      */
     public boolean inMem(String temp) {
         return this.temp2off.containsKey(temp);
+    }
+
+    /**
+     * 必须和inMem一起使用
+     *
+     * @param temp *
+     * @return *
+     */
+    public int getOff(String temp) {
+        if (inMem(temp)) {
+            return temp2off.get(temp);
+        }
+        UnExpect.unexpect(temp + "is a not in mem");
+        return -1;
     }
 
     public void write(String s) throws IOException {

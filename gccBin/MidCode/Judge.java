@@ -1,9 +1,12 @@
 package gccBin.MidCode;
 
 import SymbolTableBin.APIIRSymTable;
+import SymbolTableBin.Element.ElementFParam;
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
+
+import javax.xml.bind.Element;
 
 public class Judge {
     /**
@@ -25,6 +28,39 @@ public class Judge {
             return elementTable instanceof ElementVar;
         }
         return false;
+    }
+
+    /**
+     * 判断一个elementTable是不是local的
+     * 非全局，非形参
+     *
+     * @param elementTable *
+     * @return *
+     */
+    public static boolean isLocal(ElementTable elementTable) { //isVarNode
+        return !elementTable.isGlobal() && !(elementTable instanceof ElementFParam);
+    }
+
+    /**
+     * elementTable is FParam
+     *
+     * @param elementTable *
+     * @return *
+     */
+    public static boolean isFParam(ElementTable elementTable) {
+        return elementTable instanceof ElementFParam;
+    }
+
+    /**
+     * elementTable is Global
+     * ans
+     * not funcDef
+     *
+     * @param elementTable *
+     * @return *
+     */
+    public static boolean isGlobal(ElementTable elementTable) {
+        return elementTable.isGlobal() && !(elementTable instanceof ElementFParam);
     }
 
     public static boolean isNumber(String s) {
@@ -49,8 +85,16 @@ public class Judge {
         }
     }
 
+    public static boolean isVar(String a) {
+        return !isExp(a) && !isArrayValue(a);
+    }
+
     public static boolean isRET(String s) {
         return s.equals("$RET");
+    }
+
+    public static boolean isArrayValue(String s) {
+        return s.contains("[");
     }
 
     public static boolean isAddr(ElementTable elementTable, String s) {

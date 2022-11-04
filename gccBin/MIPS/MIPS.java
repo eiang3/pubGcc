@@ -78,7 +78,7 @@ public class MIPS {
         Reg reg1 = MIPSHelper.get().getValue(Reg.r1, tableSymbol, cmpLine.getT1());
         Reg reg2 = MIPSHelper.get().getValue(Reg.r2, tableSymbol, cmpLine.getT2());
         BLine bLine = (BLine) LineManager.getInstance().nextLine();
-        mipsIns.bCond(bLine.getB(), reg1, reg2, bLine.getLabel());
+        MipsIns.bCond_reg1_reg2_label(bLine.getB(), reg1, reg2, bLine.getLabel());
     }
 
     /**
@@ -87,9 +87,9 @@ public class MIPS {
      */
     public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
         MemManager.getInstance().pushSReg();
-        mipsIns.sub_reg_o(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
-        mipsIns.jalLabel(callFuncLine.getFuncName());
-        mipsIns.add_reg_o(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
+        MipsIns.sub_ans_reg_regOrNum(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
+        MipsIns.jal_label(callFuncLine.getFuncName());
+        MipsIns.add_ans_reg_regOrNum(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
         MemManager.getInstance().popSReg();
     }
 
@@ -114,9 +114,9 @@ public class MIPS {
             Reg temp = TempRegPool.getInstance().getTempInReg(Reg.r1, pushLine.getExp());
             if (index <= 4) {
                 Reg reg = Reg.getFParamReg(index);
-                mipsIns.move(reg, temp);
+                MipsIns.move_reg_reg(reg, temp);
             } else {
-                mipsIns.sw_number_reg(temp, off, Reg.$fp);
+                MipsIns.sw_value_num_baseReg(temp, off, Reg.$fp);
                 off = off + 4;
             }
             line = LineManager.getInstance().nextLine();
@@ -144,18 +144,18 @@ public class MIPS {
         String s = printfLine.getT();
         if (Judge.isTemp(s)) {
             Reg reg = TempRegPool.getInstance().getTempInReg(Reg.r1, s);
-            mipsIns.printfExp(reg);
+            MipsIns.printfExp(reg);
         } else if (Judge.isNumber(s)) {
             int num = Integer.parseInt(s);
-            mipsIns.printfInt(num);
+            MipsIns.printfInt(num);
         } else {
-            mipsIns.printfStr(s);
+            MipsIns.printfStr(s);
         }
     }
 
     public void scanfLineTrans(ScanfLine scanfLine) throws IOException {
         String t = scanfLine.getT();
-        mipsIns.scanfInt();
+        MipsIns.scanfInt();
         MIPSHelper.get().allocTempAndInit(t, Reg.$v0);
     }
 
@@ -165,12 +165,12 @@ public class MIPS {
         if (!retLine.isGotoExit() && exp != null) {
             if (Judge.isTemp(exp)) {
                 Reg t = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
-                mipsIns.move(Reg.$v0, t);
+                MipsIns.move_reg_reg(Reg.$v0, t);
             } else if (Judge.isNumber(exp)) {
-                mipsIns.li(Reg.$v0, Integer.parseInt(exp));
+                MipsIns.li_ans_num(Reg.$v0, Integer.parseInt(exp));
             }
         }
-        mipsIns.jr(Reg.$ra);
+        MipsIns.jr_reg(Reg.$ra);
     }
 
     public void arrayLineTranslate(TableSymbol tableSymbol, ArrayDefLine arrayDefLine) throws IOException {
@@ -220,9 +220,9 @@ public class MIPS {
         String t2 = assignLine.getT2();
         String op = assignLine.getOp();
         if (assignLine.isPureAssign()) {
-            if (Judge.isExp(t1)) {
-                MIPSHelper.get().assignExpToVar(ans, t1, tableSymbol);
-            } else {
+            if (Judge.isVar(ans) && Judge.isExp(t1)) {
+                MIPSHelper.assignExpToVar(ans, t1, tableSymbol);
+            } else if(){
                 MIPSHelper.get().assignSomeToTemp(ans, t1, tableSymbol);
             }
         } else if (assignLine.isOneOpr()) {

@@ -37,6 +37,7 @@ public class APIGramSymTable {
             ElementConst element = new ElementConst(
                     constDef.getName(), constDef.getType(), constDef.getValue());
             this.nowTable.addElement(element);
+            if (this.nowTable == rootTable) element.setGlobal(true);
         } else {
             ElementConstArray elementArray = new ElementConstArray(
                     constDef.getName(), constDef.getType(), TypeTable.CONST,

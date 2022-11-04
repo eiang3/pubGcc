@@ -3,6 +3,7 @@ package SymbolTableBin.Element;
 import SymbolTableBin.Position;
 import SymbolTableBin.TypeTable;
 import gccBin.MIPS.tool.Reg;
+import gccBin.UnExpect;
 
 /*
 符号表基本元素 ok
@@ -69,11 +70,16 @@ public class ElementTable {
 
     public int getMemOff(){
         if(isHasReg()) return -1;
+        if(position.getOff() < 0) {
+            UnExpect.unexpect("element get MemOff that not in mem");
+            return -1;
+        }
         return position.getOff();
     }
 
     public Reg getReg(){
         if(isHasReg()) return position.getReg();
+        UnExpect.unexpect("element get Reg that not in reg");
         return null;
     }
 
@@ -95,5 +101,9 @@ public class ElementTable {
 
     public void setUseless(boolean useless) {
         this.useless = useless;
+    }
+
+    public void setReg(Reg reg){
+        this.position.setReg(reg);
     }
 }

@@ -69,11 +69,4 @@ public class FuncFParam extends TreeFatherNode {
     public int getIndex() {
         return index;
     }
-
-    public static int getOff(int index){
-        if(index > 4){
-            return (index - 4) * 4;
-        }
-        return -1;
-    }
 }
