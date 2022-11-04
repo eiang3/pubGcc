@@ -5,7 +5,7 @@ import SymbolTableBin.Element.ElementConstArray;
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.Element.ElementVarArray;
 import gccBin.MIPS.tool.*;
-import gccBin.MidCode.JudgeExpElement;
+import gccBin.MidCode.Judge;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
 import gccBin.MidCode.original.PrintfFormatStringStore;
@@ -142,10 +142,10 @@ public class MIPS {
 
     public void printfLineTrans(PrintfLine printfLine) throws IOException {
         String s = printfLine.getT();
-        if (JudgeExpElement.isTemp(s)) {
+        if (Judge.isTemp(s)) {
             Reg reg = TempRegPool.getInstance().getTempInReg(Reg.r1, s);
             mipsIns.printfExp(reg);
-        } else if (JudgeExpElement.isNumber(s)) {
+        } else if (Judge.isNumber(s)) {
             int num = Integer.parseInt(s);
             mipsIns.printfInt(num);
         } else {
@@ -163,10 +163,10 @@ public class MIPS {
         if (retLine.isGotoExit()) return;
         String exp = retLine.getExp();
         if (!retLine.isGotoExit() && exp != null) {
-            if (JudgeExpElement.isTemp(exp)) {
+            if (Judge.isTemp(exp)) {
                 Reg t = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
                 mipsIns.move(Reg.$v0, t);
-            } else if (JudgeExpElement.isNumber(exp)) {
+            } else if (Judge.isNumber(exp)) {
                 mipsIns.li(Reg.$v0, Integer.parseInt(exp));
             }
         }
@@ -220,21 +220,21 @@ public class MIPS {
         String t2 = assignLine.getT2();
         String op = assignLine.getOp();
         if (assignLine.isPureAssign()) {
-            if (JudgeExpElement.isExp(t1)) {
+            if (Judge.isExp(t1)) {
                 MIPSHelper.get().assignExpToVar(ans, t1, tableSymbol);
             } else {
                 MIPSHelper.get().assignSomeToTemp(ans, t1, tableSymbol);
             }
         } else if (assignLine.isOneOpr()) {
-            if (JudgeExpElement.isTemp(t1)) {
-                MIPSHelper.get().assignOne(ans, op, t1);
-            } else if (JudgeExpElement.isNumber(t1)) {
-                MIPSHelper.get().assignOne(ans, op, Integer.parseInt(t1));
+            if (Judge.isTemp(t1)) {
+                AssignLine.assignOne(ans, op, t1);
+            } else if (Judge.isNumber(t1)) {
+                AssignLine.assignOne(ans, op, Integer.parseInt(t1));
             } else {
                 UnExpect.printf("assignOne error");
             }
         } else if (assignLine.isTwoOpr()) {
-            MIPSHelper.get().assignTwo(ans, t1, op, t2, tableSymbol);
+            AssignLine.assignTwo(ans, t1, op, t2, tableSymbol);
         }
     }
 

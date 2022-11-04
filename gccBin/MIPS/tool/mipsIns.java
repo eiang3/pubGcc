@@ -1,7 +1,7 @@
 package gccBin.MIPS.tool;
 
 import gccBin.MIPS.MIPS;
-import gccBin.MidCode.JudgeExpElement;
+import gccBin.MidCode.Judge;
 import gccBin.MidCode.original.IRTagManage;
 import gccBin.UnExpect;
 
@@ -20,6 +20,43 @@ public class mipsIns {
         return mipsIns;
     }
 
+    /**
+     * compute
+     */
+    public static void add_reg_o(Reg ans, Reg reg, int number) throws IOException {
+        write("add " + ans + "," + reg + "," + number);
+    }
+
+    public static void add_reg_o(Reg ans, Reg reg1, Reg reg2) throws IOException {
+        write("add " + ans + "," + reg1 + "," + reg2);
+    }
+
+    public static void sub_reg_o(Reg ans, Reg reg1, Reg reg2) throws IOException {
+        write("sub " + ans + "," + reg1 + "," + reg2);
+    }
+
+    public static void sub_reg_o(Reg ans, Reg reg1, int number) throws IOException {
+        write("sub " + ans + "," + reg1 + "," + number);
+    }
+
+    public static void mult_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
+        write("mult " + reg1 + "," + reg2);
+        write("mflo " + ans);
+    }
+
+    public static void div_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
+        write("div " + reg1 + "," + reg2);
+        write("mflo " + ans);
+    }
+
+    public static void mod_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
+        write("div " + reg1 + "," + reg2);
+        write("mfhi " + ans);
+    }
+
+    /**
+     * other
+     */
     public static void move(Reg regTo, Reg regFrom) throws IOException {
         write("move " + regTo + "," + regFrom);
     }
@@ -58,37 +95,6 @@ public class mipsIns {
 
     public static void sw_reg(Reg value, Reg addr) throws IOException {
         write("sw " + value + "," + "(" + addr + ")");
-    }
-
-    public static void add_reg_o(Reg ans, Reg reg, int number) throws IOException {
-        write("add " + ans + "," + reg + "," + number);
-    }
-
-    public static void add_reg_o(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("add " + ans + "," + reg1 + "," + reg2);
-    }
-
-    public static void sub_reg_o(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("sub " + ans + "," + reg1 + "," + reg2);
-    }
-
-    public static void sub_reg_o(Reg ans, Reg reg1, int number) throws IOException {
-        write("sub " + ans + "," + reg1 + "," + number);
-    }
-
-    public static void mult_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("mult " + reg1 + "," + reg2);
-        write("mflo " + ans);
-    }
-
-    public static void div_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("div " + reg1 + "," + reg2);
-        write("mflo " + ans);
-    }
-
-    public static void mod_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("div " + reg1 + "," + reg2);
-        write("mfhi " + ans);
     }
 
     public static void li(Reg reg, int number) throws IOException {
@@ -185,7 +191,7 @@ public class mipsIns {
      * t1 = (- | !) t1
      *
      * @param ans t1
-     * @param op - | !
+     * @param op  - | !
      */
     public static void negOrNot(Reg ans, String op) throws IOException {
         if (op.equals("-")) {  // op
@@ -195,22 +201,90 @@ public class mipsIns {
         } else UnExpect.printf(op + " is not ! and -");
     }
 
-    public static void compute(Reg reg,String op,){
-        if (JudgeExpElement.isPlus(op)) {
-            mipsIns.add_reg_o(Reg.r1, reg1, reg2);
-        } else if (JudgeExpElement.isMinus(op)) {
-            mipsIns.sub_reg_o(Reg.r1, reg1, reg2);
-        } else if (JudgeExpElement.isMul(op)) {
-            mipsIns.mult_reg_reg(Reg.r1, reg1, reg2);
-        } else if (JudgeExpElement.isDiv(op)) {
-            mipsIns.div_reg_reg(Reg.r1, reg1, reg2);
-        } else if (JudgeExpElement.isMod(op)) {
-            mipsIns.mod_reg_reg(Reg.r1, reg1, reg2);
-        } else if (JudgeExpElement.isSll(op)) {
-            mipsIns.sll(Reg.r1, reg1, 2);
-        } else if (JudgeExpElement.isSrl(op)) {
-            mipsIns.srl(Reg.r1, reg1, 2);
+    /**
+     * compute
+     *
+     * @param ans   ans
+     * @param op    operate
+     * @param temp1 t1
+     * @param temp2 t2
+     * @throws IOException e
+     */
+    public static void compute(Reg ans, Reg temp1, String op, Reg temp2) throws IOException {
+        if (Judge.isPlus(op)) {
+            add_reg_o(ans, temp1, temp2);
+        } else if (Judge.isMinus(op)) {
+            sub_reg_o(ans, temp1, temp2);
+        } else if (Judge.isMul(op)) {
+            mult_reg_reg(ans, temp1, temp2);
+        } else if (Judge.isDiv(op)) {
+            div_reg_reg(ans, temp1, temp2);
+        } else if (Judge.isMod(op)) {
+            mod_reg_reg(ans, temp1, temp2);
+        } else if (Judge.isSll(op)) {
+            sll(ans, temp1, 2);
+        } else if (Judge.isSrl(op)) {
+            srl(ans, temp1, 2);
         }
     }
+
+    /**
+     * compute and store to first
+     *
+     * @param op    operate +-*%<< >>/
+     * @param temp1 ans and op1
+     * @param temp2 op2
+     * @throws IOException e
+     */
+    public static void compute_first(String op, Reg temp1, Reg temp2) throws IOException {
+        compute(temp1, temp1, op, temp2);
+    }
+
+    /**
+     * compute and store to second
+     *
+     * @param op    operate +-*%<< >>/
+     * @param temp1 ans and op1
+     * @param temp2 op2
+     * @throws IOException e
+     */
+    public static void compute_second(String op, Reg temp1, Reg temp2) throws IOException {
+        compute(temp2, temp1, op, temp2);
+    }
+
+    /**
+     * compute reg and number
+     * (数字应该是第二个操作数)
+     *
+     * @param ans    ans
+     * @param temp1  temp1
+     * @param op     operate
+     * @param number number
+     * @throws IOException e
+     */
+    public static void compute(Reg ans, Reg temp1, String op, int number) throws IOException {
+        if (Judge.isPlus(op)) {
+            add_reg_o(ans, temp1, number);
+        } else if (Judge.isMinus(op)) {
+            sub_reg_o(ans, temp1, number);
+        } else if (Judge.isSll(op)) {
+            sll(ans, temp1, number);
+        } else if (Judge.isSrl(op)) {
+            srl(ans, temp1, number);
+        } else {
+            li(Reg.r2, number);
+            compute(ans, temp1, op, Reg.r2);
+        }
+    }
+
+    /**
+     * compute reg and number and store ans in first reg
+     *
+     * @param op     operate
+     * @param ans    op1 ans ans
+     * @param number number
+     */
+    public static void compute_first(String op, Reg ans, int number) throws IOException {
+        compute(ans, ans, op, number);
     }
 }

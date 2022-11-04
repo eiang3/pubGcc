@@ -1,7 +1,7 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MidCode.JudgeExpElement;
+import gccBin.MidCode.Judge;
 
 import java.util.HashSet;
 
@@ -51,7 +51,7 @@ public class Line {
     }
 
     public boolean addGen(String name) {
-        if (JudgeExpElement.isVar(name, tableSymbol)) {
+        if (Judge.isVar(name, tableSymbol)) {
             this.gen = name;
             return true;
         }
@@ -59,7 +59,7 @@ public class Line {
     }
 
     public boolean addUse(String name) {
-        if (JudgeExpElement.isVar(name, tableSymbol)) {
+        if (Judge.isVar(name, tableSymbol)) {
             this.use.add(name);
             return true;
         }

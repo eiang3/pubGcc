@@ -5,7 +5,7 @@ import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
 
-public class JudgeExpElement {
+public class Judge {
     /**
      * 判断一个name是不是var节点
      * 需要讨论的var声明的局部变量
@@ -14,11 +14,12 @@ public class JudgeExpElement {
      * 形参，ok
      * 临时变量，ok
      * 全局变量，
+     *
      * @return
      */
     public static boolean isVar(String name, TableSymbol tableSymbol) { //isVarNode
         if (name == null) return false;
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol,name);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
         if (elementTable != null && !elementTable.isGlobal() && !(name.charAt(0) == '$')) {
             //不是根节点/不是全局变量  + 不是临时变量
             return elementTable instanceof ElementVar;
@@ -32,7 +33,7 @@ public class JudgeExpElement {
         } else {
             int len = s.length();
             for (int i = 0; i < len; i++) {
-                if(s.charAt(i) < '0' || s.charAt(i) > '9'){
+                if (s.charAt(i) < '0' || s.charAt(i) > '9') {
                     return false;
                 }
             }
@@ -48,47 +49,47 @@ public class JudgeExpElement {
         }
     }
 
-    public static boolean isRET(String s){
+    public static boolean isRET(String s) {
         return s.equals("$RET");
     }
 
-    public static boolean isAddr(ElementTable table, String s) {
-        if (s == null || s.length() == 0) {
+    public static boolean isAddr(ElementTable elementTable, String s) {
+        if (elementTable == null || s == null || s.length() == 0) {
             return false;
         } else {
-            return !s.contains("[") && table.getDimension()!=0;
+            return !s.contains("[") && elementTable.getDimension() != 0;
         }
     }
 
-    public static boolean isPlus(String op){
+    public static boolean isPlus(String op) {
         return op.equals("+");
     }
 
-    public static boolean isMinus(String op){
+    public static boolean isMinus(String op) {
         return op.equals("-");
     }
 
-    public static boolean isMul(String op){
+    public static boolean isMul(String op) {
         return op.equals("*");
     }
 
-    public static boolean isDiv(String op){
+    public static boolean isDiv(String op) {
         return op.equals("/");
     }
 
-    public static boolean isMod(String op){
+    public static boolean isMod(String op) {
         return op.equals("%");
     }
 
-    public static boolean isSll(String op){
+    public static boolean isSll(String op) {
         return op.equals("<<");
     }
 
-    public static boolean isSrl(String op){
+    public static boolean isSrl(String op) {
         return op.equals(">>");
     }
 
-    public static boolean isExp(String s){
+    public static boolean isExp(String s) {
         return isTemp(s) || isNumber(s);
     }
 }

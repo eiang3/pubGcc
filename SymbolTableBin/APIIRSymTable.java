@@ -64,6 +64,7 @@ public class APIIRSymTable {
     从此符号表向上递归查找表项
      */
     public ElementTable findElementRecur(TableSymbol table, String str){
+        if(str == null || str.length() == 0) return null;
         while(table != null){
             if(table.contain(str)){
                 return table.getElement(str);
