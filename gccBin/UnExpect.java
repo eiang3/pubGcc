@@ -32,7 +32,15 @@ public class UnExpect {
         System.out.println(s + " is not global,local or fParam");
     }
 
-    public static void negOff(String s){
-        System.out.println("neg off in "+s);
+    public static void negOff(String s) {
+        System.out.println("neg off in " + s);
+    }
+
+    public static void notAnExp(String s) {
+        System.out.println(s + " is not a number or temp");
+    }
+
+    public static void fParamIndexError(String s, int index) {
+        System.out.println(s + " is a FParam has a error index of " + index);
     }
 }

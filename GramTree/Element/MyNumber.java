@@ -13,6 +13,7 @@ public class MyNumber extends TreeFatherNode {
     private Word intConst;
 
     private int value;
+    private String midCode;
 
     public MyNumber() {
         super();
@@ -21,6 +22,7 @@ public class MyNumber extends TreeFatherNode {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
+        this.midCode = intConst.getToken();
     }
 
     @Override

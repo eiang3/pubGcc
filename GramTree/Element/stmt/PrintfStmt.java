@@ -11,6 +11,7 @@ import gccBin.MidCode.original.PrintfFormatStringStore;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+
 /*
 'printf''('FormatString{,Exp}')'';'
  */
@@ -27,20 +28,21 @@ public class PrintfStmt extends Stmt {
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         IRGenerate.getInstance().annotate(this.toString());
-        for(Exp exp:exps){
-            exp.midCodeGen(fileWriter,param);
+        for (Exp exp : exps) {
+            exp.midCodeGen(fileWriter, param);
         }
         String s = this.formatString.getToken();
 
         ArrayList<String> strs = PrintfFormatStringStore
-                .getInstance().mySplit(s.substring(1,s.length()-1));
+                .getInstance().mySplit(s.substring(1, s.length() - 1));
         int index = 0;
-        for(String str:strs){
-            if(str.equals("%d")){
+        for (String str : strs) {
+            if (str.equals("%d")) {
                 PrintfFormatStringStore.getInstance().
-                        midCodePrintf(fileWriter,exps.get(index++).getMidCode());
+                        midCodePrintfExp(fileWriter, exps.get(index++).getMidCode());
             } else {
-                PrintfFormatStringStore.getInstance().midCodePrintf(fileWriter,str);
+                PrintfFormatStringStore
+                        .getInstance().midCodePrintfStr(fileWriter);
             }
         }
     }

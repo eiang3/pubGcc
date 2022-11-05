@@ -25,7 +25,9 @@ public class UnaryOpUnaryExp extends UnaryExp{
         if(param.getExpKind() == InheritProp.ConstExp){
             if (this.unaryOp.getSymbol() == Symbol.MINU) {
                 super.setValue(-1*this.unaryExp.getValue());
-            } 
+            } else {
+                super.setValue(this.unaryExp.getValue());
+            }
         } else {
             super.setMidCode(this.unaryExp.getMidCode());
             if(this.unaryOp.getSymbol() == Symbol.MINU) {

@@ -163,7 +163,7 @@ public class MipsIns {
         write("syscall");
     }
 
-    public static void bLabel(String label) throws IOException {
+    public static void b_Label(String label) throws IOException {
         write("b " + label);
     }
 

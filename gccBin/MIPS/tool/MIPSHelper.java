@@ -1,6 +1,5 @@
 package gccBin.MIPS.tool;
 
-import GramTree.Element.FuncFParam;
 import SymbolTableBin.*;
 import SymbolTableBin.Element.ElementFParam;
 import SymbolTableBin.Element.ElementTable;
@@ -21,21 +20,15 @@ public class MIPSHelper {
      *
      * @num:是右侧表达式的第几个操作数
      */
-    public static Reg getValue(Reg ans, TableSymbol tableSymbol, String s) throws IOException {
-        ElementTable elementTable = APIIRSymTable.
-                getInstance().findElementRecur(tableSymbol, s);
-        if (Judge.isAddr(elementTable, s)) {
-            if (elementTable.isGlobal()) {
-                arrAddrGlobal(ans, s);
-            } else if (elementTable instanceof ElementFParam) {
-                ElementFParam elementFParam = (ElementFParam) elementTable;
-                Reg reg = AssignLine.getFParamInReg(elementTable,ans);
-
-            } else {
-                arrAddrNormal(ans, elementTable.getMemOff());
-            }
+    public static Reg getValueInReg(Reg ans,String s) throws IOException {
+        if(Judge.isNumber(s)){
+            MipsIns.li_ans_num(ans,Integer.parseInt(s));
+            return ans;
+        } else if (Judge.isTemp(s)) {
+            return TempRegPool.getInstance().getTempInReg(ans,s);
         }
-        return ans;
+        UnExpect.unexpect("not a exp getValueInReg");
+        return null;
     }
 
     // next is static handle for mips generate

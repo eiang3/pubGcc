@@ -144,7 +144,7 @@ public class TempRegPool {
     }
 
     public Reg getReg(String temp) {
-        if (inMem(temp)) {
+        if (inReg(temp)) {
             return temp2Reg.get(temp);
         }
         UnExpect.unexpect(temp + " not in reg");
