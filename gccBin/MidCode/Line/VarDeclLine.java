@@ -10,6 +10,7 @@ import gccBin.MidCode.firstProcess.VarNodeManager;
 public class VarDeclLine extends Line {
     private final String name;
 
+
     public VarDeclLine(String s, int line, TableSymbol tableSymbol, String[] str) {
         super(s, line, tableSymbol);
         this.name = str[2];

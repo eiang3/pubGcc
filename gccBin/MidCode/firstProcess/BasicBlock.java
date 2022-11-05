@@ -101,7 +101,10 @@ public class BasicBlock {
             if (lineDef != null && !use_active.contains(lineDef)) {
                 def_active.add(lineDef);
             }
-
+            //debug
+            if(lineDef != null && lineDef.equals("c") || lineUse.contains("c")){
+                int lalalala;
+            }
             //对于只存在于基本块内的活跃变量分析
             //一个定义：这个定义的最后一次使用
             if (lineDef != null && !lineUse.contains(lineDef)) {
@@ -273,7 +276,7 @@ public class BasicBlock {
      * @return *
      */
     public BitSet getUseFromMid(String var, int index) {
-        if(!varName2GenX.containsKey(var)) {
+        if(varName2GenX.containsKey(var)) {
             BitSet ret = (BitSet) sum.clone();
             int start = ret.nextSetBit(0);
             int end = ret.length();
@@ -328,8 +331,8 @@ public class BasicBlock {
     }
 
     /**
-     * block只需要添加outblock
-     * 相应的outblock直接添加inblock
+     * block只需要添加out-block
+     * 相应的out-block直接添加in-block
      * @param block *
      */
     public void addOutBlock(BasicBlock block) {
@@ -412,9 +415,5 @@ public class BasicBlock {
 
     private HashSet<String> getIn_active() {
         return in_active;
-    }
-
-    public HashSet<String> getOut_active() {
-        return out_active;
     }
 }

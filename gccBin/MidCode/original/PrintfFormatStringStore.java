@@ -44,15 +44,15 @@ public class PrintfFormatStringStore {
 
     public void midCodePrintfExp(FileWriter fileWriter, String str) throws IOException {
         if (Judge.isExp(str)) {
-            fileWriter.write("printf " + str + "\n");
+            fileWriter.write("&printf " + str + "\n");
         }
     }
 
     public void midCodePrintfStr(FileWriter fileWriter, String str) throws IOException {
         if (str.equals("\n")) {
-            fileWriter.write("printf str_" + "\n");
+            fileWriter.write("&printf str_" + "\n");
         }else {
-            fileWriter.write("printf str_" + i + "\n");
+            fileWriter.write("&printf str_" + i + "\n");
             i++;
         }
     }

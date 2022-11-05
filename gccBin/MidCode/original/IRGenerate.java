@@ -51,7 +51,7 @@ public class IRGenerate {
     }
 
     public void constDefArray(String name, int len, ArrayList<ArrayList<Integer>> nums) throws IOException {
-        write("arr int " + name + "[" + len + "]\n");
+        write("&arr int " + name + "[" + len + "]\n");
         int index = 0;
         for (ArrayList<Integer> integers : nums) {
             for (Integer i : integers) {
@@ -65,7 +65,7 @@ public class IRGenerate {
         if (len <= 0) {
             String newName = APIIRSymTable.getInstance()
                     .findElementRecur(tableSymbol,name).getIRName();
-            write("var int " + newName + "\n");
+            write("&var int " + newName + "\n");
             if (initVal != null) {
                 ArrayList<Exp> exps = initVal.getExps();
                 exps.get(0).midCodeGen(fileWriter, param);
@@ -74,7 +74,7 @@ public class IRGenerate {
             return;
         }
 
-        write("arr int " + name + "[" + len + "]\n");
+        write("&arr int " + name + "[" + len + "]\n");
         int index = 0;
         if (initVal != null) {
             ArrayList<Exp> exps = initVal.getExps();
@@ -197,7 +197,7 @@ public class IRGenerate {
     }
 
     public void condJump(String t1, Word op, String t2, String label) throws IOException {
-        write("cmp " + t1 + " " + t2 + "\n");
+        write("&cmp " + t1 + " " + t2 + "\n");
         if (op.getSym() == Symbol.LSS) { // <
             write("bge " + label + "\n");
         } else if (op.getSym() == Symbol.GRE) { // >
@@ -227,21 +227,21 @@ public class IRGenerate {
 
     public void funcFParam(TypeTable type, String name, int dim) throws IOException {
         if (dim == 0) {
-            write("para " + type.toString().toLowerCase() + " " + name + "\n");
+            write("&para " + type.toString().toLowerCase() + " " + name + "\n");
         } else {
-            write("para " + type.toString().toLowerCase() + " " + name + " []\n");
+            write("&para " + type.toString().toLowerCase() + " " + name + " []\n");
         }
     }
 
     public String funcCall(String funcName, ArrayList<Exp> exps) throws IOException {
         for (Exp exp : exps) {
-            write("push " + exp.getMidCode() + "\n");
+            write("&push " + exp.getMidCode() + "\n");
         }
         return funcCall(funcName);
     }
 
     public String funcCall(String funcName) throws IOException {
-        write("call " + funcName + "\n");
+        write("&call " + funcName + "\n");
         ElementFunc elementFunc = APIIRSymTable.getInstance().getFuncElement(funcName);
         if(elementFunc.getReturnType() == TypeTable.INT) {
             String t1 = IRTagManage.getInstance().newVar();
@@ -266,7 +266,7 @@ public class IRGenerate {
 
     public void assignStmtScanf(String lVal) throws IOException {
         String t1 = IRTagManage.getInstance().newVar();
-        write("scanf " + t1 + "\n");
+        write("&scanf " + t1 + "\n");
         assignStmtExp(lVal, t1);
     }
 
@@ -280,7 +280,7 @@ public class IRGenerate {
     }
 
     public void LAndExpSignalExp(String t0, String endLabel) throws IOException {
-        write("cmp " + t0 + " 0\n");
+        write("&cmp " + t0 + " 0\n");
         write("beq " + endLabel + "\n");
     }
 

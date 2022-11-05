@@ -1,6 +1,7 @@
 package gccBin.MidCode.firstProcess;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MIPS.tool.MemManager;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
 
@@ -67,6 +68,14 @@ public class IRFirst {
 
         //基本块活跃变量分析
         BasicBlockManager.getInstance().block_ActiveVarAnalysis();
+
+        //debug
+        /*LineManager.getInstance().printfLines();
+
+        BasicBlockManager.getInstance().printfBlockMessage();
+
+        VarNodeManager.getInstance().printfVarNodeMessage();
+        VarNodeManager.getInstance().printfVarWebMassage();*/
 
         //新节点的活跃范围分析
         BasicBlockManager.getInstance().varNode_ActiveScopeAnalysis();

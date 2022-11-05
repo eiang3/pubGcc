@@ -80,7 +80,7 @@ public class Line {
      * @param name *
      */
     public void renameGen(String old, String name) {
-        ;
+
     }
 
     public void setGen(String gen) {
@@ -94,7 +94,7 @@ public class Line {
      * @param name *
      */
     public void renameUse(String old, String name) {
-        ;
+
     }
 
     public void replaceOneUse(String old, String last) {

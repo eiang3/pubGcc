@@ -161,4 +161,8 @@ public class VarWeb {
     public void setTableSymbol(TableSymbol tableSymbol) {
         this.tableSymbol = tableSymbol;
     }
+
+    public String getName() {
+        return name;
+    }
 }

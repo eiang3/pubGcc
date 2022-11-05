@@ -10,6 +10,8 @@ public class ElementVar extends ElementTable {
 
     private final TypeTable type;
 
+    private String oldName;
+
     public ElementVar(String name, TypeTable type) {
         super(name, type, TypeTable.VAR, 0);
         this.subScript = -1;
@@ -43,5 +45,13 @@ public class ElementVar extends ElementTable {
         } else {
             return super.getName() + "$" + subScript;
         }
+    }
+
+    public void setOldName(String oldName) {
+        this.oldName = oldName;
+    }
+
+    public String getOldName() {
+        return oldName;
     }
 }

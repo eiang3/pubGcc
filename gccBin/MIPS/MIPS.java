@@ -45,6 +45,7 @@ public class MIPS {
         do {
             Line line = LineManager.getInstance().nextLine();
             TableSymbol tableSymbol = line.getTableSymbol();
+            write("# "+line.getMidCodeLine());
             if (line instanceof ArrayDefLine) {
                 arrayLineTranslate(tableSymbol, (ArrayDefLine) line);
             } else if (line instanceof AssignLine) {
@@ -92,6 +93,10 @@ public class MIPS {
     }
 
     public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
+        if(callFuncLine.getFuncName().equals("main")){
+            MipsIns.b_Label("main");
+            return;
+        }
         MemManager.getInstance().pushSReg(); //保存现场
         MipsIns.sub_ans_reg_regOrNum(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
         MipsIns.jal_label(callFuncLine.getFuncName());

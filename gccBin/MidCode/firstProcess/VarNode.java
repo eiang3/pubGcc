@@ -130,4 +130,8 @@ public class VarNode {
     public String getName() {
         return name;
     }
+
+    public BitSet getUseSet() {
+        return (BitSet) useSet.clone();
+    }
 }

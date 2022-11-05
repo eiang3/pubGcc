@@ -2,9 +2,11 @@ package gccBin.MIPS.tool;
 
 import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.Element.ElementTable;
+import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
 import gccBin.UnExpect;
 
+import javax.xml.bind.Element;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -60,9 +62,9 @@ public class MemManager {
     /**
      * 对于一个变量，设置其对应的符号表项的偏移，并更新off(传入大小是字长)
      *
-     * @param name
-     * @param size
-     * @param tableSymbol
+     * @param name        *
+     * @param size        *
+     * @param tableSymbol *
      */
     public void allocationArrMem(String name, int size, TableSymbol tableSymbol) {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
@@ -81,22 +83,22 @@ public class MemManager {
      * @param tableSymbol 变量对应的符号表项
      */
     public void handleVar(String name, TableSymbol tableSymbol) {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+        ArrayList<ElementVar> elementVars = tableSymbol.findReNamesVar(name);
 
-        if (elementTable == null) {
-            UnExpect.error();
-        }
-
-        if (elementTable.isUseless()) {
-            return;
-        }
-
-        if (!elementTable.isHasReg()) {
-            elementTable.setMemOff(fpOff);
-            addFpOff(1);
-        } else if (elementTable.isHasReg()) {
-            Reg reg = elementTable.getReg();
-            this.regNeedToStore.add(reg);
+        for (ElementVar element : elementVars) {
+            if (element == null) {
+                UnExpect.error();
+            }
+            if (element.isUseless()) {
+                return;
+            }
+            if (!element.isHasReg()) {
+                element.setMemOff(fpOff);
+                addFpOff(1);
+            } else if (element.isHasReg()) {
+                Reg reg = element.getReg();
+                this.regNeedToStore.add(reg);
+            }
         }
     }
 

@@ -2,11 +2,10 @@ package gccBin.MidCode;
 
 import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.Element.ElementFParam;
+import SymbolTableBin.Element.ElementFunc;
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
-
-import javax.xml.bind.Element;
 
 public class Judge {
     /**
@@ -60,7 +59,7 @@ public class Judge {
      * @return *
      */
     public static boolean isGlobal(ElementTable elementTable) {
-        return elementTable.isGlobal() && !(elementTable instanceof ElementFParam);
+        return elementTable.isGlobal() && !(elementTable instanceof ElementFunc);
     }
 
     public static boolean isNumber(String s) {
@@ -97,7 +96,7 @@ public class Judge {
         return s.contains("[");
     }
 
-    public static boolean isAddr(ElementTable elementTable, String s) {
+    public static boolean isAddress(ElementTable elementTable, String s) {
         if (elementTable == null || s == null || s.length() == 0) {
             return false;
         } else {

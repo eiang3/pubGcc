@@ -3,12 +3,10 @@ package gccBin.MidCode.original;
 public class IRTagManage {
     private static IRTagManage instance;
     private int count;
-    private int ret;
     private int label;
 
     private IRTagManage() {
         this.count = 0;
-        this.ret = 0;
         this.label = 0;
     }
 

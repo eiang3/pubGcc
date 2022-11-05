@@ -25,7 +25,7 @@ public class CompUnit extends TreeFatherNode {
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         for(TreeElement treeElement:super.getChildren()){
             if(treeElement instanceof FuncDef && !j){
-                fileWriter.write("\nb main\n");
+                fileWriter.write("\n&call main\n");
                 j = true;
             }
             treeElement.midCodeGen(fileWriter,param);

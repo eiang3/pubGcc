@@ -4,7 +4,6 @@ import gccBin.MIPS.tool.Reg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  *
@@ -13,7 +12,6 @@ public class RegAllocation {
     private static RegAllocation regAllocation;
 
     private final ArrayList<VarWeb> orderUse = new ArrayList<>();
-    private final HashSet<VarWeb> orderSearch = new HashSet<>();
 
     private ArrayList<VarWeb> leave;
 

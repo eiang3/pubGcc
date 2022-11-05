@@ -80,6 +80,16 @@ public class AssignLine extends Line {
         }
     }
 
+    public String getMidCodeLine() {
+        if (isPureAssign()) {
+            return ans + " = " + t1;
+        } else if (isOneOpr()) {
+            return ans + " = " + op + " " + t1;
+        } else {
+            return ans + " = " + t1 + " " + op + " " + t2;
+        }
+    }
+
     public String getT1() {
         return t1;
     }

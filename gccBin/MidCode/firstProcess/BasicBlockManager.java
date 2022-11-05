@@ -61,7 +61,7 @@ public class BasicBlockManager {
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum++, nowBlock);
             nowBlock.parseLine_def(line);
-        } else if (line instanceof BLine) { //跳转函数
+        } else if (line instanceof BLine ) { //跳转函数
             BLine bLine = (BLine) line;
             nowBlock.parseLine_def(line);
 
@@ -168,6 +168,10 @@ public class BasicBlockManager {
                 }
             }
 
+            //debug
+            if(i == 19){
+                int a;
+            }
             //再判断gen集。
             BitSet genSum = block.getGen_def();
             for (int j = genSum.nextSetBit(0); j < genSum.length() && j >= 0; j++) {

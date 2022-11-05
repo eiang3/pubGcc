@@ -1,12 +1,10 @@
 package gccBin.MIPS.tool;
 
 import SymbolTableBin.*;
-import SymbolTableBin.Element.ElementFParam;
 import SymbolTableBin.Element.ElementTable;
 import gccBin.MIPS.MIPS;
 import gccBin.MIPS.SubOp;
 import gccBin.MidCode.Judge;
-import gccBin.MidCode.Line.AssignLine;
 import gccBin.UnExpect;
 
 import java.io.IOException;
@@ -18,7 +16,6 @@ public class MIPSHelper {
      * 如果值是保存在寄存器里的，就输出寄存器，如果值是保存在
      * 内存里的，就先把值取到临时寄存器
      *
-     * @num:是右侧表达式的第几个操作数
      */
     public static Reg getValueInReg(Reg ans,String s) throws IOException {
         if(Judge.isNumber(s)){
@@ -335,7 +332,7 @@ public class MIPSHelper {
      */
     public static void assignTwo(String answer, String temp1, String op, String temp2, TableSymbol tableSymbol) throws IOException {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, temp1);
-        if (Judge.isAddr(elementTable, temp1)) { //assert ans = address >> 2
+        if (Judge.isAddress(elementTable, temp1)) { //assert ans = address >> 2
             Reg ans = TempRegPool.getInstance().addToPool(answer);
             int off = elementTable.getMemOff();
             if (TempRegPool.getInstance().inReg(answer)) {

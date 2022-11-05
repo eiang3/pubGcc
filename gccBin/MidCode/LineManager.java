@@ -74,11 +74,11 @@ public class LineManager {
 
     public Line addLines(String line, TableSymbol tableSymbol) {
         String[] elements = line.split(" ");
-        if (equ(4, elements, 0, "arr")) {
+        if (equ(4, elements, 0, "&arr")) {
             ArrayDefLine a = new ArrayDefLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
-        } else if (equ(3, elements, 0, "var")) {
+        } else if (equ(3, elements, 0, "&var")) {
             VarDeclLine a = new VarDeclLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
@@ -92,7 +92,7 @@ public class LineManager {
             BLine a = new BLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
-        } else if (equ(3, elements, 0, "cmp")) {
+        } else if (equ(3, elements, 0, "&cmp")) {
             CmpLine a = new CmpLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
@@ -108,11 +108,11 @@ public class LineManager {
             FParamDefLine a = new FParamDefLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
-        } else if (equ(2, elements, 0, "push")) {
+        } else if (equ(2, elements, 0, "&push")) {
             PushLine a = new PushLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
-        } else if (equ(2, elements, 0, "call")) {
+        } else if (equ(2, elements, 0, "&call")) {
             CallFuncLine a = new CallFuncLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
@@ -120,11 +120,11 @@ public class LineManager {
             RetLine a = new RetLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
-        } else if (equ(2, elements, 0, "scanf")) {
+        } else if (equ(2, elements, 0, "&scanf")) {
             ScanfLine a = new ScanfLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
-        } else if (equ(2, elements, 0, "printf")) {
+        } else if (equ(2, elements, 0, "&printf")) {
             PrintfLine a = new PrintfLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
@@ -165,8 +165,8 @@ public class LineManager {
     }
 
     private boolean isFParam(String[] ele) {
-        return equ(3, ele, 0, "para") ||
-                equ(4, ele, 0, "para");
+        return equ(3, ele, 0, "&para") ||
+                equ(4, ele, 0, "&para");
     }
 
     private boolean isRetLine(String[] ele) {
@@ -204,10 +204,14 @@ public class LineManager {
     }
 
     public void printfLines() throws IOException {
-        FileWriter fileWriter = new FileWriter("midcodeLinesSet");
+        FileWriter fileWriter = new FileWriter("midcodeLinesSet.txt");
         for (Line line : lines) {
             fileWriter.write(line.getMidCodeLine() + "\n");
         }
         fileWriter.close();
+    }
+
+    public int getErgodicIndex() {
+        return ergodicIndex;
     }
 }

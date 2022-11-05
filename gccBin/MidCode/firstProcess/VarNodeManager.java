@@ -99,7 +99,8 @@ public class VarNodeManager {
             int now = 0;
             for (int key : varWebs.keySet()) {
                 VarWeb varWeb = varWebs.get(key); //一个web就是一个新变量
-                String newName = elementVar.getName() + "$$" + now;
+                String oldName = elementVar.getName();
+                String newName = oldName + "$$" + now;
                 now++;
 
                 varWeb.setTableSymbol(tableSymbol);
@@ -113,6 +114,7 @@ public class VarNodeManager {
                 //更新符号表表项(仅仅是重命名)
 
                 ElementVar t1 = elementVar.myCopy(newName);
+                t1.setOldName(oldName);
                 tableSymbol.addElement(t1);
                 //加入未划分的冲突图
                 name2Web.put(newName, varWeb);
@@ -160,12 +162,25 @@ public class VarNodeManager {
     public void printfVarNodeMessage() {
         for (String var : name2Node.keySet()) {
             VarNode varNode = name2Node.get(var);
-            HashMap<Integer, BitSet> defUseChain = varNode.getDefUseChain();
+            System.out.println("var Node name " + var);
+            System.out.println("var Node gen "+ varNode.getGenSet());
+            System.out.println("var Node Use "+varNode.getUseSet());
+            System.out.println();
+            /*HashMap<Integer, BitSet> defUseChain = varNode.getDefUseChain();
             System.out.println(var);
             for (int i : defUseChain.keySet()) {
                 System.out.println(i);
                 System.out.println(defUseChain.get(i));
             }
+            System.out.println();*/
+        }
+    }
+
+    public void printfVarWebMassage(){
+        for(VarWeb varWeb: name2Web.values()){
+            System.out.println("varWeb name "+varWeb.getName());
+            System.out.println("varWeb def "+varWeb.getDef_set());
+            System.out.println("varWeb use"+ varWeb.getUse_set());
             System.out.println();
         }
     }
