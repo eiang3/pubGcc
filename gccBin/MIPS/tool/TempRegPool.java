@@ -1,9 +1,11 @@
 package gccBin.MIPS.tool;
 
 import gccBin.MIPS.MIPS;
+import gccBin.MidCode.Judge;
 import gccBin.UnExpect;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -11,7 +13,6 @@ public class TempRegPool {
     private static TempRegPool tempRegPool;
 
     private final HashMap<String, Reg> temp2Reg;
-    private final HashSet<Reg> regAllocatedList;
 
     /**
      * temp名以及它对应的在内存里的偏移
@@ -20,7 +21,6 @@ public class TempRegPool {
 
     private TempRegPool() {
         temp2Reg = new HashMap<>();
-        regAllocatedList = new HashSet<>();
         temp2off = new HashMap<>();
     }
 
@@ -41,9 +41,9 @@ public class TempRegPool {
      */
     public Reg addToPool(String name) {
         if (hasRegToAllocate()) {
-            Reg reg = Reg.getFreeTempReg(regAllocatedList);
+            HashSet<Reg> regs = new HashSet<>(temp2Reg.values());
+            Reg reg = Reg.getFreeTempReg(regs);
             temp2Reg.put(name, reg);
-            regAllocatedList.add(reg);
             return reg;
         } else {
             int ret = MemManager.getInstance().allocation_A_Temp_Mem();
@@ -58,9 +58,10 @@ public class TempRegPool {
      * @param name temp name
      */
     public void delete(String name) {
-        this.temp2off.remove(name);
-        Reg reg = temp2Reg.remove(name);
-        regAllocatedList.remove(reg);
+        if (Judge.isTemp(name)) {
+            this.temp2off.remove(name);
+            temp2Reg.remove(name);
+        }
     }
 
     /**
@@ -180,6 +181,6 @@ public class TempRegPool {
     }
 
     public boolean hasRegToAllocate() {
-        return regAllocatedList.size() < Reg.tempNum;
+        return temp2Reg.size() < Reg.tempNum;
     }
 }
