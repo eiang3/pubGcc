@@ -23,8 +23,8 @@ public class ElementVar extends ElementTable {
     /**
      * 对于有多个web的变量，进行符号表项的更新
      *
-     * @param name
-     * @return
+     * @param name *
+     * @return *
      */
     public ElementVar myCopy(String name) {
         return new ElementVar(name, type);

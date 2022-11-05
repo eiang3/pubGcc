@@ -1,6 +1,5 @@
 package gccBin.MidCode.firstProcess;
 
-import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Line.Line;
@@ -51,19 +50,10 @@ public class VarNodeManager {
     }
 
     /**
-     * 将只定义不使用的变量移去
-     *
-     * @param name *
-     */
-    public void removeVarNode(String name) {
-        this.name2Node.remove(name);
-    }
-
-    /**
      * 交互，得到一各Var的gen集
      *
-     * @param name
-     * @return
+     * @param name *
+     * @return *
      */
     public BitSet getOneVarGen(String name) {
         VarNode varNode = name2Node.get(name);
@@ -71,9 +61,6 @@ public class VarNodeManager {
         return (BitSet) varNode.getGenSet().clone();
     }
 
-    /**
-     * 得到所有var的定义——使用链
-     */
     public VarNode getOneVar(String name) {
         return name2Node.get(name);
     }
@@ -85,41 +72,38 @@ public class VarNodeManager {
         }
     }
 
-    public HashMap<String, VarWeb> getName2Web() {
-        return name2Web;
-    }
-
-
-    public void renewSymTableAndLine() throws IOException {
-        // bug ? 不会用
+    /**
+     * 在对一个变量的多个网进行分离
+     * 并更新符号表和line
+     *
+     * @throws IOException *
+     */
+    public void separateVarWebs() throws IOException {
         HashSet<String> varNames = new HashSet<>(name2Node.keySet());
-        ;
-        //
         for (String name : varNames) {
+
             VarNode node = name2Node.get(name);
-            HashMap<Integer, VarWeb> web = node.getWeb();
+            HashMap<Integer, VarWeb> varWebs = node.getWeb();
             TableSymbol tableSymbol = node.getTableSymbol();
 
-            if (web.size() == 1) {
-                ArrayList<VarWeb> webs = new ArrayList<>(web.values());
+            if (varWebs.size() == 1) {
+                ArrayList<VarWeb> webs = new ArrayList<>(varWebs.values());
                 webs.get(0).setTableSymbol(tableSymbol);
                 name2Web.put(name, webs.get(0));
                 continue;
             }
 
-            // bug ? 不存在?
-            ElementVar elementVar = (ElementVar)
-                    APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+            //assert right
+            ElementVar elementVar = (ElementVar) tableSymbol.getElement(name);
 
             int now = 0;
-            for (int key : web.keySet()) {
-                VarWeb varWeb = web.get(key); //一个web就是一个新变量
+            for (int key : varWebs.keySet()) {
+                VarWeb varWeb = varWebs.get(key); //一个web就是一个新变量
                 String newName = elementVar.getName() + "$$" + now;
-                //变量的新名字 这个变量可能之前就被重命名过一次
+                now++;
+
                 varWeb.setTableSymbol(tableSymbol);
                 varWeb.setName(newName); //对web网进行重命名。
-
-                now++;
                 //对相应lines和进行重命名
                 LineManager.getInstance().reGenNameLine(
                         varWeb.getDef_set(), name, newName);
@@ -127,6 +111,7 @@ public class VarNodeManager {
                 LineManager.getInstance().reUseNameLine(
                         varWeb.getUse_set(), name, newName);
                 //更新符号表表项(仅仅是重命名)
+
                 ElementVar t1 = elementVar.myCopy(newName);
                 tableSymbol.addElement(t1);
                 //加入未划分的冲突图
@@ -140,7 +125,6 @@ public class VarNodeManager {
      * 得到变量冲突图
      */
     public void getClashGraph() {
-        // 优化 ？
         ArrayList<String> varNames = new ArrayList<>(name2Web.keySet());
         for (int i = 0; i < varNames.size(); i++) {
             for (int j = i + 1; j < varNames.size(); j++) {
@@ -154,6 +138,19 @@ public class VarNodeManager {
                 }
             }
         }
+    }
+
+    /**
+     * 将只定义不使用的变量移去
+     *
+     * @param name *
+     */
+    public void removeVarNode(String name) {
+        this.name2Node.remove(name);
+    }
+
+    public HashMap<String, VarWeb> getName2Web() {
+        return name2Web;
     }
 
     public VarWeb getOneVarWeb(String name) {

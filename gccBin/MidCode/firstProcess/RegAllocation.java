@@ -6,19 +6,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ *
+ */
 public class RegAllocation {
     private static RegAllocation regAllocation;
-    /***
-     * 加入未划分的冲突图，ok更新符号表表项，ok对相应lines和进行重命名。
-     */
-    private HashMap<String, VarWeb> newName2Web; //最后保存下来的全部冲突变量z
 
     private final ArrayList<VarWeb> orderUse = new ArrayList<>();
     private final HashSet<VarWeb> orderSearch = new HashSet<>();
 
     private ArrayList<VarWeb> leave;
-
-    private int k = 8;
 
     private RegAllocation() {
     }
@@ -30,14 +27,21 @@ public class RegAllocation {
         return regAllocation;
     }
 
+    /**
+     * 变量名和对应的变量
+     *
+     * @param newName2Web *
+     */
+    public void addNodeToLeaveSet(HashMap<String, VarWeb> newName2Web) {
+        this.leave = new ArrayList<>(newName2Web.values());
+    }
+
     public void add(VarWeb varWeb) {
         this.orderUse.add(varWeb);
-        this.orderSearch.add(varWeb);
     }
 
     public void finishRegAllocation() {
         if (leave.size() == 0) return; //没有网
-
 
         while (leave.size() != 1) {
             VarWeb varWeb = getOneNode();
@@ -59,11 +63,11 @@ public class RegAllocation {
     }
 
     /**
-     * Step one : find a node link less than
+     * Step one : find a node link less than Reg.storeNum
      */
     public VarWeb getOneNode() {
         for (VarWeb varWeb : leave) {
-            if (varWeb.getClashSub().size() < k) {
+            if (varWeb.getClashSub().size() < Reg.storeNum) {
                 return varWeb;
             }
         }
@@ -71,23 +75,12 @@ public class RegAllocation {
     }
 
     /**
-     *
+     * 选一个web变量存在mem里
      */
     public void selectOneNodeInMem() {
         VarWeb varWeb = leave.get(0);
         leave.remove(varWeb);
         varWeb.removeFromGraph();
-    }
-
-    /**
-     * 变量名和对应的变量
-     *
-     * @param newName2Web
-     */
-    public void addNodeToLeaveSet(HashMap<String, VarWeb> newName2Web) {
-        this.newName2Web = newName2Web;
-        // bug ?
-        this.leave = new ArrayList<>(newName2Web.values());
     }
 
 }

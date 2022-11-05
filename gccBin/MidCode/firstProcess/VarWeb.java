@@ -36,10 +36,10 @@ public class VarWeb {
     }
 
     /**
-     * 我不理解这两个方法 ??
+     * 当选中一个变量在内存中，需要把这个变量从冲突图中移走
      */
     public void removeFromGraph() {
-        for (VarWeb varWeb : clashSub) {
+        for (VarWeb varWeb : clash) {
             varWeb.remove(this);
         }
     }

@@ -39,40 +39,48 @@ public class IRFirst {
         while (rLine != null) {
             if (!isAnnotate()) {
                 Line line = LineManager.getInstance().addLines(rLine, nowTable);
-                BasicBlockManager.getInstance().createBlockAndInitGneOp(line);
+                BasicBlockManager.getInstance().build_Block_And_Parse_def(line);
                 VarNodeManager.getInstance().distributeGenAndUseToVar(line);
             }
             readLine();
         }
+        //打印lines集
         LineManager.getInstance().printfLines();
 
+        //设置结尾基本块
         BasicBlockManager.getInstance().setBExit();
+
+        //将所有基本块连接，并初始化kill_def集
         BasicBlockManager.getInstance().connectAllAndInitKill();
 
-        BasicBlockManager.getInstance().computeInAndOut();
-        //BasicBlockManager.getInstance().printfBlockMessage();
-        BasicBlockManager.getInstance().initAllDefUseChain();
+        //进行到达定义分析
+        BasicBlockManager.getInstance().compute_defInAndOut();
 
-        //VarNodeManager.getInstance().printfVarNodeMessage();
+        //计算每个节点的定义——使用链
+        BasicBlockManager.getInstance().initAllDefUseChain();
 
         //每个节点建网
         VarNodeManager.getInstance().generateWeb();
 
         //对每个节点建的网进行处理
-        VarNodeManager.getInstance().renewSymTableAndLine();
+        VarNodeManager.getInstance().separateVarWebs();
 
         //基本块活跃变量分析
-        BasicBlockManager.getInstance().blockActiveVarAnalysis();
+        BasicBlockManager.getInstance().block_ActiveVarAnalysis();
 
         //新节点的活跃范围分析
-        BasicBlockManager.getInstance().varNodeActiveScopeAnalysis();
+        BasicBlockManager.getInstance().varNode_ActiveScopeAnalysis();
 
         //得到变量冲突图
         VarNodeManager.getInstance().getClashGraph();
 
+        //得到全局变量分配方案
+
+        //首先将得到的web移到RegAllocation里
         RegAllocation.getInstance().addNodeToLeaveSet(
                 VarNodeManager.getInstance().getName2Web());
 
+        //完成s-reg分配
         RegAllocation.getInstance().finishRegAllocation();
     }
 

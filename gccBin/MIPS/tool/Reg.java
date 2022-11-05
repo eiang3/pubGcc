@@ -4,46 +4,43 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public enum Reg {
-    $ra("$ra"),
-    $fp("$fp"),
-    $sp("$sp"),
-    $zero("$zero"),
-    $a0("$a0"),
-    $a1("$a1"),
-    $a2("$a2"),
-    $a3("$a3"),
-    $v0("$v0"),
-    $v1("$v1"),
-    $s0("$s0"),
-    $s1("$s1"),
-    $s2("$s2"),
-    $s3("$s3"),
-    $s4("$s4"),
-    $s5("$s5"),
-    $s6("$s6"),
-    $s7("$s7"),
-    $t0("$t0"),
-    $t1("$t1"),
-    $t2("$t2"),
-    $t3("$t3"),
-    $t4("$t4"),
-    $t5("$t5"),
-    $t6("$t6"),
-    $t7("$t7"),
-    $t8("$t8"),
-    $t9("$t9");
+    $ra,
+    $fp,
+    $sp,
+    $zero,
+    $a0,
+    $a1,
+    $a2,
+    $a3,
+    $v0,
+    $v1,
+    $s0,
+    $s1,
+    $s2,
+    $s3,
+    $s4,
+    $s5,
+    $s6,
+    $s7,
+    $t0,
+    $t1,
+    $t2,
+    $t3,
+    $t4,
+    $t5,
+    $t6,
+    $t7,
+    $t8,
+    $t9;
 
-    private final String name;
     public static final int tempNum = 6;
+    public static final int storeNum = 8;
 
     public static final Reg l1 = $t6;
     public static final Reg l2 = $t7;
     public static final Reg r1 = $t8;
     public static final Reg r2 = $t9;
 
-    private Reg(String name) {
-        this.name = name;
-    }
 
     public static Reg getAStoreReg(ArrayList<Reg> arr) {
         if (!arr.contains($s0)) {
