@@ -6,22 +6,12 @@ import SymbolTableBin.TableSymbol;
  * printf exp
  * printf str_
  */
-public class PrintfLine extends Line{
-    private String t;
-    private boolean tIsUse;
+public class PrintfLine extends Line {
+    private final String t;
 
-    public PrintfLine(String s, int line,TableSymbol tableSymbol,String[] ele){
-        super(s,line,tableSymbol);
+    public PrintfLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
+        super(s, line, tableSymbol);
         t = ele[1];
-        tIsUse = super.addUse(t);
-    }
-
-    @Override
-    public void renameUse(String old,String name){
-        if(tIsUse && t.equals(old)){
-            t = name;
-            super.replaceOneUse(old,name);
-        }
     }
 
     public String getT() {

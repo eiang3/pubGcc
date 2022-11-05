@@ -43,4 +43,8 @@ public class UnExpect {
     public static void fParamIndexError(String s, int index) {
         System.out.println(s + " is a FParam has a error index of " + index);
     }
+
+    public static void notNum(String s) {
+        System.out.println(s + " is not a num");
+    }
 }

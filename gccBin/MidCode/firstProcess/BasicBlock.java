@@ -1,5 +1,6 @@
 package gccBin.MidCode.firstProcess;
 
+import gccBin.MidCode.Line.AssignLine;
 import gccBin.MidCode.Line.Line;
 
 import java.util.ArrayList;
@@ -7,43 +8,39 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * 基本块
+ */
 public class BasicBlock {
     private final int index; //基本块的索引
 
     private final BitSet sum; //所有在这个基本块里的line
 
-    private final ArrayList<BasicBlock> inBlocks;
-    private final ArrayList<BasicBlock> outBlocks;
+    private final ArrayList<BasicBlock> inBlocks; //流入这个基本块的基本块
+    private final ArrayList<BasicBlock> outBlocks; //这个基本块可以跳到的基本块
     private boolean gotoExit;
 
-    /**
-     * 以下是到达定义数据流分析
-     * basic 保存了每个var的定义点集。
-     * 前两个是到达定义分析的辅助数组
-     */
-    private final HashMap<String, ArrayList<Integer>> varName2DefX;
+    //到达定义分析
+    private final HashMap<String, ArrayList<Integer>> varName2GenX;
     private final HashSet<String> genVarNames;
 
-    private final BitSet gen;
-    private final BitSet kill;
-    private final BitSet in_def; //def点
+    private final BitSet gen_def;
+    private final BitSet kill_def;
+    private final BitSet in_def;
     private BitSet out_def;
 
-    /**
-     * 以下是活跃变量分析
-     * 下半部分是辅助分析变量
-     */
+    //活跃变量分析
     private final HashSet<String> use_active; //使用先于定义
     private final HashSet<String> def_active;
     private HashSet<String> in_active;
     private final HashSet<String> out_active;
 
-    private final HashMap<String, Integer> varName2lastUse;
+    // ??
+    private final HashMap<String, Integer> varName2lastUse; //var最后一次使用的点
     private final HashMap<String, Integer> varName2Ptr;
     private final HashMap<String, BitSet> varName2ActiveScope;
-    /**
-     * 一下是留给基本块连接操作使用
-     */
+
+    //留给基本块连接使用 ??
     private String jump;
     private String label;
     private String func;
@@ -51,10 +48,11 @@ public class BasicBlock {
 
     public BasicBlock(int index) {
         this.index = index;
-        varName2DefX = new HashMap<>();
+
+        varName2GenX = new HashMap<>();
         genVarNames = new HashSet<>();
-        gen = new BitSet();
-        kill = new BitSet();
+        gen_def = new BitSet();
+        kill_def = new BitSet();
         sum = new BitSet();
         in_def = new BitSet();
         out_def = new BitSet();
@@ -77,18 +75,13 @@ public class BasicBlock {
      * 分析以得到活跃变量分析里的use集和def集
      * pre:line 应该是顺序输入的
      *
-     * @param line
+     * @param line *
      */
     public void parseLine_active(Line line) {
-        if (line != null) {
+        if (line instanceof AssignLine) {
             int index = line.getIndex();
             String lineDef = line.getGen();
             HashSet<String> lineUse = line.getUse();
-
-            /*if (lineDef!=null && lineDef.equals("ret") || lineUse.contains("ret")) {
-                int a = line.getIndex();
-                line.getIndex();
-            }*/
 
             for (String var : lineUse) {
                 if (!def_active.contains(var)) {
@@ -100,9 +93,9 @@ public class BasicBlock {
             if (lineDef != null && !use_active.contains(lineDef)) {
                 def_active.add(lineDef);
             }
-            /**
-             *
-             */
+
+            //对于只存在于基本块内的活跃变量分析
+            //一个定义：这个定义的最后一次使用
             if (lineDef != null && !lineUse.contains(lineDef)) {
                 varName2Ptr.put(lineDef, index);
                 varName2ActiveScope.put(lineDef, new BitSet());
@@ -142,7 +135,7 @@ public class BasicBlock {
      * 得到一个变量从基本块开始到基本块内最后一次使用的范围，
      *
      * @param name 变量名
-     * @return
+     * @return *
      */
     public BitSet activeScopeFormStartToLastUse(String name) {
         int last = varName2lastUse.get(name);
@@ -158,7 +151,7 @@ public class BasicBlock {
      * true:表示集合更新了
      * false：表示集合没有更新
      *
-     * @return
+     * @return *
      */
     public boolean renewIn_active() {
         HashSet<String> old = new HashSet<>(in_active);
@@ -179,20 +172,20 @@ public class BasicBlock {
      * true 说明out集改变了
      * false 说明没有改变
      *
-     * @return
+     * @return *
      */
     public boolean renewOut_def() {
         BitSet preOut = (BitSet) out_def.clone();
-        out_def = SetOp.streamSet(gen, in_def, kill);
+        out_def = SetOp.streamSet(gen_def, in_def, kill_def);
         return !out_def.equals(preOut);
     }
 
     public void finishKill_def() {
         for (String var : genVarNames) {
             BitSet varGen = VarNodeManager.getInstance().getOneVarGen(var);
-            varGen.and(gen); //var在此基本块的定义点
-            varGen.xor(gen); //var在此基本块的kill点
-            kill.or(varGen); //加入kill集
+            varGen.and(gen_def); //var在此基本块的定义点
+            varGen.xor(gen_def); //var在此基本块的kill点
+            kill_def.or(varGen); //加入kill集
         }
     }
 
@@ -200,14 +193,14 @@ public class BasicBlock {
         if (line != null && line.getGen() != null) {
             int index = line.getIndex();
             String name = line.getGen();
-            gen.set(index);
+            gen_def.set(index);
             this.genVarNames.add(name);
-            if (varName2DefX.containsKey(name)) {
-                varName2DefX.get(name).add(index);
+            if (varName2GenX.containsKey(name)) {
+                varName2GenX.get(name).add(index);
             } else {
                 ArrayList<Integer> arr = new ArrayList<>();
                 arr.add(index);
-                varName2DefX.put(name, arr);
+                varName2GenX.put(name, arr);
             }
         }
         if (line != null) sum.set(line.getIndex());
@@ -216,12 +209,12 @@ public class BasicBlock {
     /**
      * 如果一个var在in集中，这里得到这个var可能的use集（到下一个定义）(包括)
      *
-     * @param name
-     * @return
+     * @param name *
+     * @return *
      */
     public BitSet getUseFromStart(String name) {
-        if (varName2DefX.containsKey(name)) {
-            int firstDef = varName2DefX.get(name).get(0);
+        if (varName2GenX.containsKey(name)) {
+            int firstDef = varName2GenX.get(name).get(0);
             BitSet ret = (BitSet) sum.clone();
             int length = ret.length();
             ret.clear(firstDef + 1, length);
@@ -242,7 +235,7 @@ public class BasicBlock {
         if (start < 0) return new BitSet();
 
         ret.clear(start, index + 1); //不包括
-        ArrayList<Integer> arr = varName2DefX.get(var);
+        ArrayList<Integer> arr = varName2GenX.get(var);
         int i = arr.indexOf(index);
         if (i == arr.size() - 1) {  //var在这个块里的最后一个定义点
             return ret;
@@ -260,6 +253,76 @@ public class BasicBlock {
         this.outBlocks.add(block);
         block.addInBlock(this);
     }
+
+    public void setRetFunc(String retFunc) {
+        if (retFunc.equals("main")) {
+            this.gotoExit = true;
+            return;
+        }
+        this.retFunc = retFunc;
+    }
+
+    public BitSet getIn_def() {
+        return (BitSet) in_def.clone();
+    }
+
+    public BitSet getOut_def() {
+        return (BitSet) out_def.clone();
+    }
+
+    public BitSet getGen_def() {
+        return (BitSet) gen_def.clone();
+    }
+
+    private HashSet<String> getIn_active() {
+        return in_active;
+    }
+
+    public HashSet<String> getOut_active() {
+        return out_active;
+    }
+
+    public boolean inActiveContains(String a) {
+        return in_active.contains(a);
+    }
+
+    public boolean outActiveContains(String a) {
+        return out_active.contains(a);
+    }
+
+    /**
+     * in_active ∪ out_active
+     *
+     * @return *
+     */
+    public HashSet<String> inOverlapOut() {
+        HashSet<String> ret = new HashSet<>(in_active);
+        HashSet<String> sub = new HashSet<>(in_active);
+        sub.removeAll(out_active);
+        ret.removeAll(sub);
+        return ret;
+    }
+
+    /**
+     * in_active - out_active
+     *
+     * @return *
+     */
+    public HashSet<String> inMinusOut() {
+        HashSet<String> ret = new HashSet<>(in_active);
+        ret.removeAll(out_active);
+        return ret;
+    }
+
+    public int getStart() {
+        return sum.nextSetBit(0);
+    }
+
+    public int getEnd() {
+        return sum.length();
+    }
+
+    //******************** get set 方法 *****************************//
 
     public BitSet getSum() {
         return (BitSet) sum.clone();
@@ -299,73 +362,5 @@ public class BasicBlock {
 
     public String getRetFunc() {
         return retFunc;
-    }
-
-    public void setRetFunc(String retFunc) {
-        if (retFunc.equals("main")) {
-            this.gotoExit = true;
-            return;
-        }
-        this.retFunc = retFunc;
-    }
-
-    public BitSet getIn_def() {
-        return (BitSet) in_def.clone();
-    }
-
-    public BitSet getOut_def() {
-        return (BitSet) out_def.clone();
-    }
-
-    public BitSet getGen() {
-        return (BitSet) gen.clone();
-    }
-
-    private HashSet<String> getIn_active() {
-        return in_active;
-    }
-
-    public HashSet<String> getOut_active() {
-        return out_active;
-    }
-
-    public boolean inActiveContains(String a) {
-        return in_active.contains(a);
-    }
-
-    public boolean outActiveContains(String a) {
-        return out_active.contains(a);
-    }
-
-    /**
-     * in_active ∪ out_active
-     *
-     * @return
-     */
-    public HashSet<String> inOverlapOut() {
-        HashSet<String> ret = new HashSet<>(in_active);
-        HashSet<String> sub = new HashSet<>(in_active);
-        sub.removeAll(out_active);
-        ret.removeAll(sub);
-        return ret;
-    }
-
-    /**
-     * in_active - out_active
-     *
-     * @return
-     */
-    public HashSet<String> inMinusOut() {
-        HashSet<String> ret = new HashSet<>(in_active);
-        ret.removeAll(out_active);
-        return ret;
-    }
-
-    public int getStart() {
-        return sum.nextSetBit(0);
-    }
-
-    public int getEnd() {
-        return sum.length();
     }
 }

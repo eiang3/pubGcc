@@ -42,7 +42,7 @@ public class PrintfStmt extends Stmt {
                         midCodePrintfExp(fileWriter, exps.get(index++).getMidCode());
             } else {
                 PrintfFormatStringStore
-                        .getInstance().midCodePrintfStr(fileWriter);
+                        .getInstance().midCodePrintfStr(fileWriter, str);
             }
         }
     }

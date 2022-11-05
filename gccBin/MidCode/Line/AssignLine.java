@@ -1,16 +1,6 @@
 package gccBin.MidCode.Line;
 
-import SymbolTableBin.APIIRSymTable;
-import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;
-import gccBin.MIPS.SubOp;
-import gccBin.MIPS.tool.Reg;
-import gccBin.MIPS.tool.TempRegPool;
-import gccBin.MIPS.tool.MipsIns;
-import gccBin.MidCode.Judge;
-import gccBin.UnExpect;
-
-import java.io.IOException;
 
 /**
  * 数组指针。
@@ -30,9 +20,9 @@ public class AssignLine extends Line {
     private String op;
     private String ans;
 
-    private boolean t1IsUse; //代表着是非全局var,以后可以直接用
+    private boolean t1IsUse;
     private boolean t2IsUse;
-    private final boolean ansIsGen;
+    private boolean ansIsGen;
 
     private boolean pureAssign; //x = y;
     private boolean oneOpr; // x = - | ! y
@@ -41,9 +31,14 @@ public class AssignLine extends Line {
 
     public AssignLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
+        parse(ele);
+    }
+
+    public void parse(String[] ele) {
         pureAssign = false;
         oneOpr = false;
         twoOpr = false;
+
         ans = ele[0];
         ansIsGen = super.addGen(ans);
         if (ele.length == 3) {

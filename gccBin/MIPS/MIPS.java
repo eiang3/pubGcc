@@ -81,6 +81,8 @@ public class MIPS {
         Reg reg2 = MIPSHelper.getValueInReg(Reg.r2, cmpLine.getT2());
         BLine bLine = (BLine) LineManager.getInstance().nextLine();
         MipsIns.bCond_reg1_reg2_label(bLine.getB(), reg1, reg2, bLine.getLabel());
+        TempRegPool.getInstance().delete(cmpLine.getT1());
+        TempRegPool.getInstance().delete(cmpLine.getT2());
     }
 
     public void bLineTrans(BLine bLine) throws IOException {
@@ -171,6 +173,7 @@ public class MIPS {
         if (Judge.isTemp(s)) {
             Reg reg = TempRegPool.getInstance().getTempInReg(Reg.r1, s);
             MipsIns.printfExp(reg);
+            TempRegPool.getInstance().delete(s);
         } else if (Judge.isNumber(s)) {
             int num = Integer.parseInt(s);
             MipsIns.printfInt(num);

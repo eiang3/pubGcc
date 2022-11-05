@@ -43,16 +43,18 @@ public class PrintfFormatStringStore {
     private static int i = 0;
 
     public void midCodePrintfExp(FileWriter fileWriter, String str) throws IOException {
-        if (str.equals("\n")) {
-            fileWriter.write("printf str_" + "\n");
-        } else if (Judge.isExp(str)) {
+        if (Judge.isExp(str)) {
             fileWriter.write("printf " + str + "\n");
         }
     }
 
-    public void midCodePrintfStr(FileWriter fileWriter) throws IOException {
-        fileWriter.write("printf str_" + i + "\n");
-        i++;
+    public void midCodePrintfStr(FileWriter fileWriter, String str) throws IOException {
+        if (str.equals("\n")) {
+            fileWriter.write("printf str_" + "\n");
+        }else {
+            fileWriter.write("printf str_" + i + "\n");
+            i++;
+        }
     }
 
 

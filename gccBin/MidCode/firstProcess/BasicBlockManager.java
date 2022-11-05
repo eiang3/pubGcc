@@ -1,6 +1,5 @@
 package gccBin.MidCode.firstProcess;
 
-import GramTree.Element.Block;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
 
@@ -108,7 +107,7 @@ public class BasicBlockManager {
 
 
     public void createBlockAndInitGneOp(Line line) {
-        if (line == null || line.getOriginalLine() == 0) return;
+        if (line == null || line.getLineLength() == 0) return;
         if (line instanceof LabelLine) { //以label开始的基本块
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum, nowBlock);
@@ -219,7 +218,7 @@ public class BasicBlockManager {
             }
 
             //再判断gen集。
-            BitSet genSum = block.getGen();
+            BitSet genSum = block.getGen_def();
             for (int j = genSum.nextSetBit(0); j < genSum.length() && j >= 0; j++) {
                 if (genSum.get(j)) {
                     Line line = LineManager.getInstance().getLine(j);
@@ -237,7 +236,7 @@ public class BasicBlockManager {
             System.out.println("index "+block.getIndex());
             System.out.println(block.getSum());
             System.out.println("in :"+block.getIn_def());
-            System.out.println("gen "+block.getGen());
+            System.out.println("gen "+block.getGen_def());
             System.out.println();
         }
     }

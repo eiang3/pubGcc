@@ -18,10 +18,10 @@ public class Judge {
      * 临时变量，ok
      * 全局变量，
      *
-     * @return
+     * @return *
      */
     public static boolean isVar(String name, TableSymbol tableSymbol) { //isVarNode
-        if (name == null) return false;
+        if (name == null || name.length() == 0 ) return false;
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
         if (elementTable != null && !elementTable.isGlobal() && !(name.charAt(0) == '$')) {
             //不是根节点/不是全局变量  + 不是临时变量

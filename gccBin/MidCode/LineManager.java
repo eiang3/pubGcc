@@ -16,8 +16,16 @@ import java.util.BitSet;
 public class LineManager {
     private static LineManager midCodeLines;
 
-    private final ArrayList<Line> lines; //第一次扫描之后的中间代码。
+
+    /**
+     * lines: 第一次扫描之后的中间代码
+     * numLine:lines的个数
+     * ergodicIndex:遍历lines时使用的下标
+     */
+
+    private final ArrayList<Line> lines;
     private int numLine;
+    private int ergodicIndex;
 
     private LineManager() {
         lines = new ArrayList<>();
@@ -30,8 +38,6 @@ public class LineManager {
         }
         return midCodeLines;
     }
-
-    private int ergodicIndex;
 
     /**
      * 对line的一个遍历方法
@@ -58,15 +64,16 @@ public class LineManager {
 
     /**
      * 判断是否遍历完毕
+     *
      * @return 返回是否遍历完毕
      */
-    public boolean hasNext(){
+    public boolean hasNext() {
         return ergodicIndex < numLine;
     }
 
     public Line addLines(String line, TableSymbol tableSymbol) {
         String[] elements = line.split(" ");
-        if (equ(3, elements, 0, "arr")) {
+        if (equ(4, elements, 0, "arr")) {
             ArrayDefLine a = new ArrayDefLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;
@@ -143,19 +150,11 @@ public class LineManager {
 
     public boolean equ(int len, String[] arr, int pos, String... str) {
         if (arr.length != len) return false;
-        if (arr.length - 1 < pos) {
-            return false;
-        }
-        for (String s : str) {
-            if (arr[pos].equals(s)) {
-                return true;
-            }
-        }
-        return false;
+        return equ(arr, pos, str);
     }
 
     private boolean isLabel(String s) {
-        if(s == null || s.length() == 0) return false;
+        if (s == null || s.length() == 0) return false;
         return s.charAt(s.length() - 1) == ':';
     }
 
@@ -175,12 +174,12 @@ public class LineManager {
     }
 
     /**
-     * 更新相应的line的名字()   Gen
+     * 如果相应的bitset位为1，则更新该位对应的line的gen变量名字
      */
     public void reGenNameLine(BitSet a, String old, String name) {
         int start = a.nextSetBit(0);
-        if(start < 0) return;
-        for (int i = start; i < a.length() && i>=0; i++) {
+        if (start < 0) return;
+        for (int i = start; i < a.length() && i >= 0; i++) {
             if (a.get(i)) {
                 lines.get(i).renameGen(old, name);
             }
@@ -188,11 +187,11 @@ public class LineManager {
     }
 
     /**
-     * 更新相应的line的名字() Use
+     * 如果相应的bitset位为1，则更新该位对应的line的use变量名字
      */
     public void reUseNameLine(BitSet a, String old, String name) {
         int start = a.nextSetBit(0);
-        for (int i = start; i < a.length() && i >=0; i++) {
+        for (int i = start; i < a.length() && i >= 0; i++) {
             if (a.get(i)) {
                 lines.get(i).renameUse(old, name);
             }
@@ -203,10 +202,10 @@ public class LineManager {
         return lines.get(index);
     }
 
-    public void printfLine() throws IOException {
+    public void printfLines() throws IOException {
         FileWriter fileWriter = new FileWriter("midcodeLinesSet");
-        for(Line line:lines){
-            fileWriter.write(line.getMidCodeLine()+"\n");
+        for (Line line : lines) {
+            fileWriter.write(line.getMidCodeLine() + "\n");
         }
         fileWriter.close();
     }

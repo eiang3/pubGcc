@@ -13,10 +13,10 @@ public class Line {
     private String gen; //只能有一个定义
     private final HashSet<String> use; //可能有多个使用
 
-    public Line(String s, int line, TableSymbol tableSymbol) {
+    public Line(String s, int index, TableSymbol tableSymbol) {
         this.midCodeLine = s;
+        this.index = index;
         this.tableSymbol = tableSymbol;
-        this.index = line;
         //this.gen
         this.use = new HashSet<>();
     }
@@ -29,7 +29,7 @@ public class Line {
         this.midCodeLine = midCodeLine;
     }
 
-    public int getOriginalLine() {
+    public int getLineLength() {
         return midCodeLine.length();
     }
 
@@ -77,7 +77,7 @@ public class Line {
     /**
      * 对gen重命名，注意一个line的gen只有一个
      *
-     * @param name
+     * @param name *
      */
     public void renameGen(String old, String name) {
         ;
@@ -90,8 +90,8 @@ public class Line {
     /**
      * 对use重命名，因为一个lines的use可能有多个，所以需要和oldName比较
      *
-     * @param old
-     * @param name
+     * @param old *
+     * @param name *
      */
     public void renameUse(String old, String name) {
         ;

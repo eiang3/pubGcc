@@ -2,61 +2,50 @@ package gccBin.MidCode.firstProcess;
 
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;
-import gccBin.MIPS.MIPS;
-import gccBin.MidCode.LineManager;
 
 import java.util.*;
 
+/**
+ * 待分配寄存器的节点集
+ * ok
+ */
 public class VarNode {
-    private final String name;
-    private final TableSymbol tableSymbol;
+    private final String name; //name
+    private final TableSymbol tableSymbol; //这个节点所在的符号表
+
 
     private final ArrayList<Integer> genSite; //gen——line对应的标号。
-
-    private final HashMap<Integer, BitSet> defUseChain;
-
-    private final HashMap<Integer, VarWeb> web;
-
     private final BitSet genSet;
     private final BitSet useSet;
 
-    /**
-     * 节点的活跃范围
-     */
-    //private final BitSet activeScope;
+    private final HashMap<Integer, BitSet> defUseChain;
+    //定义使用链,每个gen点都对应一个定义使用链
+    private final HashMap<Integer, VarWeb> web; //定义使用链形成的网
+
     public VarNode(String name, TableSymbol tableSymbol) {
         this.name = name;
         this.tableSymbol = tableSymbol;
+
         web = new HashMap<>();
         defUseChain = new HashMap<>();
         genSet = new BitSet();
         useSet = new BitSet();
         genSite = new ArrayList<>();
-        //activeScope = new BitSet();
-    }
-
-
-    public BitSet getGenSet() {
-        return genSet;
     }
 
     public void addGen(int index) {
         genSite.add(index);
-        defUseChain.put(index, new BitSet());
         genSet.set(index);
+        defUseChain.put(index, new BitSet());
     }
 
     public void addUse(int index) {
         useSet.set(index);
     }
 
-    public String getName() {
-        return name;
-    }
-
     /**
-     * @param index
-     * @param bitSet
+     * @param index  定义点索引
+     * @param bitSet 可能包含该节点的使用点的line
      */
     public void renewUseDefChain(int index, BitSet bitSet) {
         BitSet use = (BitSet) useSet.clone();
@@ -66,9 +55,10 @@ public class VarNode {
 
     /**
      * 定义使用链计算完毕后，形成网。
-     * bug ？
      */
     public void generateWeb() {
+        //如果defUseChain == 0说明定以后没有被使用，不需要为其分配reg
+        //也说明这是一个useless的变量
         if (defUseChain.size() == 0) {
             ElementTable elementTable = tableSymbol.getElement(name);
             elementTable.setUseless(true);
@@ -76,6 +66,7 @@ public class VarNode {
             return;
         }
 
+        //首先将每个定义使用链形成一个网
         for (int i : defUseChain.keySet()) {
             BitSet def = new BitSet();
             def.set(i);
@@ -84,11 +75,11 @@ public class VarNode {
         }
 
         ArrayList<Integer> tag = new ArrayList<>(genSite);
-        //tag 集最后应该是答案web的key集
-        //对每一个def点进行遍历，一遍会将所有与他冲突的点加入；
+
         while (!webDone()) {
             for (int i : genSite) {
                 if (tag.contains(i)) { //说明这个def点没有被消除（加入其他web）
+
                     Iterator<Integer> it = tag.iterator();
                     while (it.hasNext()) {
                         int k = it.next();
@@ -98,13 +89,14 @@ public class VarNode {
                             it.remove();
                         }
                     }
+
                 }
             }
         }
     }
 
     /**
-     * 判断目前的网络是否冲突
+     * 判断目前的网络是否可以继续合并
      */
     private boolean webDone() {
         ArrayList<VarWeb> web = new ArrayList<>(this.web.values());
@@ -118,6 +110,7 @@ public class VarNode {
         return true;
     }
 
+    //*************************** get set 方法 ******************************************//
     public HashMap<Integer, VarWeb> getWeb() {
         return web;
     }
@@ -128,5 +121,13 @@ public class VarNode {
 
     public HashMap<Integer, BitSet> getDefUseChain() {
         return defUseChain;
+    }
+
+    public BitSet getGenSet() {
+        return (BitSet) genSet.clone();
+    }
+
+    public String getName() {
+        return name;
     }
 }

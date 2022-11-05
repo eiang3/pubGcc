@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 /**
@@ -15,11 +16,11 @@ import java.nio.file.Files;
  */
 
 public class IRFirst {
-    private static IRFirst midCodeFirst;
+    private static IRFirst irFirst;
 
     private BufferedReader bufferedReader;
 
-    private TableSymbol nowTable; //
+    private TableSymbol nowTable;
 
     private String rLine;
 
@@ -28,13 +29,13 @@ public class IRFirst {
 
     /**
      * 分析original IR
-     * ①对有不同网变量进行重命名，
+     * ①对有不同网变量进行重命名
      * ②得到全局寄存器分配方案
-     * @throws IOException
+     *
+     * @throws IOException *
      */
     public void begin() throws IOException {
         readLine();
-        //第一遍：得到line基本信息，创建基本块，将定义点使用点分发到相应变量。
         while (rLine != null) {
             if (!isAnnotate()) {
                 Line line = LineManager.getInstance().addLines(rLine, nowTable);
@@ -43,7 +44,7 @@ public class IRFirst {
             }
             readLine();
         }
-        LineManager.getInstance().printfLine();
+        LineManager.getInstance().printfLines();
 
         BasicBlockManager.getInstance().setBExit();
         BasicBlockManager.getInstance().connectAllAndInitKill();
@@ -60,8 +61,6 @@ public class IRFirst {
         //对每个节点建的网进行处理
         VarNodeManager.getInstance().renewSymTableAndLine();
 
-        //
-
         //基本块活跃变量分析
         BasicBlockManager.getInstance().blockActiveVarAnalysis();
 
@@ -71,7 +70,6 @@ public class IRFirst {
         //得到变量冲突图
         VarNodeManager.getInstance().getClashGraph();
 
-        //
         RegAllocation.getInstance().addNodeToLeaveSet(
                 VarNodeManager.getInstance().getName2Web());
 
@@ -95,18 +93,18 @@ public class IRFirst {
         return rLine.charAt(0) == '#' && rLine.charAt(1) == '#';
     }
 
-////////////////////////////以下是单例模式基本功能////////////////////////////////////////////
+    ////////////////////////////以下是单例模式基本功能////////////////////////////////////////////
     public static IRFirst getInstance() {
-        if (midCodeFirst == null) {
-            midCodeFirst = new IRFirst();
+        if (irFirst == null) {
+            irFirst = new IRFirst();
         }
-        return midCodeFirst;
+        return irFirst;
     }
 
     public void open() throws IOException {
         File inputFile = new File("midCode.txt");
         bufferedReader = new BufferedReader(
-                new InputStreamReader(Files.newInputStream(inputFile.toPath()), "UTF-8"));
+                new InputStreamReader(Files.newInputStream(inputFile.toPath()), StandardCharsets.UTF_8));
     }
 
     public void close() throws IOException {

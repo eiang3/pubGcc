@@ -16,7 +16,7 @@ public class APIIRSymTable {
 
 
     //在第一遍更新完符号表中重定义的变量名字后，需要把相应的表项更新。
-    private HashMap<ElementVar,TableSymbol> redefineElement = new HashMap<>();
+    private final HashMap<ElementVar,TableSymbol> redefineElement = new HashMap<>();
 
     private APIIRSymTable(){}
 

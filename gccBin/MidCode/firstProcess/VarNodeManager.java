@@ -14,6 +14,8 @@ public class VarNodeManager {
 
     private final HashMap<String, VarNode> name2Node;
 
+    private final HashMap<String, VarWeb> name2Web; //最后保存下来的全部冲突变量
+
     private VarNodeManager() {
         name2Node = new HashMap<>();
         name2Web = new HashMap<>();
@@ -38,8 +40,10 @@ public class VarNodeManager {
     }
 
     /**
-     * @param name
-     * @param tableSymbol
+     * 向待分配节点集添加节点
+     *
+     * @param name        *
+     * @param tableSymbol *
      */
     public void addVarNode(String name, TableSymbol tableSymbol) {
         VarNode node = new VarNode(name, tableSymbol);
@@ -49,7 +53,7 @@ public class VarNodeManager {
     /**
      * 将只定义不使用的变量移去
      *
-     * @param name
+     * @param name *
      */
     public void removeVarNode(String name) {
         this.name2Node.remove(name);
@@ -80,12 +84,6 @@ public class VarNodeManager {
             name2Node.get(name).generateWeb();
         }
     }
-
-
-    /***
-     * 加入未划分的冲突图，ok更新符号表表项，ok对相应lines和进行重命名。
-     */
-    private final HashMap<String, VarWeb> name2Web; //最后保存下来的全部冲突变量
 
     public HashMap<String, VarWeb> getName2Web() {
         return name2Web;
@@ -124,10 +122,10 @@ public class VarNodeManager {
                 now++;
                 //对相应lines和进行重命名
                 LineManager.getInstance().reGenNameLine(
-                        varWeb.getDef(), name, newName);
+                        varWeb.getDef_set(), name, newName);
 
                 LineManager.getInstance().reUseNameLine(
-                        varWeb.getUse(), name, newName);
+                        varWeb.getUse_set(), name, newName);
                 //更新符号表表项(仅仅是重命名)
                 ElementVar t1 = elementVar.myCopy(newName);
                 tableSymbol.addElement(t1);
@@ -145,12 +143,12 @@ public class VarNodeManager {
         // 优化 ？
         ArrayList<String> varNames = new ArrayList<>(name2Web.keySet());
         for (int i = 0; i < varNames.size(); i++) {
-            for (int j = i+1; j < varNames.size(); j++){
+            for (int j = i + 1; j < varNames.size(); j++) {
                 String name1 = varNames.get(i);
                 String name2 = varNames.get(j);
                 VarWeb xx = name2Web.get(name1);
                 VarWeb yy = name2Web.get(name2);
-                if(xx.collide(yy)){
+                if (xx.collide(yy)) {
                     xx.addClash(yy);
                     yy.addClash(xx);
                 }
@@ -158,16 +156,16 @@ public class VarNodeManager {
         }
     }
 
-    public VarWeb getOneVarWeb(String name){
-        return  name2Web.get(name);
+    public VarWeb getOneVarWeb(String name) {
+        return name2Web.get(name);
     }
 
-    public void printfVarNodeMessage(){
-        for(String var:name2Node.keySet()){
+    public void printfVarNodeMessage() {
+        for (String var : name2Node.keySet()) {
             VarNode varNode = name2Node.get(var);
             HashMap<Integer, BitSet> defUseChain = varNode.getDefUseChain();
             System.out.println(var);
-            for(int i: defUseChain.keySet()){
+            for (int i : defUseChain.keySet()) {
                 System.out.println(i);
                 System.out.println(defUseChain.get(i));
             }

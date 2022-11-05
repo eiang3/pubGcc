@@ -9,7 +9,6 @@ import SymbolTableBin.TableSymbol;
  */
 public class RetLine extends Line {
     private String exp;
-    private final boolean use;
 
     private String funcName;
 
@@ -21,21 +20,11 @@ public class RetLine extends Line {
         if (ele.length == 2) {
             if(ele[1].equals("main")){
                 gotoExit = true;
-                exp = ele[1];
-            } else {
-                exp = ele[1];
             }
+            exp = ele[1];
         }
-        use = super.addUse(exp); //空的话，返回false
     }
 
-    @Override
-    public void renameUse(String old,String name){
-        if(use && exp.equals(old)){
-            exp = name;
-            super.replaceOneUse(old,name);
-        }
-    }
 
     public boolean isGotoExit() {
         return gotoExit;

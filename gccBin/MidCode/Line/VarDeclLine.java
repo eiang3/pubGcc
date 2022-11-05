@@ -8,16 +8,12 @@ import gccBin.MidCode.firstProcess.VarNodeManager;
  * var int i
  */
 public class VarDeclLine extends Line {
-    private String name;
+    private final String name;
 
-    public VarDeclLine(String s, int line,TableSymbol tableSymbol, String[] str) {
-        super(s,line, tableSymbol);
-        parse(str[2]);
-        VarNodeManager.getInstance().addVarNode(name,tableSymbol);
-    }
-
-    private void parse(String str) {
-        this.name = str;
+    public VarDeclLine(String s, int line, TableSymbol tableSymbol, String[] str) {
+        super(s, line, tableSymbol);
+        this.name = str[2];
+        VarNodeManager.getInstance().addVarNode(name, tableSymbol);
     }
 
     public String getName() {
