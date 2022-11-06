@@ -16,10 +16,13 @@ import java.util.ArrayList;
 public class ConstDef extends TreeFatherNode {
     private TypeTable type;     //int
     private String name;        //常量名addChildOp确定
+    private int falseRow;
     private int dimension;      //维数
     //for midCode
     private final Value value;     //0维的时候符号表里的值/为了回填
     private final ArrayList<ArrayList<Integer>> array;  //多维时保存的值
+
+    //
     private ConstExp constExpOne;
     private ConstExp constExpTwo;
     private ConstInitVal constInitVal;
@@ -49,12 +52,12 @@ public class ConstDef extends TreeFatherNode {
             this.value.setNum(constInitVal.getValue());
         } else if (dimension == 1) {
             this.array.add(constInitVal.getArray().get(0));
-            IRGenerate.getInstance().constDefArray(name,constExpOne.getValue(),array);
+            IRGenerate.getInstance().constDefArray(name,constExpOne.getValue(),array,super.getTableSymbol(),falseRow);
         } else if (dimension == 2) {
             this.array.addAll(constInitVal.getArray());
             IRGenerate.getInstance().constDefArray(name,
                     constExpOne.getValue()*constExpTwo.getValue(),
-                    array);
+                    array,super.getTableSymbol(),falseRow);
         }
     }
 
@@ -64,6 +67,7 @@ public class ConstDef extends TreeFatherNode {
             Word word = (Word) element;
             if (word.getSym() == Symbol.IDENFR) {
                 this.name = word.getToken();
+                this.falseRow = word.getFalseRow();
             } else if (word.getSym() == Symbol.LBRACK) {
                 this.dimension++;
             }
@@ -99,4 +103,7 @@ public class ConstDef extends TreeFatherNode {
         return array;
     }
 
+    public int getFalseRow() {
+        return falseRow;
+    }
 }

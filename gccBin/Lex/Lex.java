@@ -17,6 +17,8 @@ public class Lex {  //单例模式的词法分析器
     private boolean end = false; //记录是否读到文件末尾
     private int row = 1; //记录行号
 
+    private int falseRow = 1;
+
     private Lex() {
     }
 
@@ -28,6 +30,7 @@ public class Lex {  //单例模式的词法分析器
     }
 
     private FileInputStream fileInputStream;
+
     public void open() throws FileNotFoundException {
         File inputFile = new File("testfile.txt");
         fileInputStream = new FileInputStream(inputFile);
@@ -52,6 +55,7 @@ public class Lex {  //单例模式的词法分析器
             e.printStackTrace();
         }
     }
+
     /*
        读文件，当读到末尾时，end=true;
      */
@@ -60,6 +64,8 @@ public class Lex {  //单例模式的词法分析器
         if (value != -1) {
             character = (char) value;
             this.row = (character == '\n') ? this.row + 1 : this.row;
+
+            this.falseRow = (character == '\n') ? this.falseRow+1 : this.falseRow;
         } else {
             end = true;
             character = ' ';
@@ -140,8 +146,10 @@ public class Lex {  //单例模式的词法分析器
         } else {
             catToken();
             if (isComma()) symbol = Symbol.COMMA;
-            else if (isSemi()) symbol = Symbol.SEMICN;
-            else if (isPlus()) symbol = Symbol.PLUS;
+            else if (isSemi()) {
+                symbol = Symbol.SEMICN;
+                falseRow = falseRow + 1;
+            } else if (isPlus()) symbol = Symbol.PLUS;
             else if (isMinus()) symbol = Symbol.MINU;
             else if (isLBrack()) symbol = Symbol.LBRACK;
             else if (isRBrack()) symbol = Symbol.RBRACK;
@@ -292,6 +300,7 @@ public class Lex {  //单例模式的词法分析器
      */
     private void retract() throws IOException {
         this.row = (character == '\n') ? this.row - 1 : this.row;
+        this.falseRow = (character == '\n' || character == ';') ? this.falseRow + 1 : this.falseRow;
         inputStream.unread(character);
     }
 
@@ -322,5 +331,9 @@ public class Lex {  //单例模式的词法分析器
     public void close() throws IOException {
         this.fileInputStream.close();
         this.inputStream.close();
+    }
+
+    public int getFalseRow() {
+        return falseRow;
     }
 }

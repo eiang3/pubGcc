@@ -50,7 +50,8 @@ public class IRGenerate {
         this.root.midCodeGen(this.fileWriter, param);
     }
 
-    public void constDefArray(String name, int len, ArrayList<ArrayList<Integer>> nums) throws IOException {
+    public void constDefArray(String name, int len, ArrayList<ArrayList<Integer>> nums, TableSymbol tableSymbol, int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         write("&arr int " + name + "[" + len + "]\n");
         int index = 0;
         for (ArrayList<Integer> integers : nums) {
@@ -60,16 +61,15 @@ public class IRGenerate {
         }
     }
 
-    public void varDef(TableSymbol tableSymbol,String name, int len, InitVal initVal) throws IOException {
+    public void varDef(TableSymbol tableSymbol, String name, int len, InitVal initVal, int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         Param param = new Param();
         if (len <= 0) {
-            String newName = APIIRSymTable.getInstance()
-                    .findElementRecur(tableSymbol,name).getIRName();
-            write("&var int " + newName + "\n");
+            write("&var int " + name + "\n");
             if (initVal != null) {
                 ArrayList<Exp> exps = initVal.getExps();
                 exps.get(0).midCodeGen(fileWriter, param);
-                write(newName + " = " + initVal.getExps().get(0).getMidCode() + "\n");
+                write(name + " = " + initVal.getExps().get(0).getMidCode() + "\n");
             }
             return;
         }
@@ -85,77 +85,83 @@ public class IRGenerate {
         }
     }
 
-    public String lValRParam(TableSymbol tableSymbol, String name) throws IOException {
+    public String lValRParam(TableSymbol tableSymbol, String name, int falseRow) throws IOException {
         ElementTable elementTable = APIIRSymTable.getInstance()
-                .findElementRecur(tableSymbol, name);
-        if ( elementTable.getDimension() == 0 ) {  //保存的是值
-            return lValNormal(tableSymbol,name,new Param()); //实参传值
+                .findElementIRGen(tableSymbol, name, falseRow);
+        String oldName = name;
+        name = elementTable.getIRName();
+        if (elementTable.getDimension() == 0) {  //保存的是值
+            return lValNormal(tableSymbol, oldName, new Param(),falseRow); //实参传值
         } else {
             String ans = IRTagManage.getInstance().newVar();
-            write(ans + " = " + name +" >> 2\n");  // 除4
+            write(ans + " = " + name + " >> 2\n");  // 除4
             return ans;
         }
     }
 
-    public String lValRParam(TableSymbol tableSymbol, String name, String one) throws IOException {
-        ElementTable elementTable = APIIRSymTable.getInstance()
-                .findElementRecur(tableSymbol, name);
-
+    public String lValRParam(TableSymbol tableSymbol, String name, String one, int falseRow) throws IOException {
+        ElementTable elementTable =
+                APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow);
+        String oldName = name;
+        name = elementTable.getIRName();
         if (elementTable.getDimension() == 1) {  //保存的是值
-            return lValNormal(name, one,new Param());
+            return lValNormal(oldName, one, new Param(),tableSymbol,falseRow);
         } else if (elementTable.getDimension() == 2) {
             int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
-                    tableSymbol, name);
+                    tableSymbol, oldName,falseRow);
             String t1 = IRTagManage.getInstance().newVar();
             write(t1 + " = " + one + " * " + len + "\n");
             String t2 = IRTagManage.getInstance().newVar();
             String ans = IRTagManage.getInstance().newVar();
-            write(t2 + " = " + name +  " >> 2" + "\n"); // 除4
+            write(t2 + " = " + name + " >> 2" + "\n"); // 除4
             write(ans + " = " + t1 + " + " + t2 + "\n");
             return ans;
         } else return null;
     }
 
     //2维一定是数值
-    public String lValRParam(TableSymbol tableSymbol, String name, String one, String two) throws IOException {
+    public String lValRParam(TableSymbol tableSymbol, String name, String one, String two, int falseRow) throws IOException {
         int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
-                tableSymbol, name);
-        return lValNormal(name, one, two, len,new Param());
+                tableSymbol, name,falseRow);
+        return lValNormal(name, one, two, len, new Param(), tableSymbol, falseRow);
     }
 
-    public String lValNormal(TableSymbol tableSymbol,String name,Param param) throws IOException {
-        String newName = APIIRSymTable.getInstance()
-                .findElementRecur(tableSymbol,name).getIRName();
-        if(param.getExpKind() == InheritProp.LValAssign){
-            return  newName;
+    public String lValNormal(TableSymbol tableSymbol, String name, Param param, int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance()
+                .findElementIRGen(tableSymbol, name, falseRow).getIRName();
+        if (param.getExpKind() == InheritProp.LValAssign) {
+            return name;
         } else {
             String t1 = IRTagManage.getInstance().newVar();
-            write(t1 +" = "+ newName+"\n");
+            write(t1 + " = " + name + "\n");
             return t1;
         }
     }
 
 
-    public String lValNormal(String name,String one, String two, int len,Param param) throws IOException {
+    public String lValNormal(String name, String one, String two, int len, Param param, TableSymbol tableSymbol, int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         String t1 = IRTagManage.getInstance().newVar();
         write(t1 + " = " + one + " * " + len + "\n");
         String t2 = IRTagManage.getInstance().newVar();
         write(t2 + " = " + two + " + " + t1 + "\n");
-        if(param.getExpKind() == InheritProp.LValAssign) {
+        if (param.getExpKind() == InheritProp.LValAssign) {
             return name + "[" + t2 + "]";
         } else {
-            String ans  = IRTagManage.getInstance().newVar();
-            write(ans + " = "+name + "[" + t2 + "]\n");
+            String ans = IRTagManage.getInstance().newVar();
+            write(ans + " = " + name + "[" + t2 + "]\n");
             return ans;
         }
     }
 
-    public String lValNormal(String name,String one,Param param) throws IOException {
-        if(param.getExpKind() == InheritProp.LValAssign) {
+    public String lValNormal(String name, String one, Param param, TableSymbol tableSymbol, int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance()
+                .findElementIRGen(tableSymbol, name, falseRow).getIRName();
+        if (param.getExpKind() == InheritProp.LValAssign) {
             return name + "[" + one + "]";
         } else {
-            String ans  = IRTagManage.getInstance().newVar();
-            write(ans + " = "+name + "[" + one + "]\n");
+            String ans = IRTagManage.getInstance().newVar();
+            write(ans + " = " + name + "[" + one + "]\n");
             return ans;
         }
     }
@@ -225,7 +231,8 @@ public class IRGenerate {
         write(returnType.toString().toLowerCase() + " " + name + " ()\n");
     }
 
-    public void funcFParam(TypeTable type, String name, int dim) throws IOException {
+    public void funcFParam(TypeTable type, String name, int dim,TableSymbol tableSymbol,int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol,name,falseRow).getIRName();
         if (dim == 0) {
             write("&para " + type.toString().toLowerCase() + " " + name + "\n");
         } else {
@@ -243,7 +250,7 @@ public class IRGenerate {
     public String funcCall(String funcName) throws IOException {
         write("&call " + funcName + "\n");
         ElementFunc elementFunc = APIIRSymTable.getInstance().getFuncElement(funcName);
-        if(elementFunc.getReturnType() == TypeTable.INT) {
+        if (elementFunc.getReturnType() == TypeTable.INT) {
             String t1 = IRTagManage.getInstance().newVar();
             write(t1 + " = $RET\n");
             return t1;
@@ -260,7 +267,7 @@ public class IRGenerate {
         write("&ret" + "\n");
     }
 
-    public void mainRetStmt() throws IOException{
+    public void mainRetStmt() throws IOException {
         write("&ret main\n");
     }
 
@@ -292,6 +299,6 @@ public class IRGenerate {
     }
 
     public void annotate(String str) throws IOException {
-        write("##"+str+"##\n");
+        write("##" + str + "##\n");
     }
 }

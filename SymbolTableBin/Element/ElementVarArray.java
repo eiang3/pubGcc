@@ -5,13 +5,13 @@ import SymbolTableBin.TypeTable;
 import SymbolTableBin.Value;
 
 public class ElementVarArray extends ElementTable {
-    private Value oneDim; //一维
+    private final Value oneDim; //一维
     private final Value twoDim; //二维
 
     public ElementVarArray(String name, TypeTable type, TypeTable decl,
                            int dimension, Value oneDim,
-                           Value twoDim) {
-        super(name, type, decl, dimension);
+                           Value twoDim,int falseRow) {
+        super(name, type, decl, dimension,falseRow);
         this.oneDim = oneDim;
         this.twoDim = twoDim;
     }

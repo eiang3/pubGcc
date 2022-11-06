@@ -6,8 +6,8 @@ import gccBin.MIPS.tool.Reg;
 public class ElementFParam extends ElementTable {
     private int index;
     public ElementFParam(String name, TypeTable type, TypeTable decl,
-                         int dimension,int index){
-        super(name,type,decl,dimension);
+                         int dimension,int index,int falseRow){
+        super(name,type,decl,dimension,falseRow);
         this.index = index;
         if(index <= 4 && index >= 1){
             super.setReg(Reg.getFParamReg(index));

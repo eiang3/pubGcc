@@ -9,8 +9,8 @@ public class ElementConstArray extends ElementTable {
 
     public ElementConstArray(String name, TypeTable type,
                              TypeTable decl, int dimension,
-                              ArrayList<ArrayList<Integer>> a) {
-        super(name, type, decl, dimension);
+                              ArrayList<ArrayList<Integer>> a,int falseRow) {
+        super(name, type, decl, dimension,falseRow);
         this.array = a;
     }
 

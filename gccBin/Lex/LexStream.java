@@ -10,6 +10,7 @@ public class LexStream {
     private Symbol sym;
     private String token;
     private int row;
+    private int falseRow;
     private Word word;
     private final MyQueue wordTb = new MyQueue();
 
@@ -36,12 +37,14 @@ public class LexStream {
             this.sym = word.getSym();
             this.token = word.getToken();
             this.row = word.getRow();
+            falseRow = word.getFalseRow();
         } else {
             nextSymLex();
             this.sym = Lex.getInstance().getSymbol();
             this.token = Lex.getInstance().getToken();
             this.row = Lex.getInstance().getRow();
-            this.word = new Word(this.sym,this.token,this.row);
+            falseRow = Lex.getInstance().getFalseRow();
+            this.word = new Word(this.sym,this.token,this.row,this.falseRow);
         }
     }
 
@@ -71,7 +74,7 @@ public class LexStream {
                 nextSymLex();
                 wordTb.offer(new Word(Lex.getInstance().getSymbol(),
                         Lex.getInstance().getToken(),
-                        Lex.getInstance().getRow()));
+                        Lex.getInstance().getRow(),Lex.getInstance().getFalseRow()));
             }
         }
         return wordTb.peek(index);
@@ -91,5 +94,9 @@ public class LexStream {
 
     public Word getWord() {
         return word;
+    }
+
+    public int getFalseRow() {
+        return falseRow;
     }
 }

@@ -47,4 +47,8 @@ public class UnExpect {
     public static void notNum(String s) {
         System.out.println(s + " is not a num");
     }
+
+    public static void NULL(){
+        System.out.println("null pointer");
+    }
 }

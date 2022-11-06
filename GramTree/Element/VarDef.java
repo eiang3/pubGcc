@@ -17,6 +17,7 @@ import java.io.IOException;
 public class VarDef extends TreeFatherNode {
     private TypeTable type;
     private String name;
+    private int falseRow;
     private int dimension;
     // for midCode
     private ConstExp constExpOne;
@@ -56,7 +57,7 @@ public class VarDef extends TreeFatherNode {
         } else {
             len = -1;
         }
-        IRGenerate.getInstance().varDef(super.getTableSymbol(),name,len,initVal);
+        IRGenerate.getInstance().varDef(super.getTableSymbol(),name,len,initVal,falseRow);
     }
 
 
@@ -74,6 +75,7 @@ public class VarDef extends TreeFatherNode {
             Word word = (Word) element;
             if (word.getSym() == Symbol.IDENFR) {
                 this.name = word.getToken();
+                this.falseRow = word.getFalseRow();
             } else if (word.getSym() == Symbol.LBRACK) {
                 this.dimension++;
             }
@@ -100,4 +102,7 @@ public class VarDef extends TreeFatherNode {
         return type;
     }
 
+    public int getFalseRow() {
+        return falseRow;
+    }
 }

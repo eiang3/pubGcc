@@ -11,11 +11,13 @@ public class Word extends TreeElement{
     private final Symbol sym;
     private final String token;
     private final int row;
+    private final int falseRow;
 
-    public Word(Symbol sym,String token,int row){
+    public Word(Symbol sym,String token,int row,int falseRow){
         this.sym = sym;
         this.token = token;
         this.row = row;
+        this.falseRow = falseRow;
     }
 
     public Symbol getSym(){
@@ -39,5 +41,9 @@ public class Word extends TreeElement{
     @Override
     public String toString(){
         return token;
+    }
+
+    public int getFalseRow() {
+        return falseRow;
     }
 }

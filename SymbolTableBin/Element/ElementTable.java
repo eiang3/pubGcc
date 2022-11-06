@@ -23,8 +23,10 @@ public class ElementTable {
 
     private int subScript;  //如果有重命名的变量，需要添加下标保证它们的名字不一样。
 
+    private int falseRow;
+
     public ElementTable(String name, TypeTable type, TypeTable decl,
-                        int dimension){
+                        int dimension,int falseRow){
         this.name = name;
         this.type = type;
         this.decl = decl;
@@ -32,6 +34,7 @@ public class ElementTable {
         this.position  = new Position();
         this.global = false;
         this.subScript = -1;
+        this.falseRow = falseRow;
     }
 
     public String getName() {
@@ -126,5 +129,9 @@ public class ElementTable {
         tableSymbol.remove(this);
         setName(this.getIRName());
         tableSymbol.addElement(this);
+    }
+
+    public int getFalseRow() {
+        return falseRow;
     }
 }

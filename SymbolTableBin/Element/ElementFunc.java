@@ -12,8 +12,8 @@ public class ElementFunc extends ElementTable {
     private TypeTable returnType;   //返回值
 
     public ElementFunc(String name, TypeTable type, TypeTable decl,
-                       int dimension){
-        super(name,type,decl,dimension);
+                       int dimension,int falseRow){
+        super(name,type,decl,dimension,falseRow);
         this.params = new ArrayList<>();
         super.setGlobal(true);
     }

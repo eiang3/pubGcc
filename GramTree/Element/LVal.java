@@ -20,6 +20,7 @@ public class LVal extends TreeFatherNode {
 
     private Word ident;
     private String name;
+    private int falseRow;
     private Exp exp1;
     private Exp exp2;
     //
@@ -49,6 +50,7 @@ public class LVal extends TreeFatherNode {
             if (word.getSym() == Symbol.IDENFR) {
                 this.ident = word;
                 this.name = word.getToken();
+                this.falseRow = word.getFalseRow();
                 ElementTable tableElement =
                         APIErrorSymTable.getInstance().getElement(word.getToken());
                 if (tableElement != null) {
@@ -80,36 +82,39 @@ public class LVal extends TreeFatherNode {
 
     private void funcRParamOp(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter, param); //如果是函数的话，那下标里一定是数值了。
-        if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name)) {
+        if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name, falseRow)) {
             this.midCode = String.valueOf(APIIRSymTable.getInstance().getConstNum
-                    (super.getTableSymbol(), name));
+                    (super.getTableSymbol(), name, falseRow));
         } else if (exp1 == null && exp2 == null) {
             this.midCode = IRGenerate.getInstance().lValRParam
-                    (super.getTableSymbol(), name);
+                    (super.getTableSymbol(), name, falseRow);
         } else if (exp1 != null && exp2 == null) { //一维的数组
             this.midCode = IRGenerate.getInstance().lValRParam
-                    (super.getTableSymbol(), name, exp1.getMidCode());
+                    (super.getTableSymbol(), name, exp1.getMidCode(), falseRow);
         } else if (exp1 != null && exp2 != null) {
             this.midCode = IRGenerate.getInstance().lValRParam(
                     super.getTableSymbol(), name,
-                    exp1.getMidCode(), exp2.getMidCode());
+                    exp1.getMidCode(), exp2.getMidCode(), falseRow);
         }
     }
 
     private void elseOp(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter, param);
-        if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name)) {
+        if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name, falseRow)) {
             this.midCode = String.valueOf(APIIRSymTable.getInstance().getConstNum
-                    (super.getTableSymbol(), name));
+                    (super.getTableSymbol(), name, falseRow));
         } else if (exp1 == null && exp2 == null) {
-            this.midCode = IRGenerate.getInstance().lValNormal(super.getTableSymbol(),name, param);
+            this.midCode = IRGenerate.getInstance().lValNormal(super.getTableSymbol()
+                    , name, param, falseRow);
         } else if (exp1 != null && exp2 == null) { //一维的数组
-            this.midCode = IRGenerate.getInstance().lValNormal(name, exp1.getMidCode(), param);
+            this.midCode = IRGenerate.getInstance().lValNormal(name, exp1.getMidCode()
+                    , param, super.getTableSymbol(), falseRow);
         } else if (exp1 != null && exp2 != null) {
             int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
-                    super.getTableSymbol(), this.name);
+                    super.getTableSymbol(), this.name, falseRow);
             this.midCode = IRGenerate.getInstance().lValNormal(name,
-                    exp1.getMidCode(), exp2.getMidCode(), len, param);
+                    exp1.getMidCode(), exp2.getMidCode(), len, param, super.getTableSymbol(),
+                    falseRow);
         }
     }
 

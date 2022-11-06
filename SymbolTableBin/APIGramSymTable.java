@@ -35,7 +35,8 @@ public class APIGramSymTable {
         if (close) return;
         if (constDef.getDimension() == 0) {
             ElementConst element = new ElementConst(
-                    constDef.getName(), constDef.getType(), constDef.getValue());
+                    constDef.getName(), constDef.getType(),
+                    constDef.getValue(), constDef.getFalseRow());
             this.nowTable.addElement(element);
 
             judgeGlobal(element);
@@ -44,7 +45,8 @@ public class APIGramSymTable {
         } else {
             ElementConstArray elementArray = new ElementConstArray(
                     constDef.getName(), constDef.getType(), TypeTable.CONST,
-                    constDef.getDimension(), constDef.getArray());
+                    constDef.getDimension(), constDef.getArray(),
+                    constDef.getFalseRow());
             this.nowTable.addElement(elementArray);
 
             judgeGlobal(elementArray);
@@ -57,7 +59,7 @@ public class APIGramSymTable {
         if (close) return;
         if (varDef.getDimension() == 0) {
             ElementVar elementVar = new ElementVar(
-                    varDef.getName(), TypeTable.INT); // TypeTable.INT改成get有bug
+                    varDef.getName(), TypeTable.INT, varDef.getFalseRow()); // TypeTable.INT改成get有bug
             this.nowTable.addElement(elementVar);
 
             nameClash(elementVar.getName(), elementVar);
@@ -66,7 +68,7 @@ public class APIGramSymTable {
             ElementVarArray elementVarArray = new ElementVarArray(
                     varDef.getName(), varDef.getType(), TypeTable.VAR,
                     varDef.getDimension(), varDef.getOneDim(),
-                    varDef.getTwoDim());
+                    varDef.getTwoDim(), varDef.getFalseRow());
             this.nowTable.addElement(elementVarArray);
 
             nameClash(elementVarArray.getName(), elementVarArray);
@@ -80,7 +82,7 @@ public class APIGramSymTable {
         ElementFParam elementFParam = new ElementFParam(
                 funcFParam.getName(), funcFParam.getType(),
                 TypeTable.FUNC_F_PARAM, funcFParam.getDimension(),
-                funcFParam.getIndex());
+                funcFParam.getIndex(), funcFParam.getFalseRow());
         this.nowTable.addElement(elementFParam);
 
         nameClash(elementFParam.getName(), elementFParam);
@@ -90,7 +92,8 @@ public class APIGramSymTable {
     public void addFuncDef(FuncDef funcDef) throws IOException {
         if (close) return;
         ElementFunc funcElement = new ElementFunc(
-                funcDef.getName(), TypeTable.FUNC, TypeTable.FUNC, 0);
+                funcDef.getName(), TypeTable.FUNC, TypeTable.FUNC, 0,
+                funcDef.getFalseRow());
         funcElement.setReturnType(funcDef.getReturnType());
         funcElement.addParameters(funcDef.getFParams());
         this.rootTable.addElement(funcElement);
@@ -101,11 +104,12 @@ public class APIGramSymTable {
     public void addMainFuncDef() throws IOException {
         if (close) return;
         ElementFunc funcElement = new ElementFunc(
-                "main", TypeTable.FUNC, TypeTable.FUNC, 0);
+                "main", TypeTable.FUNC, TypeTable.FUNC,
+                0, 0);//main 是关键字，不会冲突吧？
         funcElement.setReturnType(TypeTable.INT);
         this.nowTable.addElement(funcElement);
 
-        nameClash("main",funcElement);
+        nameClash("main", funcElement);
     }
 
     //构筑语法树部分，已经可以确定不会轻易更改。
@@ -144,8 +148,8 @@ public class APIGramSymTable {
         }
     }
 
-    public void judgeGlobal(ElementTable elementTable){
-        if(nowTable == rootTable) elementTable.setGlobal(true);
+    public void judgeGlobal(ElementTable elementTable) {
+        if (nowTable == rootTable) elementTable.setGlobal(true);
     }
 }
 

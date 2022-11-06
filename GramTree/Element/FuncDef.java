@@ -17,6 +17,7 @@ import java.util.ArrayList;
 public class FuncDef extends TreeFatherNode {
     private FuncType funcType;
     private String name;
+    private int falseRow;
     private FuncFParams funcFParams;
     private ArrayList<FuncFParam> fParams;
     private TypeTable returnType;
@@ -52,6 +53,7 @@ public class FuncDef extends TreeFatherNode {
             Word word = (Word) element;
             if (word.getSym() == Symbol.IDENFR) {
                 this.name = word.getToken();
+                this.falseRow = word.getFalseRow();
             }
         } else if (element instanceof FuncType) {
             funcType = (FuncType) element;
@@ -74,5 +76,9 @@ public class FuncDef extends TreeFatherNode {
 
     public TypeTable getReturnType() {
         return returnType;
+    }
+
+    public int getFalseRow() {
+        return falseRow;
     }
 }

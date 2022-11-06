@@ -45,7 +45,7 @@ public class MIPS {
         do {
             Line line = LineManager.getInstance().nextLine();
             TableSymbol tableSymbol = line.getTableSymbol();
-            write("# "+line.getMidCodeLine());
+            write("# " + line.getMidCodeLine());
             if (line instanceof ArrayDefLine) {
                 arrayLineTranslate(tableSymbol, (ArrayDefLine) line);
             } else if (line instanceof AssignLine) {
@@ -93,15 +93,20 @@ public class MIPS {
     }
 
     public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
-        if(callFuncLine.getFuncName().equals("main")){
+        if (callFuncLine.getFuncName().equals("main")) {
             MipsIns.b_Label("main");
             return;
         }
-        MemManager.getInstance().pushSReg(); //保存现场
-        MipsIns.sub_ans_reg_regOrNum(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
+        MemManager.getInstance().pushS_TReg(); //保存现场
+        int fpOff = MemManager.getInstance().getFpOff();
+        if (fpOff != 0) {
+            MipsIns.sub_ans_reg_regOrNum(Reg.$fp, Reg.$fp, fpOff);
+        }
         MipsIns.jal_label(callFuncLine.getFuncName());
-        MipsIns.add_ans_reg_regOrNum(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
-        MemManager.getInstance().popSReg();
+        if (fpOff != 0) {
+            MipsIns.add_ans_reg_regOrNum(Reg.$fp, Reg.$fp, fpOff);
+        }
+        MemManager.getInstance().popS_TReg();
         MemManager.getInstance().popAReg();
     }
 

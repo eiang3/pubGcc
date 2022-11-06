@@ -12,8 +12,8 @@ public class ElementVar extends ElementTable {
 
     private String oldName;
 
-    public ElementVar(String name, TypeTable type) {
-        super(name, type, TypeTable.VAR, 0);
+    public ElementVar(String name, TypeTable type,int falseRow) {
+        super(name, type, TypeTable.VAR, 0,falseRow);
 
         this.type = type;
     }
@@ -27,7 +27,7 @@ public class ElementVar extends ElementTable {
      * @return *
      */
     public ElementVar myCopy(String name) {
-        return new ElementVar(name, type);
+        return new ElementVar(name, type,super.getFalseRow());
     }
 
 

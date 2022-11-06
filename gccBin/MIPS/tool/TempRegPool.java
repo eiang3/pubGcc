@@ -183,4 +183,8 @@ public class TempRegPool {
     public boolean hasRegToAllocate() {
         return temp2Reg.size() < Reg.tempNum;
     }
+
+    public ArrayList<Reg> getTempRegInUse() {
+        return new ArrayList<>(temp2Reg.values());
+    }
 }

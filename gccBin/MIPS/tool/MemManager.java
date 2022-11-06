@@ -6,7 +6,6 @@ import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
 import gccBin.UnExpect;
 
-import javax.xml.bind.Element;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,21 +31,35 @@ public class MemManager {
         return memManager;
     }
 
-    public void pushSReg() throws IOException {
+    public void pushS_TReg() throws IOException {
         int number = regNeedToStore.size();
+        ArrayList<Reg> tempRegInUse = TempRegPool.getInstance().getTempRegInUse();
+        number = number + tempRegInUse.size();
+
         MipsIns.sub_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
         int count = 0;
         for (Reg reg : regNeedToStore) {
             MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
+        for(Reg reg:tempRegInUse){
+            MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
+            count++;
+        }
         MipsIns.sw_value_num_baseReg(Reg.$ra, count * 4, Reg.$sp);
     }
 
-    public void popSReg() throws IOException {
+    public void popS_TReg() throws IOException {
         int number = regNeedToStore.size();
+        ArrayList<Reg> tempRegInUse = TempRegPool.getInstance().getTempRegInUse();
+        number = number + tempRegInUse.size();
+
         int count = 0;
         for (Reg reg : regNeedToStore) {
+            MipsIns.lw_ans_num_baseReg(reg, count * 4, Reg.$sp);
+            count++;
+        }
+        for (Reg reg : tempRegInUse) {
             MipsIns.lw_ans_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
@@ -145,7 +158,7 @@ public class MemManager {
         }
     }
 
-    public boolean inRegToStore(Reg reg){
+    public boolean inRegToStore(Reg reg) {
         return regFParamNeedToStore.contains(reg) || regNeedToStore.contains(reg);
     }
 }

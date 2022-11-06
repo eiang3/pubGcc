@@ -16,6 +16,7 @@ public class FuncFParam extends TreeFatherNode {
     private TypeTable type;
     private BType bType;
     private String name;
+    private int falseRow;
     private ConstExp constExpTwo;
     private int dimension;
 
@@ -30,7 +31,7 @@ public class FuncFParam extends TreeFatherNode {
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         super.ergodicMidCode(fileWriter,param);
-        IRGenerate.getInstance().funcFParam(type,name,dimension);
+        IRGenerate.getInstance().funcFParam(type,name,dimension,super.getTableSymbol(),falseRow);
     }
 
     @Override
@@ -39,6 +40,7 @@ public class FuncFParam extends TreeFatherNode {
             Word word = (Word) element;
             if(word.getSym() == Symbol.IDENFR){
                 this.name = word.getToken();
+                this.falseRow = word.getFalseRow();
             } else if(word.getSym() == Symbol.LBRACK){
                 this.dimension++;
             }
@@ -68,5 +70,9 @@ public class FuncFParam extends TreeFatherNode {
 
     public int getIndex() {
         return index;
+    }
+
+    public int getFalseRow() {
+        return falseRow;
     }
 }
