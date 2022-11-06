@@ -11,7 +11,6 @@ public class Param {
     private String whileOrIfEndLabel;
     private String whileEndLabel;
     private String condLabel;
-    private String ifOrWhileBegin;
 
     private int fParamDim; //形参的维数
 
@@ -26,7 +25,6 @@ public class Param {
         this.whileEndLabel = param.getWhileEndLabel();
         this.condLabel = param.getCondLabel();
         this.fParamDim = param.getFParamDim();
-        this.ifOrWhileBegin = param.getIfOrWhileBegin();
     }
 
     public Param() {
@@ -106,13 +104,5 @@ public class Param {
 
     public void setFParamDim(int fParamDim) {
         this.fParamDim = fParamDim;
-    }
-
-    public String getIfOrWhileBegin() {
-        return ifOrWhileBegin;
-    }
-
-    public void setIfOrWhileBegin(String ifOrWhileBegin) {
-        this.ifOrWhileBegin = ifOrWhileBegin;
     }
 }

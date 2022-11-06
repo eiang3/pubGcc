@@ -34,16 +34,13 @@ public class IfStmt extends Stmt {
         if (elseStmt != null) {
             String start_else = IRTagManage.getInstance().newLabel();
             String end_if = IRTagManage.getInstance().newLabel();
-            String if_begin = IRTagManage.getInstance().newLabel();
 
             Param p = new Param(param);
             p.setWhileOrIfEndLabel(start_else);
-            p.setIfOrWhileBegin(if_begin);
 
             cond.midCodeGen(fileWriter, p); //失败,跳到start_else
-            IRGenerate.getInstance().annotate("cond "+cond.toString());
+            IRGenerate.getInstance().annotate("cond " + cond.toString());
 
-            IRGenerate.getInstance().localLabel(if_begin);
             ifStmt.midCodeGen(fileWriter, p); //if stmt;
             IRGenerate.getInstance().jump(end_if); //jump end_if
 
@@ -53,15 +50,11 @@ public class IfStmt extends Stmt {
             IRGenerate.getInstance().localLabel(end_if); //end_if:
         } else {
             String end_if = IRTagManage.getInstance().newLabel();
-            String if_begin = IRTagManage.getInstance().newLabel();
-
             Param p = new Param(param);
             p.setWhileOrIfEndLabel(end_if);
-            p.setIfOrWhileBegin(if_begin);
 
             cond.midCodeGen(fileWriter, p); //失败，end_if
 
-            IRGenerate.getInstance().localLabel(if_begin);
             ifStmt.midCodeGen(fileWriter, p); //if stmt;
             IRGenerate.getInstance().localLabel(end_if); //end_if
         }
