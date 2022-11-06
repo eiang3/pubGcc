@@ -67,21 +67,24 @@ public class LVal extends TreeFatherNode {
     private void constOp(FileWriter fileWriter, Param param) throws IOException {
         if (exp1 == null && exp2 == null) {
             this.value = APIIRSymTable.getInstance()
-                    .findValue(super.getTableSymbol(), name);
+                    .findValue(super.getTableSymbol(), name,falseRow);
         } else if (exp1 != null && exp2 == null) {
             exp1.midCodeGen(fileWriter, param);
             this.value = APIIRSymTable.getInstance()
-                    .findValue(super.getTableSymbol(), name, exp1.getValue());
+                    .findValue(super.getTableSymbol(), name, exp1.getValue(),falseRow);
         } else if (exp1 != null && exp2 != null) {
             exp1.midCodeGen(fileWriter, param);
             exp2.midCodeGen(fileWriter, param);
             this.value = APIIRSymTable.getInstance()
-                    .findValue(super.getTableSymbol(), name, exp1.getValue(), exp2.getValue());
+                    .findValue(super.getTableSymbol(), name, exp1.getValue()
+                            , exp2.getValue(),falseRow);
         }
     }
 
     private void funcRParamOp(FileWriter fileWriter, Param param) throws IOException {
-        super.ergodicMidCode(fileWriter, param); //如果是函数的话，那下标里一定是数值了。
+        Param expParam = new Param(param);
+        expParam.setFuncRParams(InheritProp.NULL);
+        super.ergodicMidCode(fileWriter, expParam); //如果是函数的话，那下标里一定是数值了。
         if (APIIRSymTable.getInstance().isConstNum(super.getTableSymbol(), name, falseRow)) {
             this.midCode = String.valueOf(APIIRSymTable.getInstance().getConstNum
                     (super.getTableSymbol(), name, falseRow));

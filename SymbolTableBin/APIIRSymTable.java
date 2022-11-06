@@ -145,6 +145,8 @@ public class APIIRSymTable {
             return ((ElementConstArray) elementTable).getLen();
         } else if (elementTable instanceof ElementVarArray) {
             return ((ElementVarArray) elementTable).getLen();
+        } else if (elementTable instanceof ElementFParam) {
+            return ((ElementFParam) elementTable).getTwoDim();
         } else {
             return -1;
         }
@@ -157,8 +159,8 @@ public class APIIRSymTable {
      * @param str
      * @return
      */
-    public int findValue(TableSymbol table, String str) {
-        ElementTable elementTable = findElementRecur(table, str);
+    public int findValue(TableSymbol table, String str, int falseRow) {
+        ElementTable elementTable = findElementIRGen(table, str,falseRow);
         if (elementTable instanceof ElementConst)
             return ((ElementConst) elementTable).getValue().getNum();
         return -1;
@@ -172,8 +174,8 @@ public class APIIRSymTable {
      * @param oneDim
      * @return
      */
-    public int findValue(TableSymbol table, String str, int oneDim) {
-        ElementConstArray elementArray = (ElementConstArray) findElementRecur(table, str);
+    public int findValue(TableSymbol table, String str, int oneDim, int falseRow) {
+        ElementConstArray elementArray = (ElementConstArray) findElementIRGen(table, str,falseRow);
         if (elementArray != null) return elementArray.getConstArrValue(oneDim);
         else return -1;
     }
@@ -187,8 +189,8 @@ public class APIIRSymTable {
      * @param twoDim
      * @return
      */
-    public int findValue(TableSymbol table, String str, int oneDim, int twoDim) {
-        ElementConstArray elementArray = (ElementConstArray) findElementRecur(table, str);
+    public int findValue(TableSymbol table, String str, int oneDim, int twoDim, int falseRow) {
+        ElementConstArray elementArray = (ElementConstArray) findElementIRGen(table, str,falseRow);
         if (elementArray != null) return elementArray.getConstArrValue(oneDim, twoDim);
         else return -1;
     }

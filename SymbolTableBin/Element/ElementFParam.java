@@ -1,12 +1,14 @@
 package SymbolTableBin.Element;
 
 import SymbolTableBin.TypeTable;
+import SymbolTableBin.Value;
 import gccBin.MIPS.tool.Reg;
 
 public class ElementFParam extends ElementTable {
     private int index;
+    private Value twoDim;
     public ElementFParam(String name, TypeTable type, TypeTable decl,
-                         int dimension,int index,int falseRow){
+                         int dimension,int index,int falseRow,Value twoDim){
         super(name,type,decl,dimension,falseRow);
         this.index = index;
         if(index <= 4 && index >= 1){
@@ -15,6 +17,7 @@ public class ElementFParam extends ElementTable {
             int off = (index-5)*4;
             super.setMemOff(off);
         }
+        this.twoDim = twoDim;
     }
 
     /***
@@ -27,5 +30,9 @@ public class ElementFParam extends ElementTable {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getTwoDim(){
+        return twoDim.getNum();
     }
 }

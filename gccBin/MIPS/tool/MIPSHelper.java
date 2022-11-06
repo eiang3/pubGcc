@@ -73,25 +73,28 @@ public class MIPSHelper {
 
         if (elementTable.isGlobal()) {
             if (Judge.isNumber(arrSub)) {
-                MipsIns.lw_ans_label_num(ansReg, arrName, Integer.parseInt(arrSub));
+                MipsIns.lw_ans_label_num(ansReg, arrName, Integer.parseInt(arrSub) * 4);
             } else {
+                MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.lw_ans_label_base(ansReg, arrName, subReg);
             }
         } else if (Judge.isFParam(elementTable)) {
             Reg address = getFParamInReg(elementTable, Reg.r1);
             if (Judge.isNumber(arrSub)) {
-                MipsIns.lw_ans_num_baseReg(ansReg, Integer.parseInt(arrSub), address);
+                MipsIns.lw_ans_num_baseReg(ansReg, Integer.parseInt(arrSub) * 4, address);
             } else {
+                MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.add_ans_reg_regOrNum(subReg, subReg, address); //地址
                 MipsIns.lw_ans_num_baseReg(ansReg, 0, subReg);
             }
         } else if (Judge.isLocal(elementTable)) {
             int arrOff = elementTable.getMemOff();
             if (Judge.isNumber(arrSub)) {
-                MipsIns.lw_ans_num_baseReg(ansReg, Integer.parseInt(arrSub) + arrOff, Reg.$fp);
+                MipsIns.lw_ans_num_baseReg(ansReg, Integer.parseInt(arrSub) * 4 + arrOff, Reg.$fp);
             } else {
+                MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.add_ans_reg_regOrNum(subReg, subReg, Reg.$fp); //地址
-                MipsIns.lw_ans_num_baseReg(ansReg, 0, subReg);
+                MipsIns.lw_ans_num_baseReg(ansReg, arrOff, subReg);
             }
         } else UnExpect.unexpect("assignArrToTemp 1");
     }
@@ -130,9 +133,10 @@ public class MIPSHelper {
      * @throws IOException *
      */
     public static void assignExpToArr(String answer, String exp, TableSymbol tableSymbol) throws IOException {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
+
         String arrName = SubOp.getArrName(answer);
         String arrSub = SubOp.getArrSubscript(answer);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
         //get value in reg.r1
         Reg value = null;
         if (Judge.isTemp(exp)) {
@@ -145,27 +149,30 @@ public class MIPSHelper {
         //getAddress
         if (elementTable.isGlobal()) {
             if (Judge.isNumber(arrSub)) {
-                MipsIns.sw_value_label_num(value, arrName, Integer.parseInt(arrSub));
+                MipsIns.sw_value_label_num(value, arrName, Integer.parseInt(arrSub) * 4);
             } else if (Judge.isTemp(arrSub)) {
                 Reg arrOff = TempRegPool.getInstance().getTempInReg(Reg.l1, arrSub);
+                MipsIns.sll_ans_regx_num(arrOff, arrOff, 2);//
                 MipsIns.sw_value_label_base(value, arrName, arrOff);
             } else UnExpect.unexpect("assignExpToArr 2");
         } else if (Judge.isLocal(elementTable)) {
             int ansOff = elementTable.getMemOff();
             if (Judge.isNumber(arrSub)) {
-                ansOff = ansOff + Integer.parseInt(arrSub);
+                ansOff = ansOff + Integer.parseInt(arrSub) * 4;
                 MipsIns.sw_value_num_baseReg(value, ansOff, Reg.$fp);
             } else if (Judge.isTemp(arrSub)) {
                 Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.l1, arrSub);
+                MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.add_ans_reg_regOrNum(subReg, subReg, Reg.$fp);
-                MipsIns.sw_value_base(value, subReg);
+                MipsIns.sw_value_num_baseReg(value, ansOff, subReg);
             } else UnExpect.unexpect("assignExpToArr 3");
         } else if (Judge.isFParam(elementTable)) {
             Reg address = getFParamInReg(elementTable, Reg.l1);
             if (Judge.isNumber(arrSub)) {
-                MipsIns.sw_value_num_baseReg(value, Integer.parseInt(arrSub), address);
+                MipsIns.sw_value_num_baseReg(value, Integer.parseInt(arrSub) * 4, address);
             } else if (Judge.isTemp(arrSub)) {
                 Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.l2, arrSub);
+                MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.add_ans_reg_regOrNum(subReg, subReg, address);
                 MipsIns.sw_value_base(value, subReg);
             } else UnExpect.unexpect("assignExpToArr 5");
@@ -348,6 +355,27 @@ public class MIPSHelper {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, temp1);
         if (Judge.isAddress(elementTable, temp1)) { //assert ans = address >> 2
             Reg ans = TempRegPool.getInstance().addToPool(answer);
+            if (elementTable.isGlobal()) { //全局数组传参，是个人才
+                if (TempRegPool.getInstance().inReg(answer)) {
+                    MipsIns.la_ans_label(ans, temp1);
+                    MipsIns.srl_ans_regx_num(ans, ans, 2);
+                } else if (TempRegPool.getInstance().inMem(answer)) {
+                    MipsIns.la_ans_label(Reg.r1, temp1);
+                    MipsIns.srl_ans_regx_num(Reg.r1, Reg.r1, 2);
+                    TempRegPool.getInstance().storeToMem(Reg.r1, answer);
+                } else UnExpect.tempNotInMemAndReg(answer);
+                return;
+            } else if (Judge.isFParam(elementTable)) {
+                Reg fReg = getFParamInReg(elementTable,Reg.r1);
+                if (TempRegPool.getInstance().inReg(answer)) {
+                    MipsIns.move_reg_reg(ans,fReg);
+                    MipsIns.srl_ans_regx_num(ans,ans,2);
+                } else if (TempRegPool.getInstance().inMem(answer)) {
+                    MipsIns.srl_ans_regx_num(Reg.r1,fReg,2);
+                    TempRegPool.getInstance().storeToMem(Reg.r1, answer);
+                } else UnExpect.tempNotInMemAndReg(answer);
+                return;
+            }
             int off = elementTable.getMemOff();
             if (TempRegPool.getInstance().inReg(answer)) {
                 MipsIns.address_srl_2(ans, off);

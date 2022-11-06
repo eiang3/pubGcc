@@ -82,7 +82,8 @@ public class APIGramSymTable {
         ElementFParam elementFParam = new ElementFParam(
                 funcFParam.getName(), funcFParam.getType(),
                 TypeTable.FUNC_F_PARAM, funcFParam.getDimension(),
-                funcFParam.getIndex(), funcFParam.getFalseRow());
+                funcFParam.getIndex(), funcFParam.getFalseRow(),
+                funcFParam.getTowDim());
         this.nowTable.addElement(elementFParam);
 
         nameClash(elementFParam.getName(), elementFParam);

@@ -45,7 +45,6 @@ public class MIPS {
         do {
             Line line = LineManager.getInstance().nextLine();
             TableSymbol tableSymbol = line.getTableSymbol();
-            write("# " + line.getMidCodeLine());
             if (line instanceof ArrayDefLine) {
                 arrayLineTranslate(tableSymbol, (ArrayDefLine) line);
             } else if (line instanceof AssignLine) {
@@ -93,6 +92,7 @@ public class MIPS {
     }
 
     public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
+        if(!push) MemManager.getInstance().pushAReg();
         if (callFuncLine.getFuncName().equals("main")) {
             MipsIns.b_Label("main");
             return;
@@ -100,14 +100,15 @@ public class MIPS {
         MemManager.getInstance().pushS_TReg(); //保存现场
         int fpOff = MemManager.getInstance().getFpOff();
         if (fpOff != 0) {
-            MipsIns.sub_ans_reg_regOrNum(Reg.$fp, Reg.$fp, fpOff);
+            MipsIns.add_ans_reg_regOrNum(Reg.$fp, Reg.$fp, fpOff);
         }
         MipsIns.jal_label(callFuncLine.getFuncName());
         if (fpOff != 0) {
-            MipsIns.add_ans_reg_regOrNum(Reg.$fp, Reg.$fp, fpOff);
+            MipsIns.sub_ans_reg_regOrNum(Reg.$fp, Reg.$fp, fpOff);
         }
         MemManager.getInstance().popS_TReg();
         MemManager.getInstance().popAReg();
+        push = false;
     }
 
     public void fParamDefLineTrans(FParamDefLine fParamDefLine) {
@@ -125,9 +126,11 @@ public class MIPS {
         LineManager.getInstance().retract();
     }
 
+    private boolean push = false;
+    //若果要push,就先保存本函数的a-reg，否则就在调用函数的时候保存reg
     public void pushLineLineTrnas(PushLine push) throws IOException {
+        this.push = true;
         MemManager.getInstance().pushAReg();
-
         int index = 1;
         Line line = push;
         int off = MemManager.getInstance().getFpOff();
@@ -165,6 +168,7 @@ public class MIPS {
             index++;
             TempRegPool.getInstance().delete(exp);
         }
+
         LineManager.getInstance().retract();
     }
 
@@ -227,11 +231,11 @@ public class MIPS {
         int len = arrayDefLine.getLen();
         String arrName = arrayDefLine.getName();
         if (tableSymbol.getFather() == null) { //全局数组
+            write(".data");
             ElementTable elementTable = APIIRSymTable.getInstance().findGlobalElement(
                     arrayDefLine.getName());
             writeNotNext("  " + arrName + ":");
             if (elementTable instanceof ElementConstArray) {
-                write(".data");
                 writeNotNext(".word ");
                 for (int i = 0; i < len; i++) {
                     AssignLine assignLine = (AssignLine) LineManager.
@@ -241,7 +245,6 @@ public class MIPS {
                 writeNotNext("\n");
                 write(".text");
             } else if (elementTable instanceof ElementVarArray) {
-                write(".data");
                 write(".space " + len * 4); //先分配地址 等着
                 write(".text");
             }
@@ -315,7 +318,16 @@ public class MIPS {
     }
 
     public void write(String s) throws IOException {
-        fileWriter.write(s + "\n");
+        fileWriter.write(s);
+
+        int len = s.length();
+        int space = (len <= 30) ? 30 - len : 0;
+        for (int i = 0; i < space; i++) {
+            fileWriter.write(" ");
+        }
+        fileWriter.write("#" + LineManager.getInstance()
+                .getNowLine().getMidCodeLine()+"\n");
+
         System.out.println(s);
     }
 

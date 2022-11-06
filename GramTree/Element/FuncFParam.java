@@ -2,6 +2,7 @@ package GramTree.Element;
 
 import GramTree.*;
 import SymbolTableBin.TypeTable;
+import SymbolTableBin.Value;
 import gccBin.Lex.Symbol;
 import gccBin.MidCode.original.IRGenerate;
 
@@ -21,33 +22,39 @@ public class FuncFParam extends TreeFatherNode {
     private int dimension;
 
     private int index; //函数的第x个参数。
-    public FuncFParam(){
+    private Value towDim; //如果由第二维的话
+
+    public FuncFParam() {
         super();
         super.setLabel(Label.FuncFParam);
         this.dimension = 0;
         index = 0;
+        towDim = new Value();
     }
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        super.ergodicMidCode(fileWriter,param);
-        IRGenerate.getInstance().funcFParam(type,name,dimension,super.getTableSymbol(),falseRow);
+        super.ergodicMidCode(fileWriter, param);
+        IRGenerate.getInstance().funcFParam(type, name, dimension, super.getTableSymbol(), falseRow);
+        if (constExpTwo != null) {
+            towDim.setNum(constExpTwo.getValue());
+        }
     }
 
     @Override
     public void addChildOperate(TreeElement element) {
-        if(element instanceof Word){
+        if (element instanceof Word) {
             Word word = (Word) element;
-            if(word.getSym() == Symbol.IDENFR){
+            if (word.getSym() == Symbol.IDENFR) {
                 this.name = word.getToken();
                 this.falseRow = word.getFalseRow();
-            } else if(word.getSym() == Symbol.LBRACK){
+            } else if (word.getSym() == Symbol.LBRACK) {
                 this.dimension++;
             }
-        } else if(element instanceof BType){
+        } else if (element instanceof BType) {
             this.bType = (BType) element;
             this.type = ((BType) element).getType();
-        } else if(element instanceof ConstExp){
+        } else if (element instanceof ConstExp) {
             this.constExpTwo = (ConstExp) element;
         }
     }
@@ -74,5 +81,9 @@ public class FuncFParam extends TreeFatherNode {
 
     public int getFalseRow() {
         return falseRow;
+    }
+
+    public Value getTowDim() {
+        return towDim;
     }
 }

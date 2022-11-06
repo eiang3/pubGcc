@@ -80,6 +80,7 @@ public class AssignLine extends Line {
         }
     }
 
+    @Override
     public String getMidCodeLine() {
         if (isPureAssign()) {
             return ans + " = " + t1;

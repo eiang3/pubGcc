@@ -56,6 +56,9 @@ public class LineManager {
         return lines.get(ergodicIndex++);
     }
 
+    public Line getNowLine(){
+        return lines.get(ergodicIndex-1);
+    }
     /**
      * 回退一条line
      */
@@ -74,7 +77,7 @@ public class LineManager {
 
     public Line addLines(String line, TableSymbol tableSymbol) {
         String[] elements = line.split(" ");
-        if (equ(4, elements, 0, "&arr")) {
+        if (equ(3, elements, 0, "&arr")) {
             ArrayDefLine a = new ArrayDefLine(line, numLine++, tableSymbol, elements);
             this.lines.add(a);
             return a;

@@ -2,6 +2,7 @@ package gccBin.MIPS.tool;
 
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.Judge;
+import gccBin.MidCode.LineManager;
 import gccBin.MidCode.original.IRTagManage;
 import gccBin.UnExpect;
 
@@ -71,7 +72,7 @@ public class MipsIns {
     }
 
     public static void lw_ans_label_num(Reg ans, String label, int number) throws IOException {
-        write("lw " + ans + "," + label + "+" + number);
+        write("lw " + ans + "," + label + " + " + number);
     }
 
     public static void lw_ans_label(Reg ans, String label) throws IOException {
@@ -79,7 +80,7 @@ public class MipsIns {
     }
 
     public static void sw_value_label_num(Reg value, String label, int number) throws IOException {
-        write("sw " + value + "," + label + "+" + number);
+        write("sw " + value + "," + label + " + " + number);
     }
 
     public static void sw_value_label(Reg value, String label) throws IOException {
@@ -219,11 +220,7 @@ public class MipsIns {
             div_ans_reg_reg(ans, temp1, temp2);
         } else if (Judge.isMod(op)) {
             mod_ans_reg_reg(ans, temp1, temp2);
-        } /*else if (Judge.isSll(op)) {
-            sll_ans_regx_num(ans, temp1, 2);
-        } else if (Judge.isSrl(op)) {
-            srl_ans_regx_num(ans, temp1, 2);
-        }*/
+        }
     }
 
     /**
@@ -294,7 +291,7 @@ public class MipsIns {
      */
     public static void address_srl_2(Reg ans, int off) throws IOException {
         add_ans_reg_regOrNum(ans, Reg.$fp, off);
-        srl_ans_regx_num(ans, Reg.r1, off);
+        srl_ans_regx_num(ans, ans, 2);
     }
 
     public static void push(Reg reg) throws IOException {
@@ -306,4 +303,5 @@ public class MipsIns {
         lw_ans_base(reg, Reg.$sp);
         add_ans_reg_regOrNum(Reg.$sp, Reg.$sp, 4);
     }
+
 }
