@@ -23,7 +23,7 @@ public class BreakStmt extends Stmt{
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         IRGenerate.getInstance().annotate(this.toString());
-        IRGenerate.getInstance().jump(param.getWhileEndLabel());
+        IRGenerate.getInstance().b_label(param.getWhileEndLabel());
     }
 
     @Override

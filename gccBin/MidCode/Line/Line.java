@@ -51,7 +51,7 @@ public class Line {
     }
 
     public boolean addGen(String name) {
-        if (Judge.isVar(name, tableSymbol)) {
+        if (Judge.is_LocalVar(name, tableSymbol)) {
             this.gen = name;
             return true;
         }
@@ -59,7 +59,7 @@ public class Line {
     }
 
     public boolean addUse(String name) {
-        if (Judge.isVar(name, tableSymbol)) {
+        if (Judge.is_LocalVar(name, tableSymbol)) {
             this.use.add(name);
             return true;
         }

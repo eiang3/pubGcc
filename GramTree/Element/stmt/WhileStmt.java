@@ -32,7 +32,7 @@ public class WhileStmt extends Stmt {
         Param p = new Param(param);
         p.setWhileOrIfEndLabel(end_while);
         p.setWhileEndLabel(end_while);
-        p.setCondLabel(cond_again);
+        p.setCondBeginLabel(cond_again);
 
         IRGenerate.getInstance().annotate("while");
         IRGenerate.getInstance().localLabel(cond_again); //    cond_again:
@@ -41,7 +41,7 @@ public class WhileStmt extends Stmt {
         IRGenerate.getInstance().annotate("cond "+cond.toString());
 
         stmt.midCodeGen(fileWriter, p); //stmt;
-        IRGenerate.getInstance().jump(cond_again);     // jump cond_again
+        IRGenerate.getInstance().b_label(cond_again);     // jump cond_again
         IRGenerate.getInstance().localLabel(end_while); //end_while:
     }
 

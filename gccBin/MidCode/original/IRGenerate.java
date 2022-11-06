@@ -192,7 +192,7 @@ public class IRGenerate {
         write("}\n");
     }
 
-    public void jump(String label) throws IOException {
+    public void b_label(String label) throws IOException {
         write("b " + label + "\n");
     }
 

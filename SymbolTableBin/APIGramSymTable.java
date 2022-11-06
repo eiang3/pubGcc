@@ -37,13 +37,18 @@ public class APIGramSymTable {
             ElementConst element = new ElementConst(
                     constDef.getName(), constDef.getType(), constDef.getValue());
             this.nowTable.addElement(element);
-            if (this.nowTable == rootTable) element.setGlobal(true);
+
+            judgeGlobal(element);
+            nameClash(element.getName(), element);
+
         } else {
             ElementConstArray elementArray = new ElementConstArray(
                     constDef.getName(), constDef.getType(), TypeTable.CONST,
                     constDef.getDimension(), constDef.getArray());
             this.nowTable.addElement(elementArray);
-            if (this.nowTable == rootTable) elementArray.setGlobal(true);
+
+            judgeGlobal(elementArray);
+            nameClash(elementArray.getName(), elementArray);
         }
     }
 
@@ -55,26 +60,17 @@ public class APIGramSymTable {
                     varDef.getName(), TypeTable.INT); // TypeTable.INT改成get有bug
             this.nowTable.addElement(elementVar);
 
-            if (nowTable != rootTable) {
-                String name = varDef.getName();
-                if (name2Times.containsKey(name)) {
-                    int times = name2Times.get(name);
-                    elementVar.setSubScript(times);
-                    name2Times.put(name, times + 1);
-                    APIIRSymTable.getInstance().addToRedefineElement(elementVar,nowTable);
-                } else {
-                    name2Times.put(name, 0);
-                }
-            } else {
-                elementVar.setGlobal(true);
-            }
+            nameClash(elementVar.getName(), elementVar);
+            judgeGlobal(elementVar);
         } else {
             ElementVarArray elementVarArray = new ElementVarArray(
                     varDef.getName(), varDef.getType(), TypeTable.VAR,
                     varDef.getDimension(), varDef.getOneDim(),
                     varDef.getTwoDim());
             this.nowTable.addElement(elementVarArray);
-            if (this.nowTable == rootTable) elementVarArray.setGlobal(true);
+
+            nameClash(elementVarArray.getName(), elementVarArray);
+            judgeGlobal(elementVarArray);
         }
     }
 
@@ -86,6 +82,8 @@ public class APIGramSymTable {
                 TypeTable.FUNC_F_PARAM, funcFParam.getDimension(),
                 funcFParam.getIndex());
         this.nowTable.addElement(elementFParam);
+
+        nameClash(elementFParam.getName(), elementFParam);
     }
 
     //name,type,decl,dim
@@ -96,6 +94,8 @@ public class APIGramSymTable {
         funcElement.setReturnType(funcDef.getReturnType());
         funcElement.addParameters(funcDef.getFParams());
         this.rootTable.addElement(funcElement);
+
+        nameClash(funcElement.getName(), funcElement);
     }
 
     public void addMainFuncDef() throws IOException {
@@ -104,6 +104,8 @@ public class APIGramSymTable {
                 "main", TypeTable.FUNC, TypeTable.FUNC, 0);
         funcElement.setReturnType(TypeTable.INT);
         this.nowTable.addElement(funcElement);
+
+        nameClash("main",funcElement);
     }
 
     //构筑语法树部分，已经可以确定不会轻易更改。
@@ -130,4 +132,20 @@ public class APIGramSymTable {
         if (close) return null;
         return nowTable;
     }
+
+    public void nameClash(String name, ElementTable elementTable) {
+        if (name2Times.containsKey(name)) {
+            int times = name2Times.get(name);
+            elementTable.setSubScript(times);
+            name2Times.put(name, times + 1);
+            APIIRSymTable.getInstance().addToRedefineElement(elementTable, nowTable);
+        } else {
+            name2Times.put(name, 0);
+        }
+    }
+
+    public void judgeGlobal(ElementTable elementTable){
+        if(nowTable == rootTable) elementTable.setGlobal(true);
+    }
 }
+

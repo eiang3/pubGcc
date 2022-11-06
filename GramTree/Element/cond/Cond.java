@@ -1,6 +1,8 @@
 package GramTree.Element.cond;
 
 import GramTree.*;
+import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.original.IRTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,9 +22,14 @@ public class Cond extends TreeFatherNode {
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         Param p = new Param(param);
         p.setExpKind(InheritProp.CondExp);
+        String condEnd_label = IRTagManage.getInstance().newLabel();
+        p.setCondEndLabel(condEnd_label);
+
         for(TreeElement treeElement : super.getChildren()){
             treeElement.midCodeGen(fileWriter,p);
         }
+
+        IRGenerate.getInstance().localLabel(condEnd_label);
     }
 
     @Override

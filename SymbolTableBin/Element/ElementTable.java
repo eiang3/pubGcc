@@ -1,9 +1,12 @@
 package SymbolTableBin.Element;
 
 import SymbolTableBin.Position;
+import SymbolTableBin.TableSymbol;
 import SymbolTableBin.TypeTable;
 import gccBin.MIPS.tool.Reg;
 import gccBin.UnExpect;
+
+import java.io.IOException;
 
 /*
 符号表基本元素 ok
@@ -18,6 +21,8 @@ public class ElementTable {
     private boolean global;
     private boolean useless; //只定义不使用的变量
 
+    private int subScript;  //如果有重命名的变量，需要添加下标保证它们的名字不一样。
+
     public ElementTable(String name, TypeTable type, TypeTable decl,
                         int dimension){
         this.name = name;
@@ -26,6 +31,7 @@ public class ElementTable {
         this.dimension = dimension;
         this.position  = new Position();
         this.global = false;
+        this.subScript = -1;
     }
 
     public String getName() {
@@ -58,10 +64,6 @@ public class ElementTable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getIRName(){
-        return this.name;
     }
 
     public void setMemOff(int off){
@@ -105,5 +107,24 @@ public class ElementTable {
 
     public void setReg(Reg reg){
         this.position.setReg(reg);
+    }
+
+    //************************ 变量重命名 ************************//
+    public void setSubScript(int subScript) {
+        this.subScript = subScript;
+    }
+
+    public String getIRName() {
+        if (this.subScript == -1) {
+            return getName();
+        } else {
+            return getName() + "$" + subScript;
+        }
+    }
+
+    public void refreshName(TableSymbol tableSymbol) throws IOException {
+        tableSymbol.remove(this);
+        setName(this.getIRName());
+        tableSymbol.addElement(this);
     }
 }

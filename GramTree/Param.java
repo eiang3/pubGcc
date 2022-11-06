@@ -10,7 +10,8 @@ public class Param {
     
     private String whileOrIfEndLabel;
     private String whileEndLabel;
-    private String condLabel;
+    private String condBeginLabel;
+    private String condEndLabel;
 
     private int fParamDim; //形参的维数
 
@@ -23,7 +24,9 @@ public class Param {
 
         this.whileOrIfEndLabel = param.getWhileOrIfEndLabel();
         this.whileEndLabel = param.getWhileEndLabel();
-        this.condLabel = param.getCondLabel();
+        this.condBeginLabel = param.getCondBeginLabel();
+        this.condEndLabel = param.getCondEndLabel();
+
         this.fParamDim = param.getFParamDim();
     }
 
@@ -58,12 +61,12 @@ public class Param {
         this.expKind = expKind;
     }
 
-    public String getCondLabel() {
-        return condLabel;
+    public String getCondBeginLabel() {
+        return condBeginLabel;
     }
 
-    public void setCondLabel(String condLabel) {
-        this.condLabel = condLabel;
+    public void setCondBeginLabel(String condBeginLabel) {
+        this.condBeginLabel = condBeginLabel;
     }
 
     public InheritProp getInitial() {
@@ -104,5 +107,13 @@ public class Param {
 
     public void setFParamDim(int fParamDim) {
         this.fParamDim = fParamDim;
+    }
+
+    public String getCondEndLabel() {
+        return condEndLabel;
+    }
+
+    public void setCondEndLabel(String condEndLabel) {
+        this.condEndLabel = condEndLabel;
     }
 }

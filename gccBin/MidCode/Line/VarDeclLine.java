@@ -2,6 +2,7 @@ package gccBin.MidCode.Line;
 
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MidCode.Judge;
 import gccBin.MidCode.firstProcess.VarNodeManager;
 
 /**
@@ -14,7 +15,9 @@ public class VarDeclLine extends Line {
     public VarDeclLine(String s, int line, TableSymbol tableSymbol, String[] str) {
         super(s, line, tableSymbol);
         this.name = str[2];
-        VarNodeManager.getInstance().addVarNode(name, tableSymbol);
+        if (Judge.is_LocalVar(name,tableSymbol)) {
+            VarNodeManager.getInstance().addVarNode(name, tableSymbol);
+        }
     }
 
     public String getName() {

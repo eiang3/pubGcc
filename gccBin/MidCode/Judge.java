@@ -19,7 +19,7 @@ public class Judge {
      *
      * @return *
      */
-    public static boolean isVar(String name, TableSymbol tableSymbol) { //isVarNode
+    public static boolean is_LocalVar(String name, TableSymbol tableSymbol) { //isVarNode
         if (name == null || name.length() == 0 ) return false;
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
         if (elementTable != null && !elementTable.isGlobal() && !(name.charAt(0) == '$')) {

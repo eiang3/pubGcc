@@ -22,7 +22,7 @@ public class ContinueStmt extends Stmt{
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         IRGenerate.getInstance().annotate(this.toString());
-        IRGenerate.getInstance().jump(param.getCondLabel());
+        IRGenerate.getInstance().b_label(param.getCondBeginLabel());
     }
 
     @Override

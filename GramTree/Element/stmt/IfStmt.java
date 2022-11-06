@@ -42,7 +42,7 @@ public class IfStmt extends Stmt {
             IRGenerate.getInstance().annotate("cond " + cond.toString());
 
             ifStmt.midCodeGen(fileWriter, p); //if stmt;
-            IRGenerate.getInstance().jump(end_if); //jump end_if
+            IRGenerate.getInstance().b_label(end_if); //jump end_if
 
             IRGenerate.getInstance().localLabel(start_else); // start_else:
             IRGenerate.getInstance().annotate("else");

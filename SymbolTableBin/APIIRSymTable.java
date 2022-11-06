@@ -16,7 +16,7 @@ public class APIIRSymTable {
 
 
     //在第一遍更新完符号表中重定义的变量名字后，需要把相应的表项更新。
-    private final HashMap<ElementVar,TableSymbol> redefineElement = new HashMap<>();
+    private final HashMap<ElementTable,TableSymbol> redefineElement = new HashMap<>();
 
     private APIIRSymTable(){}
 
@@ -27,16 +27,16 @@ public class APIIRSymTable {
         return instance;
     }
 
-    public void addToRedefineElement(ElementVar elementVar,TableSymbol tableSymbol){
-        this.redefineElement.put(elementVar,tableSymbol);
+    public void addToRedefineElement(ElementTable elementTable,TableSymbol tableSymbol){
+        this.redefineElement.put(elementTable,tableSymbol);
     }
 
     /**
      * 刷新符号表项，把重定义的变量重命名
      */
     public void refreshTable() throws IOException {
-        for(ElementVar elementVar:redefineElement.keySet()){
-            elementVar.refreshName(redefineElement.get(elementVar));
+        for(ElementTable elementTable:redefineElement.keySet()){
+            elementTable.refreshName(redefineElement.get(elementTable));
         }
     }
 
