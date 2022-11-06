@@ -70,12 +70,12 @@ public class IRFirst {
         BasicBlockManager.getInstance().block_ActiveVarAnalysis();
 
         //debug
-        /*LineManager.getInstance().printfLines();
+        LineManager.getInstance().printfLines();
 
         BasicBlockManager.getInstance().printfBlockMessage();
 
         VarNodeManager.getInstance().printfVarNodeMessage();
-        VarNodeManager.getInstance().printfVarWebMassage();*/
+        VarNodeManager.getInstance().printfVarWebMassage();
 
         //新节点的活跃范围分析
         BasicBlockManager.getInstance().varNode_ActiveScopeAnalysis();

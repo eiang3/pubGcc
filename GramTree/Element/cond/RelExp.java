@@ -27,7 +27,7 @@ public class RelExp extends TreeFatherNode {
     @Override
     public void midCodeGen(FileWriter fileWriter,Param param) throws IOException {
         super.ergodicMidCode(fileWriter,param);
-        if(relExp != null){
+        if(relExp != null){ //错误的话
             String t1 = relExp.getMidCode();
             String t2 = addExp.getMidCode();
             IRGenerate.getInstance().condJump(t1,word,t2, param.getWhileOrIfEndLabel());

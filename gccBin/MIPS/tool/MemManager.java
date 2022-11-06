@@ -9,16 +9,20 @@ import gccBin.UnExpect;
 import javax.xml.bind.Element;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class MemManager {
     private static MemManager memManager;
 
     private int fpOff;
-    private ArrayList<Reg> regNeedToStore;
+    private HashSet<Reg> regNeedToStore;
+
+    private HashSet<Reg> regFParamNeedToStore;
 
     private MemManager() {
         fpOff = 0x0;
-        regNeedToStore = new ArrayList<>();
+        regNeedToStore = new HashSet<>();
+        regFParamNeedToStore = new HashSet<>();
     }
 
     public static MemManager getInstance() {
@@ -30,29 +34,30 @@ public class MemManager {
 
     public void pushSReg() throws IOException {
         int number = regNeedToStore.size();
+        MipsIns.sub_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
         int count = 0;
         for (Reg reg : regNeedToStore) {
             MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
         MipsIns.sw_value_num_baseReg(Reg.$ra, count * 4, Reg.$sp);
-        MipsIns.add_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
     }
 
     public void popSReg() throws IOException {
         int number = regNeedToStore.size();
-        MipsIns.sub_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
         int count = 0;
         for (Reg reg : regNeedToStore) {
             MipsIns.lw_ans_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
         MipsIns.lw_ans_num_baseReg(Reg.$ra, count * 4, Reg.$sp);
+        MipsIns.add_ans_reg_regOrNum(Reg.$sp, Reg.$sp, (number + 1) * 4);
     }
 
     public void enterANewFunc() {
         this.fpOff = 0;
-        regNeedToStore = new ArrayList<>();
+        regNeedToStore = new HashSet<>();
+        regFParamNeedToStore = new HashSet<>();
     }
 
     public int getFpOff() {
@@ -110,5 +115,37 @@ public class MemManager {
 
     public void addFpOff(int x) {
         fpOff = fpOff + x * 4;
+    }
+
+    public void addTo_AF_StoreReg(Reg reg) {
+        this.regFParamNeedToStore.add(reg);
+    }
+
+    public void pushAReg() throws IOException {
+        int number = regFParamNeedToStore.size();
+        if (number != 0) {
+            MipsIns.sub_ans_reg_regOrNum(Reg.$sp, Reg.$sp, number * 4);
+        }
+        int count = 0;
+        for (Reg reg : regFParamNeedToStore) {
+            MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
+            count++;
+        }
+    }
+
+    public void popAReg() throws IOException {
+        int number = regFParamNeedToStore.size();
+        int count = 0;
+        for (Reg reg : regFParamNeedToStore) {
+            MipsIns.lw_ans_num_baseReg(reg, count * 4, Reg.$sp);
+            count++;
+        }
+        if (number != 0) {
+            MipsIns.add_ans_reg_regOrNum(Reg.$sp, Reg.$sp, number * 4);
+        }
+    }
+
+    public boolean inRegToStore(Reg reg){
+        return regFParamNeedToStore.contains(reg) || regNeedToStore.contains(reg);
     }
 }

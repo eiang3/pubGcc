@@ -102,6 +102,7 @@ public class MIPS {
         MipsIns.jal_label(callFuncLine.getFuncName());
         MipsIns.add_ans_reg_regOrNum(Reg.$fp, Reg.$fp, MemManager.getInstance().getFpOff());
         MemManager.getInstance().popSReg();
+        MemManager.getInstance().popAReg();
     }
 
     public void fParamDefLineTrans(FParamDefLine fParamDefLine) {
@@ -110,6 +111,8 @@ public class MIPS {
         do {
             if (index > 4) {
                 MemManager.getInstance().addFpOff(1);
+            } else if (index >= 1) {
+                MemManager.getInstance().addTo_AF_StoreReg(Reg.getFParamReg(index));
             }
             line = LineManager.getInstance().nextLine();
             index++;
@@ -118,6 +121,8 @@ public class MIPS {
     }
 
     public void pushLineLineTrnas(PushLine push) throws IOException {
+        MemManager.getInstance().pushAReg();
+
         int index = 1;
         Line line = push;
         int off = MemManager.getInstance().getFpOff();

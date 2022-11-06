@@ -46,22 +46,24 @@ public class BasicBlockManager {
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum++, nowBlock);
             nowBlock.parseLine_def(line);
-
             label2Block.put(((LabelLine) line).getLabel(), nowBlock);
+            return;
         } else if (line instanceof FuncDefLine) { //以int|void func ()开始的基本块
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum++, nowBlock);
             nowBlock.parseLine_def(line);
-
             funcName = ((FuncDefLine) line).getName();
             funcName2Block.put(funcName, nowBlock);
+            return;
         }
 
         if (nowBlock == null) { //刚开始的语句|跳转语句下一句
             nowBlock = new BasicBlock(basicBlockNum);
             basicBlocks.put(basicBlockNum++, nowBlock);
-            nowBlock.parseLine_def(line);
-        } else if (line instanceof BLine ) { //跳转函数
+            //nowBlock.parseLine_def(line);
+        }
+
+        if (line instanceof BLine) { //跳转函数
             BLine bLine = (BLine) line;
             nowBlock.parseLine_def(line);
 
@@ -105,7 +107,7 @@ public class BasicBlockManager {
      * 不包括exit块，因为其没有out-block
      */
     public void connectAllAndInitKill() {
-        for (int i = 0; i < basicBlocks.size() - 2; i++) {
+        for (int i = 0; i < basicBlocks.size() - 1; i++) {
             BasicBlock b = basicBlocks.get(i);
             connectBlockAndInitKill(b);
         }
@@ -116,15 +118,21 @@ public class BasicBlockManager {
         if (block.isGotoExit()) {
             block.addOutBlock(bExit);
         } else if (block.getLabel() != null) { // b** label
-            block.addOutBlock(label2Block.get(block.getLabel()));
-            if (!block.getJump().equals("b")) {
-                block.addOutBlock(basicBlocks.get(block.getIndex() + 1));
+            if (label2Block.containsKey(block.getLabel())) {
+                block.addOutBlock(label2Block.get(block.getLabel()));
+                if (!block.getJump().equals("b")) {
+                    block.addOutBlock(basicBlocks.get(block.getIndex() + 1));
+                }
             }
         } else if (block.getFunc() != null) { //call func
-            block.addOutBlock(funcName2Block.get(block.getFunc()));
+            if (funcName2Block.containsKey(block.getFunc())) {
+                block.addOutBlock(funcName2Block.get(block.getFunc()));
+            }
         } else if (block.getRetFunc() != null) { //ret (exp)
-            for (Integer integer : call2nextBlockId.get(block.getRetFunc())) {
-                block.addOutBlock(basicBlocks.get(integer));
+            if (call2nextBlockId.containsKey(block.getRetFunc())) {
+                for (Integer integer : call2nextBlockId.get(block.getRetFunc())) {
+                    block.addOutBlock(basicBlocks.get(integer));
+                }
             }
         } else {
             block.addOutBlock(basicBlocks.get(block.getIndex() + 1));
@@ -169,7 +177,7 @@ public class BasicBlockManager {
             }
 
             //debug
-            if(i == 19){
+            if (i == 19) {
                 int a;
             }
             //再判断gen集。
@@ -247,9 +255,13 @@ public class BasicBlockManager {
         for (int key : basicBlocks.keySet()) {
             BasicBlock block = basicBlocks.get(key);
             System.out.println("index " + block.getIndex());
-            System.out.println(block.getSum());
-            System.out.println("in :" + block.getIn_def());
-            System.out.println("gen " + block.getGen_def());
+            block.printfInBlock();
+            block.printfOutBlock();
+            System.out.println("sum : " + block.getSum());
+            System.out.println("in : " + block.getIn_def());
+            System.out.println("gen : " + block.getGen_def());
+            System.out.println("kill : " + block.getKill_def());
+            System.out.println("out : " + block.getOut_def());
             System.out.println();
         }
     }

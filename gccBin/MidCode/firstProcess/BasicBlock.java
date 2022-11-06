@@ -102,7 +102,7 @@ public class BasicBlock {
                 def_active.add(lineDef);
             }
             //debug
-            if(lineDef != null && lineDef.equals("c") || lineUse.contains("c")){
+            if(lineDef != null && lineDef.equals("num") || lineUse.contains("num")){
                 int lalalala;
             }
             //对于只存在于基本块内的活跃变量分析
@@ -415,5 +415,26 @@ public class BasicBlock {
 
     private HashSet<String> getIn_active() {
         return in_active;
+    }
+
+    //debug
+    public void printfInBlock(){
+        System.out.print("in-block:{");
+        for(BasicBlock block:inBlocks){
+            System.out.print(block.getIndex()+",");
+        }
+        System.out.println("}");
+    }
+
+    public void printfOutBlock(){
+        System.out.print("out-block:{");
+        for(BasicBlock block:outBlocks){
+            System.out.print(block.getIndex()+",");
+        }
+        System.out.println("}");
+    }
+
+    public BitSet getKill_def() {
+        return (BitSet) kill_def.clone();
     }
 }

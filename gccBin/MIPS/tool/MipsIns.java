@@ -75,7 +75,7 @@ public class MipsIns {
     }
 
     public static void lw_ans_label(Reg ans, String label) throws IOException {
-        write("lw " + ans + "," + label );
+        write("lw " + ans + "," + label);
     }
 
     public static void sw_value_label_num(Reg value, String label, int number) throws IOException {
@@ -131,7 +131,7 @@ public class MipsIns {
         write("beq " + Reg.$zero + "," + reg + "," + labelLiOne);
         write("move " + reg + "," + Reg.$zero);
         write("b " + labelEnd);
-        write(labelLiOne);
+        write(labelLiOne + ":");
         write("li " + reg + ",1");
         write(labelEnd + ":");
     }
@@ -141,21 +141,27 @@ public class MipsIns {
     }
 
     public static void printfStr(String s) throws IOException {
+        if (MemManager.getInstance().inRegToStore(Reg.$a0)) push(Reg.$a0);
         la_ans_label(Reg.$a0, s);
         li_ans_num(Reg.$v0, 4);
         write("syscall");
+        if (MemManager.getInstance().inRegToStore(Reg.$a0)) pop(Reg.$a0);
     }
 
     public static void printfInt(int s) throws IOException {
+        if (MemManager.getInstance().inRegToStore(Reg.$a0)) push(Reg.$a0);
         li_ans_num(Reg.$a0, s);
         li_ans_num(Reg.$v0, 1);
         write("syscall");
+        if (MemManager.getInstance().inRegToStore(Reg.$a0)) pop(Reg.$a0);
     }
 
     public static void printfExp(Reg s) throws IOException {
+        if (MemManager.getInstance().inRegToStore(Reg.$a0)) push(Reg.$a0);
         move_reg_reg(Reg.$a0, s);
         li_ans_num(Reg.$v0, 1);
         write("syscall");
+        if (MemManager.getInstance().inRegToStore(Reg.$a0)) pop(Reg.$a0);
     }
 
     public static void scanfInt() throws IOException {
@@ -289,5 +295,15 @@ public class MipsIns {
     public static void address_srl_2(Reg ans, int off) throws IOException {
         add_ans_reg_regOrNum(ans, Reg.$fp, off);
         srl_ans_regx_num(ans, Reg.r1, 2);
+    }
+
+    public static void push(Reg reg) throws IOException {
+        sub_ans_reg_regOrNum(Reg.$sp, Reg.$sp, 4);
+        sw_value_base(reg, Reg.$sp);
+    }
+
+    public static void pop(Reg reg) throws IOException {
+        lw_ans_base(reg, Reg.$sp);
+        add_ans_reg_regOrNum(Reg.$sp, Reg.$sp, 4);
     }
 }

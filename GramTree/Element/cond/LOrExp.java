@@ -29,6 +29,7 @@ public class LOrExp extends TreeFatherNode {
             Param p = new Param(param);
             p.setWhileOrIfEndLabel(nextOr);
             lOrExp.midCodeGen(fileWriter,p);
+
             IRGenerate.getInstance().localLabel(nextOr);
             lAndExp.midCodeGen(fileWriter,param);
         } else {
