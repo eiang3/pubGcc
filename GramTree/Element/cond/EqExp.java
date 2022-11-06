@@ -18,7 +18,7 @@ public class EqExp extends TreeFatherNode {
 
     private boolean signalExp;
 
-    public EqExp(){
+    public EqExp() {
         super();
         super.setLabel(Label.EqExp);
         this.signalExp = false;
@@ -26,22 +26,19 @@ public class EqExp extends TreeFatherNode {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        super.ergodicMidCode(fileWriter,param);
-        if(eqExp != null){
+        super.ergodicMidCode(fileWriter, param);
+        if (eqExp != null) {
             String t1 = eqExp.getMidCode();
             String t2 = relExp.getMidCode();
-            IRGenerate.getInstance().condJump(t1,word,t2, param.getWhileOrIfEndLabel());
+            this.midCode = IRGenerate.getInstance().condJump(t1, word, t2);
         } else {
-            if(super.getFather() instanceof LAndExp && this.signalExp){
-                ((LAndExp)super.getFather()).setSignalExp(true);
-            }
             this.midCode = relExp.getMidCode();
         }
     }
 
     @Override
     public void addChildOperate(TreeElement treeElement) {
-        if(treeElement instanceof EqExp){
+        if (treeElement instanceof EqExp) {
             this.eqExp = (EqExp) treeElement;
         } else if (treeElement instanceof Word) {
             this.word = (Word) treeElement;

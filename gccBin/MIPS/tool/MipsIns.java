@@ -219,11 +219,11 @@ public class MipsIns {
             div_ans_reg_reg(ans, temp1, temp2);
         } else if (Judge.isMod(op)) {
             mod_ans_reg_reg(ans, temp1, temp2);
-        } else if (Judge.isSll(op)) {
+        } /*else if (Judge.isSll(op)) {
             sll_ans_regx_num(ans, temp1, 2);
         } else if (Judge.isSrl(op)) {
             srl_ans_regx_num(ans, temp1, 2);
-        }
+        }*/
     }
 
     /**
@@ -294,7 +294,7 @@ public class MipsIns {
      */
     public static void address_srl_2(Reg ans, int off) throws IOException {
         add_ans_reg_regOrNum(ans, Reg.$fp, off);
-        srl_ans_regx_num(ans, Reg.r1, 2);
+        srl_ans_regx_num(ans, Reg.r1, off);
     }
 
     public static void push(Reg reg) throws IOException {

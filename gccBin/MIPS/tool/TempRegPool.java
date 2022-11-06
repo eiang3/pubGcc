@@ -40,6 +40,12 @@ public class TempRegPool {
      * @return reg || null
      */
     public Reg addToPool(String name) {
+        if (temp2Reg.containsKey(name)) {
+            return temp2Reg.get(name);
+        } else if (temp2off.containsKey(name)) {
+            return null;
+        }
+
         if (hasRegToAllocate()) {
             HashSet<Reg> regs = new HashSet<>(temp2Reg.values());
             Reg reg = Reg.getFreeTempReg(regs);

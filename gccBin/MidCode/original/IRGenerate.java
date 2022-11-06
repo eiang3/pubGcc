@@ -91,7 +91,7 @@ public class IRGenerate {
         String oldName = name;
         name = elementTable.getIRName();
         if (elementTable.getDimension() == 0) {  //保存的是值
-            return lValNormal(tableSymbol, oldName, new Param(),falseRow); //实参传值
+            return lValNormal(tableSymbol, oldName, new Param(), falseRow); //实参传值
         } else {
             String ans = IRTagManage.getInstance().newVar();
             write(ans + " = " + name + " >> 2\n");  // 除4
@@ -105,10 +105,10 @@ public class IRGenerate {
         String oldName = name;
         name = elementTable.getIRName();
         if (elementTable.getDimension() == 1) {  //保存的是值
-            return lValNormal(oldName, one, new Param(),tableSymbol,falseRow);
+            return lValNormal(oldName, one, new Param(), tableSymbol, falseRow);
         } else if (elementTable.getDimension() == 2) {
             int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
-                    tableSymbol, oldName,falseRow);
+                    tableSymbol, oldName, falseRow);
             String t1 = IRTagManage.getInstance().newVar();
             write(t1 + " = " + one + " * " + len + "\n");
             String t2 = IRTagManage.getInstance().newVar();
@@ -122,7 +122,7 @@ public class IRGenerate {
     //2维一定是数值
     public String lValRParam(TableSymbol tableSymbol, String name, String one, String two, int falseRow) throws IOException {
         int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
-                tableSymbol, name,falseRow);
+                tableSymbol, name, falseRow);
         return lValNormal(name, one, two, len, new Param(), tableSymbol, falseRow);
     }
 
@@ -202,8 +202,53 @@ public class IRGenerate {
         write("b " + label + "\n");
     }
 
-    public void condJump(String t1, Word op, String t2, String label) throws IOException {
-        write("&cmp " + t1 + " " + t2 + "\n");
+    public String condJump(String op1, Word op, String op2) throws IOException {
+        String subAns = IRTagManage.getInstance().newVar();
+        if (op.getSym() == Symbol.LSS || op.getSym() == Symbol.LEQ) {
+            myWrite(subAns + " = " + op1 + " - " + op2);
+        } else {
+            myWrite(subAns + " = " + op2 + " - " + op1);
+        }
+
+        String ret = IRTagManage.getInstance().newVar();
+        // a - b < 0 置1
+        if (op.getSym() == Symbol.LSS || op.getSym() == Symbol.GRE) {
+            myWrite(ret + " = " + subAns + " >> 31");
+        } //a - b <= 0 置一
+        else if (op.getSym() == Symbol.LEQ || op.getSym() == Symbol.GEQ) {
+            String label1 = IRTagManage.getInstance().newLabel();
+            String label2 = IRTagManage.getInstance().newLabel();
+            myWrite("&cmp " + subAns + " 0");
+            myWrite("ble " + label1 );
+            myWrite(ret + " = 0");
+            b_label(label2);
+            localLabel(label1);
+            myWrite(ret + " = 1");
+            localLabel(label2);
+        } //a - b == 0 置1
+        else if (op.getSym() == Symbol.EQL) {
+            String label1 = IRTagManage.getInstance().newLabel();
+            String label2 = IRTagManage.getInstance().newLabel();
+            myWrite("&cmp " + subAns + " 0");
+            myWrite("beq " + label1 );
+            myWrite(ret + " = 0");
+            b_label(label2);
+            localLabel(label1);
+            myWrite(ret + " = 1");
+            localLabel(label2);
+        } // a - b != 0 置1
+        else if (op.getSym() == Symbol.NEQ) {
+            String label1 = IRTagManage.getInstance().newLabel();
+            String label2 = IRTagManage.getInstance().newLabel();
+            myWrite("&cmp " + subAns + " 0");
+            myWrite("bne " + label1 );
+            myWrite(ret + " = 0");
+            b_label(label2);
+            localLabel(label1);
+            myWrite(ret + " = 1");
+            localLabel(label2);
+        }
+        /*write("&cmp " + op1 + " " + op2 + "\n");
         if (op.getSym() == Symbol.LSS) { // <
             write("bge " + label + "\n");
         } else if (op.getSym() == Symbol.GRE) { // >
@@ -216,7 +261,13 @@ public class IRGenerate {
             write("bne " + label + "\n");
         } else if (op.getSym() == Symbol.NEQ) { // !=
             write("beq " + label + "\n");
-        }
+        }*/
+        return ret;
+    }
+
+    public void b_false(String ir,String label) throws IOException {
+        myWrite("&cmp " + ir + " 0");
+        myWrite("beq " + label);
     }
 
     public void localLabel(String label) throws IOException {
@@ -231,8 +282,8 @@ public class IRGenerate {
         write(returnType.toString().toLowerCase() + " " + name + " ()\n");
     }
 
-    public void funcFParam(TypeTable type, String name, int dim,TableSymbol tableSymbol,int falseRow) throws IOException {
-        name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol,name,falseRow).getIRName();
+    public void funcFParam(TypeTable type, String name, int dim, TableSymbol tableSymbol, int falseRow) throws IOException {
+        name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         if (dim == 0) {
             write("&para " + type.toString().toLowerCase() + " " + name + "\n");
         } else {
@@ -283,6 +334,11 @@ public class IRGenerate {
 
     public void write(String str) throws IOException {
         fileWriter.write(str);
+        //System.out.print(str);
+    }
+
+    public void myWrite(String str) throws IOException {
+        fileWriter.write(str + "\n");
         //System.out.print(str);
     }
 

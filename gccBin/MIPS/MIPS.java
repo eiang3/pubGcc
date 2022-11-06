@@ -284,6 +284,8 @@ public class MIPS {
                 MIPSHelper.assignExpToArr(ans, t1, tableSymbol);
             } else if (Judge.isTemp(ans) && Judge.isArrayValue(t1)) {
                 MIPSHelper.assignArrToTemp(ans, t1, tableSymbol);
+            } else if (Judge.isTemp(ans) && Judge.isNumber(t1)) {
+                MIPSHelper.assignNumberToTemp(ans, Integer.parseInt(t1));
             }
         } else if (assignLine.isOneOpr()) {
             if (Judge.isTemp(t1)) {

@@ -31,9 +31,14 @@ public class UnaryOpUnaryExp extends UnaryExp{
         } else {
             super.setMidCode(this.unaryExp.getMidCode());
             if(this.unaryOp.getSymbol() == Symbol.MINU) {
-                super.setCoe(-1*super.getCoe());
-            } else if (this.unaryOp.getSymbol() == Symbol.NOT) {
-                super.setNegative(-1*super.getNegative());
+                super.setCoe(-1*unaryExp.getCoe());
+            } else if(this.unaryOp.getSymbol() == Symbol.PLUS){
+                super.setCoe(unaryExp.getCoe());
+            }
+            if (this.unaryOp.getSymbol() == Symbol.NOT) {
+                super.setNegative(-1*unaryExp.getNegative());
+            }  else {
+                super.setNegative(unaryExp.getNegative());
             }
         }
     }

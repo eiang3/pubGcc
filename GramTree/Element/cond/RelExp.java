@@ -30,11 +30,8 @@ public class RelExp extends TreeFatherNode {
         if(relExp != null){ //错误的话
             String t1 = relExp.getMidCode();
             String t2 = addExp.getMidCode();
-            IRGenerate.getInstance().condJump(t1,word,t2, param.getWhileOrIfEndLabel());
+            midCode = IRGenerate.getInstance().condJump(t1,word,t2);
         } else {
-            if(super.getFather() instanceof EqExp){
-                ((EqExp)super.getFather()).setSignalExp(true);
-            }
             this.midCode = addExp.getMidCode();
         }
     }

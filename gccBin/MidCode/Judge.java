@@ -20,7 +20,7 @@ public class Judge {
      * @return *
      */
     public static boolean is_LocalVar(String name, TableSymbol tableSymbol) { //isVarNode
-        if (name == null || name.length() == 0 ) return false;
+        if (name == null || name.length() == 0) return false;
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
         if (elementTable != null && !elementTable.isGlobal() && !(name.charAt(0) == '$')) {
             //不是根节点/不是全局变量  + 不是临时变量
@@ -65,15 +65,22 @@ public class Judge {
     public static boolean isNumber(String s) {
         if (s == null || s.length() == 0) {
             return false;
-        } else {
-            int len = s.length();
-            for (int i = 0; i < len; i++) {
-                if (s.charAt(i) < '0' || s.charAt(i) > '9') {
-                    return false;
-                }
-            }
-            return true;
         }
+        if (s.length() == 1 && s.charAt(0) == '-') {
+            return false;
+        }
+        if (s.length() != 1 && s.charAt(0) == '-') {
+            s = s.substring(1);
+        }
+
+        int len = s.length();
+        for (int i = 0; i < len; i++) {
+            if (s.charAt(i) < '0' || s.charAt(i) > '9') {
+                return false;
+            }
+        }
+        return true;
+
     }
 
     public static boolean isTemp(String s) {

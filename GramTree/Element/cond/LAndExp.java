@@ -14,9 +14,10 @@ public class LAndExp extends TreeFatherNode {
     private Word word;
     private EqExp eqExp;
 
+    //private String midCode;
     private boolean signalExp;
 
-    public LAndExp(){
+    public LAndExp() {
         super();
         super.setLabel(Label.LAndExp);
         this.signalExp = false;
@@ -24,20 +25,25 @@ public class LAndExp extends TreeFatherNode {
 
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
-        super.ergodicMidCode(fileWriter,param);
-        if(signalExp){
-            IRGenerate.getInstance().LAndExpSignalExp(
-                    eqExp.getMidCode(),param.getWhileOrIfEndLabel());
+        if (lAndExp != null) {
+            lAndExp.midCodeGen(fileWriter, param);
+            eqExp.midCodeGen(fileWriter, param);
+            String ret = eqExp.getMidCode();
+            IRGenerate.getInstance().b_false(ret,param.getWhileOrIfEndLabel());
+        } else {
+            eqExp.midCodeGen(fileWriter, param);
+            String ret = eqExp.getMidCode();
+            IRGenerate.getInstance().b_false(ret,param.getWhileOrIfEndLabel());
         }
     }
 
     @Override
     public void addChildOperate(TreeElement treeElement) {
-        if(treeElement instanceof LAndExp){
+        if (treeElement instanceof LAndExp) {
             this.lAndExp = (LAndExp) treeElement;
         } else if (treeElement instanceof Word) {
             this.word = (Word) treeElement;
-        } else if(treeElement instanceof EqExp){
+        } else if (treeElement instanceof EqExp) {
             this.eqExp = (EqExp) treeElement;
         }
     }

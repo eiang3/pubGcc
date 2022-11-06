@@ -15,14 +15,13 @@ public class MIPSHelper {
      * 寄存器里，因为数字可以直接计算
      * 如果值是保存在寄存器里的，就输出寄存器，如果值是保存在
      * 内存里的，就先把值取到临时寄存器
-     *
      */
-    public static Reg getValueInReg(Reg ans,String s) throws IOException {
-        if(Judge.isNumber(s)){
-            MipsIns.li_ans_num(ans,Integer.parseInt(s));
+    public static Reg getValueInReg(Reg ans, String s) throws IOException {
+        if (Judge.isNumber(s)) {
+            MipsIns.li_ans_num(ans, Integer.parseInt(s));
             return ans;
         } else if (Judge.isTemp(s)) {
-            return TempRegPool.getInstance().getTempInReg(ans,s);
+            return TempRegPool.getInstance().getTempInReg(ans, s);
         }
         UnExpect.unexpect("not a exp getValueInReg");
         return null;
@@ -261,6 +260,21 @@ public class MIPSHelper {
         }
     }
 
+    /**
+     * t = num
+     *
+     * @param ans temp
+     * @param num num
+     */
+    public static void assignNumberToTemp(String ans, int num) throws IOException {
+        Reg temp = TempRegPool.getInstance().addToPool(ans);
+        if (TempRegPool.getInstance().inReg(ans)) {
+            MipsIns.li_ans_num(temp, num);
+        } else if (TempRegPool.getInstance().inMem(ans)) {
+            MipsIns.li_ans_num(Reg.r1, num);
+            TempRegPool.getInstance().storeToMem(Reg.r1, ans);
+        } else UnExpect.tempNotInMemAndReg(ans);
+    }
     //*********************************************************************************/
 
     /**
