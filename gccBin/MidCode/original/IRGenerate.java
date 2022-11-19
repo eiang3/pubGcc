@@ -10,6 +10,7 @@ import SymbolTableBin.*;
 import SymbolTableBin.Element.ElementFunc;
 import SymbolTableBin.Element.ElementTable;
 import gccBin.Lex.Symbol;
+import gccBin.MidCode.Judge;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -168,6 +169,9 @@ public class IRGenerate {
 
     public String mulExpUnary(String mid, int coe, int negative) throws IOException {
         if (coe == 1 && negative == 1) return mid;
+        if (Judge.isNumber(mid) && negative == 1) {
+            return "-" + mid;
+        }
         String ans = IRTagManage.getInstance().newVar();
         if (negative == -1) {  //如果有！的话，是不是1没什么关系了
             write(ans + " = ! " + mid + "\n");
@@ -219,7 +223,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("ble " + label1 );
+            myWrite("ble " + label1);
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -230,7 +234,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("beq " + label1 );
+            myWrite("beq " + label1);
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -241,7 +245,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("bne " + label1 );
+            myWrite("bne " + label1);
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -265,7 +269,7 @@ public class IRGenerate {
         return ret;
     }
 
-    public void b_false(String ir,String label) throws IOException {
+    public void b_false(String ir, String label) throws IOException {
         myWrite("&cmp " + ir + " 0");
         myWrite("beq " + label);
     }
@@ -274,7 +278,23 @@ public class IRGenerate {
         write(label + ":\n");
     }
 
-    private String generateTwoExp(String ans, String t1, String op, String t2) {
+    private String generateTwoExp(String ans, String t1, String op, String t2) throws IOException {
+        if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("/")) {
+            int div = Integer.parseInt(t2);
+            int twoTimes = Judge.isTimesTwo(div);
+            if (twoTimes != -1) {
+                return ans + " = " + t1 + " >> " + twoTimes;
+            }
+            long M = ((long) (Math.pow(2, 33)) + 3) / div;
+            String temp = IRTagManage.getInstance().newVar();
+            myWrite(temp + " = " + t1 + " * " + M);
+            return ans + " = " + temp + " >> 33\n";
+        } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("*")) {
+            int twoTimes = Judge.isTimesTwo(Integer.parseInt(t2));
+            if (twoTimes != -1) {
+                return ans + " = " + t1 + " << " + twoTimes;
+            }
+        }
         return ans + " = " + t1 + " " + op + " " + t2 + "\n";
     }
 

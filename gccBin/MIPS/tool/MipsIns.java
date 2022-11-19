@@ -103,7 +103,14 @@ public class MipsIns {
         write("sll " + ans + "," + regx + "," + number);
     }
 
+
     public static void srl_ans_regx_num(Reg ans, Reg regx, int number) throws IOException {
+        if (number == 33) {
+            write("mfhi " + ans);
+            write();
+            write("sra " + ans + "," + ans + "," + 1);
+            return;
+        }
         write("srl " + ans + "," + regx + "," + number);
     }
 

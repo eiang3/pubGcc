@@ -111,6 +111,13 @@ public class Judge {
         }
     }
 
+    public static int isTimesTwo(int n)  {
+        if (!(n > 0 && (n & (n - 1)) == 0)) {
+            return -1;
+        }
+        return Integer.toBinaryString(n).length() - 1;
+    }
+
     public static boolean isPlus(String op) {
         return op.equals("+");
     }
