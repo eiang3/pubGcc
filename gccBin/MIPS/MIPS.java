@@ -92,7 +92,7 @@ public class MIPS {
     }
 
     public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
-        if(!push) MemManager.getInstance().pushAReg();
+        if (!push) MemManager.getInstance().pushAReg();
         if (callFuncLine.getFuncName().equals("main")) {
             MipsIns.b_Label("main");
             return;
@@ -127,6 +127,7 @@ public class MIPS {
     }
 
     private boolean push = false;
+
     //若果要push,就先保存本函数的a-reg，否则就在调用函数的时候保存reg
     public void pushLineLineTrnas(PushLine push) throws IOException {
         this.push = true;
@@ -289,6 +290,9 @@ public class MIPS {
                 MIPSHelper.assignArrToTemp(ans, t1, tableSymbol);
             } else if (Judge.isTemp(ans) && Judge.isNumber(t1)) {
                 MIPSHelper.assignNumberToTemp(ans, Integer.parseInt(t1));
+            } else if (Judge.isTemp(ans) && Judge.isTemp(t1)) {
+                TempRegPool.getInstance().justCopy(ans, t1);
+                // 这里不算使用，所以不会删去old的记录。
             }
         } else if (assignLine.isOneOpr()) {
             if (Judge.isTemp(t1)) {
@@ -326,7 +330,7 @@ public class MIPS {
             fileWriter.write(" ");
         }
         fileWriter.write("#" + LineManager.getInstance()
-                .getNowLine().getMidCodeLine()+"\n");
+                .getNowLine().getMidCodeLine() + "\n");
 
         System.out.println(s);
     }

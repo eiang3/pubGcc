@@ -14,19 +14,19 @@ public class MipsIns {
      * compute
      */
     public static void add_ans_reg_regOrNum(Reg ans, Reg reg, int number) throws IOException {
-        write("add " + ans + "," + reg + "," + number);
+        write("addu " + ans + "," + reg + "," + number);
     }
 
     public static void add_ans_reg_regOrNum(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("add " + ans + "," + reg1 + "," + reg2);
+        write("addu " + ans + "," + reg1 + "," + reg2);
     }
 
     public static void sub_ans_reg_regOrNum(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("sub " + ans + "," + reg1 + "," + reg2);
+        write("subu " + ans + "," + reg1 + "," + reg2);
     }
 
     public static void sub_ans_reg_regOrNum(Reg ans, Reg reg1, int number) throws IOException {
-        write("sub " + ans + "," + reg1 + "," + number);
+        write("subu " + ans + "," + reg1 + "," + number);
     }
 
     public static void mul_ans_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
@@ -106,12 +106,39 @@ public class MipsIns {
 
     public static void srl_ans_regx_num(Reg ans, Reg regx, int number) throws IOException {
         if (number == 33) {
-            write("mfhi " + ans);
-            write();
+            write("mflo " + ans);
+
             write("sra " + ans + "," + ans + "," + 1);
             return;
         }
         write("srl " + ans + "," + regx + "," + number);
+    }
+
+    public static void srl_ans_regx_num_afloat(Reg ans, Reg regx, int number, Reg afloat) throws IOException {
+        if (number == 33) {
+            String begin = IRTagManage.getInstance().newLabel();
+            String end = IRTagManage.getInstance().newLabel();
+
+            write("mfhi " + ans);
+            write("sra " + ans + "," + ans + "," + 1);  //计算出ans,如果ans是负数，需要特殊判断
+
+            bCond_reg1_reg2_label("bge", ans, Reg.$zero, end);
+            write("mflo " + afloat);
+            bCond_reg1_reg2_label("bne", afloat, Reg.$zero, begin);
+            write("mfhi " + afloat);
+            and_ans_reg_num(afloat, afloat, 1);
+            bCond_reg1_reg2_label("bne", afloat, Reg.$zero, begin);
+            b_Label(end);
+            local_label(begin);
+            add_ans_reg_regOrNum(ans, ans, 1);
+            local_label(end);
+            return;
+        }
+        write("srl " + ans + "," + regx + "," + number);
+    }
+
+    public static void and_ans_reg_num(Reg ans, Reg reg, int num) throws IOException {
+        write("and " + ans + "," + reg + "," + num);
     }
 
     public static void not_ans_regx(Reg ans, Reg regx) throws IOException {
@@ -120,7 +147,7 @@ public class MipsIns {
 
     public static void neg_ans_regx(Reg ans, Reg operand) throws IOException {
         write("not " + ans + "," + operand);
-        write("add " + ans + "," + ans + "," + 1);
+        write("addu " + ans + "," + ans + "," + 1);
     }
 
     public static void neg_reg(Reg ans) throws IOException {
@@ -187,6 +214,10 @@ public class MipsIns {
 
     public static void jr_reg(Reg reg) throws IOException {
         write("jr " + reg);
+    }
+
+    public static void local_label(String label) throws IOException {
+        write(label + ":");
     }
 
     public static void write(String s) throws IOException {
@@ -272,7 +303,7 @@ public class MipsIns {
         } else if (Judge.isSll(op)) {
             sll_ans_regx_num(ans, temp1, number);
         } else if (Judge.isSrl(op)) {
-            srl_ans_regx_num(ans, temp1, number);
+            srl_ans_regx_num_afloat(ans, temp1, number, afloat);
         } else {
             li_ans_num(afloat, number);
             compute_ans_r1_op_r2(ans, temp1, op, afloat);

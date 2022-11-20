@@ -12,12 +12,16 @@ import java.util.HashSet;
 public class TempRegPool {
     private static TempRegPool tempRegPool;
 
+    /**
+     *
+     */
     private final HashMap<String, Reg> temp2Reg;
 
     /**
      * temp名以及它对应的在内存里的偏移
      */
     private final HashMap<String, Integer> temp2off;
+
 
     private TempRegPool() {
         temp2Reg = new HashMap<>();
@@ -45,7 +49,6 @@ public class TempRegPool {
         } else if (temp2off.containsKey(name)) {
             return null;
         }
-
         if (hasRegToAllocate()) {
             HashSet<Reg> regs = new HashSet<>(temp2Reg.values());
             Reg reg = Reg.getFreeTempReg(regs);
@@ -141,6 +144,32 @@ public class TempRegPool {
     }
 
     /**
+     * 为一个新的变量分配内存地址，并且将旧的变量复制一份过去
+     *
+     * @param temp new
+     * @param old  old
+     */
+    public void justCopy(String temp, String old) throws IOException {
+        Reg tempReg = addToPool(temp);
+        if (temp2Reg.containsKey(old)) {
+            Reg reg = temp2Reg.get(old);
+            if (tempReg != null) {
+                MipsIns.move_reg_reg(tempReg, reg);
+            } else {
+                storeToMem(reg, temp);
+            }
+        } else if (temp2off.containsKey(old)) {
+            int off = temp2off.get(old);
+            if (tempReg != null) {
+                MipsIns.lw_ans_num_baseReg(tempReg, off, Reg.$fp);
+            } else {
+                MipsIns.lw_ans_num_baseReg(Reg.r1, off, Reg.$fp);
+                storeToMem(Reg.r1, temp);
+            }
+        }
+    }
+
+    /**
      * 判断temp是否在t-reg里
      *
      * @param temp temp name
@@ -187,10 +216,12 @@ public class TempRegPool {
     }
 
     public boolean hasRegToAllocate() {
-        return temp2Reg.size() < Reg.tempNum;
+        HashSet<Reg> ret = new HashSet<>(temp2Reg.values());
+        return ret.size() < Reg.tempNum;
     }
 
     public ArrayList<Reg> getTempRegInUse() {
-        return new ArrayList<>(temp2Reg.values());
+        HashSet<Reg> ret = new HashSet<>(temp2Reg.values());
+        return new ArrayList<>(ret);
     }
 }

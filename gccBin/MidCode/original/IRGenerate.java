@@ -184,13 +184,13 @@ public class IRGenerate {
     public String mulExpTwo(String mul, String una, int coe, int negative, Word op) throws IOException {
         String t2 = mulExpUnary(una, coe, negative);
         String ans = IRTagManage.getInstance().newVar();
-        write(generateTwoExp(ans, mul, op.getToken(), t2));
+        generateTwoExp(ans, mul, op.getToken(), t2);
         return ans;
     }
 
     public String addExpTwo(String add, String mul, Word op) throws IOException {
         String ans = IRTagManage.getInstance().newVar();
-        write(generateTwoExp(ans, add, op.getToken(), mul));
+        generateTwoExp(ans, add, op.getToken(), mul);
         return ans;
     }
 
@@ -278,24 +278,42 @@ public class IRGenerate {
         write(label + ":\n");
     }
 
-    private String generateTwoExp(String ans, String t1, String op, String t2) throws IOException {
+    private void generateTwoExp(String ans, String t1, String op, String t2) throws IOException {
         if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("/")) {
-            int div = Integer.parseInt(t2);
-            int twoTimes = Judge.isTimesTwo(div);
-            if (twoTimes != -1) {
-                return ans + " = " + t1 + " >> " + twoTimes;
-            }
-            long M = ((long) (Math.pow(2, 33)) + 3) / div;
-            String temp = IRTagManage.getInstance().newVar();
-            myWrite(temp + " = " + t1 + " * " + M);
-            return ans + " = " + temp + " >> 33\n";
+            generateTwo_div_number(ans, t1, t2);
+            return;
         } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("*")) {
             int twoTimes = Judge.isTimesTwo(Integer.parseInt(t2));
             if (twoTimes != -1) {
-                return ans + " = " + t1 + " << " + twoTimes;
+                myWrite(ans + " = " + t1 + " << " + twoTimes);
+                return;
             }
+        } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("%")) {
+            String div = IRTagManage.getInstance().newVar();
+            String result = IRTagManage.getInstance().newVar();
+            String t1_copy = IRTagManage.getInstance().newVar();
+            String number = t2;
+            // 因为表达式的结果不是数字，就是temp，所以这里一定是temp
+            myWrite(t1_copy + " = " + t1);
+            generateTwo_div_number(div, t1, number);
+            myWrite(result + " = " + div + " * " + number);
+            myWrite(ans + " = " + t1_copy + " - " + result);
+            return;
         }
-        return ans + " = " + t1 + " " + op + " " + t2 + "\n";
+        myWrite(ans + " = " + t1 + " " + op + " " + t2);
+    }
+
+    private void generateTwo_div_number(String ans, String t1, String t2) throws IOException {
+        int div = Integer.parseInt(t2);
+        int twoTimes = Judge.isTimesTwo(div);
+        if (twoTimes != -1) {
+            myWrite(ans + " = " + t1 + " >> " + twoTimes);
+            return;
+        }
+        long M = ((long) (Math.pow(2, 33)) + 3) / div;
+        String temp = IRTagManage.getInstance().newVar();
+        myWrite(temp + " = " + t1 + " * " + M);
+        myWrite(ans + " = " + temp + " >> 33");
     }
 
     public void funcDef(TypeTable returnType, String name) throws IOException {
