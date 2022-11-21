@@ -14,19 +14,19 @@ public class MipsIns {
      * compute
      */
     public static void add_ans_reg_regOrNum(Reg ans, Reg reg, int number) throws IOException {
-        write("add " + ans + "," + reg + "," + number);
+        write("addu " + ans + "," + reg + "," + number);
     }
 
     public static void add_ans_reg_regOrNum(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("add " + ans + "," + reg1 + "," + reg2);
+        write("addu " + ans + "," + reg1 + "," + reg2);
     }
 
     public static void sub_ans_reg_regOrNum(Reg ans, Reg reg1, Reg reg2) throws IOException {
-        write("sub " + ans + "," + reg1 + "," + reg2);
+        write("subu " + ans + "," + reg1 + "," + reg2);
     }
 
     public static void sub_ans_reg_regOrNum(Reg ans, Reg reg1, int number) throws IOException {
-        write("sub " + ans + "," + reg1 + "," + number);
+        write("subu " + ans + "," + reg1 + "," + number);
     }
 
     public static void mul_ans_reg_reg(Reg ans, Reg reg1, Reg reg2) throws IOException {
@@ -72,7 +72,7 @@ public class MipsIns {
     }
 
     public static void lw_ans_label_num(Reg ans, String label, int number) throws IOException {
-        write("lw " + ans + "," + label + "+" + number);
+        write("lw " + ans + "," + label + " + " + number);
     }
 
     public static void lw_ans_label(Reg ans, String label) throws IOException {
@@ -80,7 +80,7 @@ public class MipsIns {
     }
 
     public static void sw_value_label_num(Reg value, String label, int number) throws IOException {
-        write("sw " + value + "," + label + "+" + number);
+        write("sw " + value + "," + label + " + " + number);
     }
 
     public static void sw_value_label(Reg value, String label) throws IOException {
@@ -113,7 +113,7 @@ public class MipsIns {
 
     public static void neg_ans_regx(Reg ans, Reg operand) throws IOException {
         write("not " + ans + "," + operand);
-        write("add " + ans + "," + ans + "," + 1);
+        write("addu " + ans + "," + ans + "," + 1);
     }
 
     public static void neg_reg(Reg ans) throws IOException {

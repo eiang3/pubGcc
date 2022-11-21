@@ -92,7 +92,7 @@ public class MIPS {
     }
 
     public void callFuncLineTrans(CallFuncLine callFuncLine) throws IOException {
-        if(!push) MemManager.getInstance().pushAReg();
+        if (!push) MemManager.getInstance().pushAReg();
         if (callFuncLine.getFuncName().equals("main")) {
             MipsIns.b_Label("main");
             return;
@@ -127,6 +127,7 @@ public class MIPS {
     }
 
     private boolean push = false;
+
     //若果要push,就先保存本函数的a-reg，否则就在调用函数的时候保存reg
     public void pushLineLineTrnas(PushLine push) throws IOException {
         this.push = true;
@@ -213,7 +214,10 @@ public class MIPS {
     }
 
     public void retLineTrans(RetLine retLine) throws IOException {
-        if (retLine.isGotoExit()) return;
+        if (retLine.isGotoExit()) {
+            MipsIns.b_Label("main_end");
+            return;
+        }
         String exp = retLine.getExp();
         if (exp != null) {
             if (Judge.isTemp(exp)) {
@@ -326,7 +330,7 @@ public class MIPS {
             fileWriter.write(" ");
         }
         fileWriter.write("#" + LineManager.getInstance()
-                .getNowLine().getMidCodeLine()+"\n");
+                .getNowLine().getMidCodeLine() + "\n");
 
         System.out.println(s);
     }

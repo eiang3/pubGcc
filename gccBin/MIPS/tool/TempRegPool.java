@@ -2,6 +2,7 @@ package gccBin.MIPS.tool;
 
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.Judge;
+import gccBin.MidCode.original.IRTagManage;
 import gccBin.UnExpect;
 
 import java.io.IOException;
@@ -65,8 +66,10 @@ public class TempRegPool {
      */
     public void delete(String name) {
         if (Judge.isTemp(name)) {
-            this.temp2off.remove(name);
-            temp2Reg.remove(name);
+            if (IRTagManage.getInstance().delete(name)) {
+                this.temp2off.remove(name);
+                temp2Reg.remove(name);
+            }
         }
     }
 

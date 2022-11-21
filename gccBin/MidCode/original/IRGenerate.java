@@ -52,11 +52,11 @@ public class IRGenerate {
 
     public void constDefArray(String name, int len, ArrayList<ArrayList<Integer>> nums, TableSymbol tableSymbol, int falseRow) throws IOException {
         name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
-        write("&arr int " + name + "[" + len + "]\n");
+        myWrite("&arr int " + name + "[" + len + "]");
         int index = 0;
         for (ArrayList<Integer> integers : nums) {
             for (Integer i : integers) {
-                write(name + "[" + (index++) + "]" + " = " + i + "\n");
+                myWrite(name + "[" + (index++) + "]" + " = " + i);
             }
         }
     }
@@ -65,22 +65,22 @@ public class IRGenerate {
         name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         Param param = new Param();
         if (len <= 0) {
-            write("&var int " + name + "\n");
+            myWrite("&var int " + name);
             if (initVal != null) {
                 ArrayList<Exp> exps = initVal.getExps();
                 exps.get(0).midCodeGen(fileWriter, param);
-                write(name + " = " + initVal.getExps().get(0).getMidCode() + "\n");
+                myWrite(name + " = " + initVal.getExps().get(0).getMidCode());
             }
             return;
         }
 
-        write("&arr int " + name + "[" + len + "]\n");
+        myWrite("&arr int " + name + "[" + len + "]");
         int index = 0;
         if (initVal != null) {
             ArrayList<Exp> exps = initVal.getExps();
             for (Exp exp : exps) {
                 exp.midCodeGen(fileWriter, param);
-                write(name + "[" + (index++) + "]" + " = " + exp.getMidCode() + "\n");
+                myWrite(name + "[" + (index++) + "]" + " = " + exp.getMidCode());
             }
         }
     }
@@ -94,7 +94,7 @@ public class IRGenerate {
             return lValNormal(tableSymbol, oldName, new Param(), falseRow); //实参传值
         } else {
             String ans = IRTagManage.getInstance().newVar();
-            write(ans + " = " + name + " >> 2\n");  // 除4
+            myWrite(ans + " = " + name + " >> 2");  // 除4
             return ans;
         }
     }
@@ -110,11 +110,11 @@ public class IRGenerate {
             int len = APIIRSymTable.getInstance().findTwoDimArrayLen(
                     tableSymbol, oldName, falseRow);
             String t1 = IRTagManage.getInstance().newVar();
-            write(t1 + " = " + one + " * " + len + "\n");
+            myWrite(t1 + " = " + one + " * " + len);
             String t2 = IRTagManage.getInstance().newVar();
             String ans = IRTagManage.getInstance().newVar();
-            write(t2 + " = " + name + " >> 2" + "\n"); // 除4
-            write(ans + " = " + t1 + " + " + t2 + "\n");
+            myWrite(t2 + " = " + name + " >> 2"); // 除4
+            myWrite(ans + " = " + t1 + " + " + t2);
             return ans;
         } else return null;
     }
@@ -133,7 +133,7 @@ public class IRGenerate {
             return name;
         } else {
             String t1 = IRTagManage.getInstance().newVar();
-            write(t1 + " = " + name + "\n");
+            myWrite(t1 + " = " + name);
             return t1;
         }
     }
@@ -142,14 +142,14 @@ public class IRGenerate {
     public String lValNormal(String name, String one, String two, int len, Param param, TableSymbol tableSymbol, int falseRow) throws IOException {
         name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         String t1 = IRTagManage.getInstance().newVar();
-        write(t1 + " = " + one + " * " + len + "\n");
+        myWrite(t1 + " = " + one + " * " + len);
         String t2 = IRTagManage.getInstance().newVar();
-        write(t2 + " = " + two + " + " + t1 + "\n");
+        myWrite(t2 + " = " + two + " + " + t1);
         if (param.getExpKind() == InheritProp.LValAssign) {
             return name + "[" + t2 + "]";
         } else {
             String ans = IRTagManage.getInstance().newVar();
-            write(ans + " = " + name + "[" + t2 + "]\n");
+            myWrite(ans + " = " + name + "[" + t2 + "]");
             return ans;
         }
     }
@@ -161,7 +161,7 @@ public class IRGenerate {
             return name + "[" + one + "]";
         } else {
             String ans = IRTagManage.getInstance().newVar();
-            write(ans + " = " + name + "[" + one + "]\n");
+            myWrite(ans + " = " + name + "[" + one + "]");
             return ans;
         }
     }
@@ -170,9 +170,9 @@ public class IRGenerate {
         if (coe == 1 && negative == 1) return mid;
         String ans = IRTagManage.getInstance().newVar();
         if (negative == -1) {  //如果有！的话，是不是1没什么关系了
-            write(ans + " = ! " + mid + "\n");
+            myWrite(ans + " = ! " + mid);
         } else if (coe == -1) {
-            write(ans + " = - " + mid + "\n");
+            myWrite(ans + " = - " + mid);
         }
         return ans;
     }
@@ -180,26 +180,26 @@ public class IRGenerate {
     public String mulExpTwo(String mul, String una, int coe, int negative, Word op) throws IOException {
         String t2 = mulExpUnary(una, coe, negative);
         String ans = IRTagManage.getInstance().newVar();
-        write(generateTwoExp(ans, mul, op.getToken(), t2));
+        myWrite(generateTwoExp(ans, mul, op.getToken(), t2));
         return ans;
     }
 
     public String addExpTwo(String add, String mul, Word op) throws IOException {
         String ans = IRTagManage.getInstance().newVar();
-        write(generateTwoExp(ans, add, op.getToken(), mul));
+        myWrite(generateTwoExp(ans, add, op.getToken(), mul));
         return ans;
     }
 
     public void inBlock() throws IOException {
-        write("{\n");
+        myWrite("{");
     }
 
     public void leaveBlock() throws IOException {
-        write("}\n");
+        myWrite("}");
     }
 
     public void b_label(String label) throws IOException {
-        write("b " + label + "\n");
+        myWrite("b " + label);
     }
 
     public String condJump(String op1, Word op, String op2) throws IOException {
@@ -219,7 +219,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("ble " + label1 );
+            myWrite("ble " + label1);
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -230,7 +230,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("beq " + label1 );
+            myWrite("beq " + label1);
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -241,37 +241,23 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("bne " + label1 );
+            myWrite("bne " + label1);
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
             myWrite(ret + " = 1");
             localLabel(label2);
         }
-        /*write("&cmp " + op1 + " " + op2 + "\n");
-        if (op.getSym() == Symbol.LSS) { // <
-            write("bge " + label + "\n");
-        } else if (op.getSym() == Symbol.GRE) { // >
-            write("ble " + label + "\n");
-        } else if (op.getSym() == Symbol.LEQ) { // <=
-            write("bgt " + label + "\n");
-        } else if (op.getSym() == Symbol.GEQ) { //>=
-            write("blt " + label + "\n");
-        } else if (op.getSym() == Symbol.EQL) { //==
-            write("bne " + label + "\n");
-        } else if (op.getSym() == Symbol.NEQ) { // !=
-            write("beq " + label + "\n");
-        }*/
         return ret;
     }
 
-    public void b_false(String ir,String label) throws IOException {
+    public void b_false(String ir, String label) throws IOException {
         myWrite("&cmp " + ir + " 0");
         myWrite("beq " + label);
     }
 
     public void localLabel(String label) throws IOException {
-        write(label + ":\n");
+        myWrite(label + ":");
     }
 
     private String generateTwoExp(String ans, String t1, String op, String t2) {
@@ -279,31 +265,31 @@ public class IRGenerate {
     }
 
     public void funcDef(TypeTable returnType, String name) throws IOException {
-        write(returnType.toString().toLowerCase() + " " + name + " ()\n");
+        myWrite(returnType.toString().toLowerCase() + " " + name + " ()");
     }
 
     public void funcFParam(TypeTable type, String name, int dim, TableSymbol tableSymbol, int falseRow) throws IOException {
         name = APIIRSymTable.getInstance().findElementIRGen(tableSymbol, name, falseRow).getIRName();
         if (dim == 0) {
-            write("&para " + type.toString().toLowerCase() + " " + name + "\n");
+            myWrite("&para " + type.toString().toLowerCase() + " " + name);
         } else {
-            write("&para " + type.toString().toLowerCase() + " " + name + " []\n");
+            myWrite("&para " + type.toString().toLowerCase() + " " + name + " []");
         }
     }
 
     public String funcCall(String funcName, ArrayList<Exp> exps) throws IOException {
         for (Exp exp : exps) {
-            write("&push " + exp.getMidCode() + "\n");
+            myWrite("&push " + exp.getMidCode());
         }
         return funcCall(funcName);
     }
 
     public String funcCall(String funcName) throws IOException {
-        write("&call " + funcName + "\n");
+        myWrite("&call " + funcName);
         ElementFunc elementFunc = APIIRSymTable.getInstance().getFuncElement(funcName);
         if (elementFunc.getReturnType() == TypeTable.INT) {
             String t1 = IRTagManage.getInstance().newVar();
-            write(t1 + " = $RET\n");
+            myWrite(t1 + " = $RET");
             return t1;
         }
         return null;
@@ -311,30 +297,25 @@ public class IRGenerate {
 
 
     public void returnStmt(String exp) throws IOException {
-        write("&ret " + exp + "\n");
+        myWrite("&ret " + exp);
     }
 
     public void returnStmt() throws IOException {
-        write("&ret" + "\n");
+        myWrite("&ret");
     }
 
     public void mainRetStmt() throws IOException {
-        write("&ret main\n");
+        myWrite("&ret main");
     }
 
     public void assignStmtScanf(String lVal) throws IOException {
         String t1 = IRTagManage.getInstance().newVar();
-        write("&scanf " + t1 + "\n");
+        myWrite("&scanf " + t1);
         assignStmtExp(lVal, t1);
     }
 
     public void assignStmtExp(String left, String right) throws IOException {
-        write(left + " = " + right + "\n");
-    }
-
-    public void write(String str) throws IOException {
-        fileWriter.write(str);
-        //System.out.print(str);
+        myWrite(left + " = " + right);
     }
 
     public void myWrite(String str) throws IOException {
@@ -342,19 +323,14 @@ public class IRGenerate {
         //System.out.print(str);
     }
 
-    public void LAndExpSignalExp(String t0, String endLabel) throws IOException {
-        write("&cmp " + t0 + " 0\n");
-        write("beq " + endLabel + "\n");
-    }
-
     //对于数组指针引用，最后的结果还需要乘4
     public String mulFour(String s) throws IOException {
         String ans = IRTagManage.getInstance().newVar();
-        write(ans + " = " + s + " << 2\n");
+        myWrite(ans + " = " + s + " << 2");
         return ans;
     }
 
     public void annotate(String str) throws IOException {
-        write("##" + str + "##\n");
+        myWrite("##" + str + "##");
     }
 }

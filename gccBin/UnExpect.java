@@ -51,4 +51,8 @@ public class UnExpect {
     public static void NULL(){
         System.out.println("null pointer");
     }
+
+    public static void TempHasNoIndexes(String str){
+        System.out.println("TempHasNoIndexes");
+    }
 }
