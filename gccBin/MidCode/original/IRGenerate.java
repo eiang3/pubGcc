@@ -10,7 +10,6 @@ import SymbolTableBin.*;
 import SymbolTableBin.Element.ElementFunc;
 import SymbolTableBin.Element.ElementTable;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.Judge;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -169,9 +168,6 @@ public class IRGenerate {
 
     public String mulExpUnary(String mid, int coe, int negative) throws IOException {
         if (coe == 1 && negative == 1) return mid;
-        if (Judge.isNumber(mid) && negative == 1) {
-            return "-" + mid;
-        }
         String ans = IRTagManage.getInstance().newVar();
         if (negative == -1) {  //如果有！的话，是不是1没什么关系了
             write(ans + " = ! " + mid + "\n");
@@ -184,13 +180,13 @@ public class IRGenerate {
     public String mulExpTwo(String mul, String una, int coe, int negative, Word op) throws IOException {
         String t2 = mulExpUnary(una, coe, negative);
         String ans = IRTagManage.getInstance().newVar();
-        generateTwoExp(ans, mul, op.getToken(), t2);
+        write(generateTwoExp(ans, mul, op.getToken(), t2));
         return ans;
     }
 
     public String addExpTwo(String add, String mul, Word op) throws IOException {
         String ans = IRTagManage.getInstance().newVar();
-        generateTwoExp(ans, add, op.getToken(), mul);
+        write(generateTwoExp(ans, add, op.getToken(), mul));
         return ans;
     }
 
@@ -223,7 +219,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("ble " + label1);
+            myWrite("ble " + label1 );
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -234,7 +230,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("beq " + label1);
+            myWrite("beq " + label1 );
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -245,7 +241,7 @@ public class IRGenerate {
             String label1 = IRTagManage.getInstance().newLabel();
             String label2 = IRTagManage.getInstance().newLabel();
             myWrite("&cmp " + subAns + " 0");
-            myWrite("bne " + label1);
+            myWrite("bne " + label1 );
             myWrite(ret + " = 0");
             b_label(label2);
             localLabel(label1);
@@ -269,7 +265,7 @@ public class IRGenerate {
         return ret;
     }
 
-    public void b_false(String ir, String label) throws IOException {
+    public void b_false(String ir,String label) throws IOException {
         myWrite("&cmp " + ir + " 0");
         myWrite("beq " + label);
     }
@@ -278,42 +274,8 @@ public class IRGenerate {
         write(label + ":\n");
     }
 
-    private void generateTwoExp(String ans, String t1, String op, String t2) throws IOException {
-        if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("/")) {
-            generateTwo_div_number(ans, t1, t2);
-            return;
-        } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("*")) {
-            int twoTimes = Judge.isTimesTwo(Integer.parseInt(t2));
-            if (twoTimes != -1) {
-                myWrite(ans + " = " + t1 + " << " + twoTimes);
-                return;
-            }
-        } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("%")) {
-            String div = IRTagManage.getInstance().newVar();
-            String result = IRTagManage.getInstance().newVar();
-            String t1_copy = IRTagManage.getInstance().newVar();
-            String number = t2;
-            // 因为表达式的结果不是数字，就是temp，所以这里一定是temp
-            myWrite(t1_copy + " = " + t1);
-            generateTwo_div_number(div, t1, number);
-            myWrite(result + " = " + div + " * " + number);
-            myWrite(ans + " = " + t1_copy + " - " + result);
-            return;
-        }
-        myWrite(ans + " = " + t1 + " " + op + " " + t2);
-    }
-
-    private void generateTwo_div_number(String ans, String t1, String t2) throws IOException {
-        int div = Integer.parseInt(t2);
-        int twoTimes = Judge.isTimesTwo(div);
-        if (twoTimes != -1) {
-            myWrite(ans + " = " + t1 + " >> " + twoTimes);
-            return;
-        }
-        long M = ((long) (Math.pow(2, 33)) + 3) / div;
-        String temp = IRTagManage.getInstance().newVar();
-        myWrite(temp + " = " + t1 + " * " + M);
-        myWrite(ans + " = " + temp + " >> 33");
+    private String generateTwoExp(String ans, String t1, String op, String t2) {
+        return ans + " = " + t1 + " " + op + " " + t2 + "\n";
     }
 
     public void funcDef(TypeTable returnType, String name) throws IOException {
