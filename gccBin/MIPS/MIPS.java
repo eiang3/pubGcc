@@ -205,8 +205,9 @@ public class MIPS {
     public void scanfLineTrans(ScanfLine scanfLine) throws IOException {
         String t = scanfLine.getT();
         MipsIns.scanfInt();
-        Reg reg = TempRegPool.getInstance().addToPool(t);
+        TempRegPool.getInstance().addToPool(t);
         if (TempRegPool.getInstance().inReg(t)) {
+            Reg reg = TempRegPool.getInstance().getReg(t);
             MipsIns.move_reg_reg(reg, Reg.$v0);
         } else if (TempRegPool.getInstance().inMem(t)) {
             TempRegPool.getInstance().storeToMem(Reg.$v0, t);
@@ -277,8 +278,9 @@ public class MIPS {
         String op = assignLine.getOp();
         if (assignLine.isPureAssign()) {
             if (Judge.isRET(t1)) {
-                Reg t = TempRegPool.getInstance().addToPool(ans);
+                TempRegPool.getInstance().addToPool(ans);
                 if (TempRegPool.getInstance().inReg(ans)) {
+                    Reg t = TempRegPool.getInstance().getReg(ans);
                     MipsIns.move_reg_reg(t, Reg.$v0);
                 } else if (TempRegPool.getInstance().inMem(ans)) {
                     TempRegPool.getInstance().storeToMem(Reg.$v0, ans);
@@ -293,6 +295,8 @@ public class MIPS {
                 MIPSHelper.assignArrToTemp(ans, t1, tableSymbol);
             } else if (Judge.isTemp(ans) && Judge.isNumber(t1)) {
                 MIPSHelper.assignNumberToTemp(ans, Integer.parseInt(t1));
+            } else if (Judge.isTemp(ans) && Judge.isTemp(t1)) {
+                TempRegPool.getInstance().justCopy(ans, t1);
             }
         } else if (assignLine.isOneOpr()) {
             if (Judge.isTemp(t1)) {

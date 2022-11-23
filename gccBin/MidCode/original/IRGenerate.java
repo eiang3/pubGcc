@@ -10,6 +10,7 @@ import SymbolTableBin.*;
 import SymbolTableBin.Element.ElementFunc;
 import SymbolTableBin.Element.ElementTable;
 import gccBin.Lex.Symbol;
+import gccBin.MidCode.Judge;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -180,13 +181,13 @@ public class IRGenerate {
     public String mulExpTwo(String mul, String una, int coe, int negative, Word op) throws IOException {
         String t2 = mulExpUnary(una, coe, negative);
         String ans = IRTagManage.getInstance().newVar();
-        myWrite(generateTwoExp(ans, mul, op.getToken(), t2));
+        generateTwoExp(ans, mul, op.getToken(), t2);
         return ans;
     }
 
     public String addExpTwo(String add, String mul, Word op) throws IOException {
         String ans = IRTagManage.getInstance().newVar();
-        myWrite(generateTwoExp(ans, add, op.getToken(), mul));
+        generateTwoExp(ans, add, op.getToken(), mul);
         return ans;
     }
 
@@ -260,8 +261,121 @@ public class IRGenerate {
         myWrite(label + ":");
     }
 
-    private String generateTwoExp(String ans, String t1, String op, String t2) {
-        return ans + " = " + t1 + " " + op + " " + t2 + "\n";
+    private void generateTwoExp(String ans, String t1, String op, String t2) throws IOException {
+        if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("/")) {
+            generateTwo_div_number(ans, t1, t2);
+        } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("*")) {
+            shift_mul(ans, t1, Integer.parseInt(t2));
+        } else if (Judge.isNumber(t1) && !Judge.isNumber(t2) && op.equals("*")) {
+            shift_mul(ans, t2, Integer.parseInt(t1));
+        } else if (!Judge.isNumber(t1) && Judge.isNumber(t2) && op.equals("%")) {
+            // 因为表达式的结果不是数字，就是temp，所以这里一定是temp
+            generateTwo_div_number(ans, t1, t2);
+            myWrite(ans + " = " + ans + " * " + t2);
+            IRTagManage.getInstance().addUse(t1);
+            myWrite(ans + " = " + t1 + " - " + ans);
+        } else {
+            myWrite(ans + " = " + t1 + " " + op + " " + t2);
+        }
+    }
+
+    private void generateTwo_div_number(String ans, String t1, String t2) throws IOException {
+        int div = Integer.parseInt(t2);
+        int twoTimes = Judge.isTimesTwo(div);
+        String labelBranch = IRTagManage.getInstance().newLabel();
+        String labelEnd = IRTagManage.getInstance().newLabel();
+        String t1_copy = IRTagManage.getInstance().newVar();
+
+        if (twoTimes != -1) { // 判断是否是2的倍数 //移位之前，也要判断正负呀
+            shift_div(ans, t1, div, twoTimes, ">>>");
+            return;
+        }
+
+        divOptimize.get(div);
+        int M = (int) divOptimize.M;
+        int l = divOptimize.l;
+
+
+        if (div > 0) {
+            IRTagManage.getInstance().addUse(t1, 2);
+            myWrite("&cmp " + t1 + " " + "0");
+            myWrite("bge " + labelBranch);// 说明是正值
+            //a-  b+
+            myWrite(t1_copy + " = - " + t1);
+            //合并处理叭
+            myWrite(ans + " = " + t1_copy + " ** " + M);
+            myWrite(ans + " = " + ans + " >>>_/ " + (divOptimize.N + l));
+            myWrite(ans + " = - " + ans);
+            myWrite("b " + labelEnd);
+            localLabel(labelBranch);
+            // a+ b+
+            myWrite(ans + " = " + t1 + " ** " + M);
+            myWrite(ans + " = " + ans + " >>>_/ " + (divOptimize.N + l));
+        } else if (div < 0) {
+            IRTagManage.getInstance().addUse(t1, 2);
+           // IRTagManage.getInstance().addUse(t1_copy);
+            myWrite("&cmp " + t1 + " " + "0");
+            myWrite("bgt " + labelBranch);
+            //a -  b -
+            //除非在翻译的时候两句一起处理，才可以使得在M超范围时，高32位可以及时加上ans。
+            myWrite(t1_copy + " = - " + t1); //转嫁
+            myWrite(ans + " = " + t1_copy + " ** " + M);
+            myWrite(ans + " = " + ans + " >>>_/ " + (divOptimize.N + l));
+            myWrite("b " + labelEnd);
+            localLabel(labelBranch);
+            //a+  b-
+            myWrite(ans + " = " + t1 + " ** " + M);
+            myWrite(ans + " = " + ans + " >>>_/ " + (divOptimize.N + l));
+            myWrite(ans + " = - " + ans);
+        }
+        localLabel(labelEnd);
+    }
+
+    private void shift_mul(String ans, String temp, int num) throws IOException {
+        int twoTimes = Judge.isTimesTwo(num);
+        if (twoTimes != -1) {
+            myWrite(ans + " = " + temp + " << " + twoTimes);
+            if (num < 0) myWrite(ans + " = - " + ans);
+        } else {
+            myWrite(ans + " = " + num + " * " + temp);
+        }
+    }
+
+    /**
+     * 这个函数进行完毕，也属于一个div或者mult进行完了
+     *
+     * @param ans      ans
+     * @param t1       t1
+     * @param t2_num   div t2
+     * @param twoTimes 2的倍数 0-31
+     * @throws IOException *
+     */
+    private void shift_div(String ans, String t1, int t2_num, int twoTimes, String shift) throws IOException {
+        String labelBranch = IRTagManage.getInstance().newLabel();
+        String labelEnd = IRTagManage.getInstance().newLabel();
+        String t1_copy = IRTagManage.getInstance().newVar();
+        IRTagManage.getInstance().addUse(t1, 2);
+        if (t2_num >= 0) {
+            myWrite("&cmp " + t1 + " " + "0");
+            myWrite("bge " + labelBranch);// a- b+
+            myWrite(t1_copy + " = " + t1 + " + " + (t2_num - 1)); //t1不能变，因为如果是%可能还会再用
+            myWrite(ans + " = " + t1_copy + " " + shift + " " + twoTimes);
+            b_label(labelEnd);
+            localLabel(labelBranch); // a+ b+
+            myWrite(ans + " = " + t1 + " " + shift + " " + twoTimes);
+        } else {
+            IRTagManage.getInstance().addUse(t1_copy);
+            t2_num = -t2_num; //取正，因为位移默认这里是正的
+            myWrite("&cmp " + t1 + " " + "0");
+            myWrite("bge " + labelBranch);// 说明是负值  a-  b-
+            myWrite(t1_copy + " = - " + t1);
+            myWrite(ans + " = " + t1_copy + " " + shift + " " + twoTimes);
+            b_label(labelEnd);
+            localLabel(labelBranch); // copy = - t1 && copy = copy + (t2_num-1) // a+ b-
+            myWrite(t1_copy + " = " + (1 - t2_num) + " - " + t1);
+            myWrite(ans + " = " + t1_copy + " " + shift + " " + twoTimes);
+        }
+        localLabel(labelEnd);
     }
 
     public void funcDef(TypeTable returnType, String name) throws IOException {

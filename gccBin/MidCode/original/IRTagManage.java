@@ -36,6 +36,16 @@ public class IRTagManage {
         return ret;
     }
 
+    public void addUse(String temp) {
+        int a = this.temp2useTimes.get(temp);
+        this.temp2useTimes.put(temp, a + 1);
+    }
+
+    public void addUse(String temp, int add) {
+        int a = this.temp2useTimes.get(temp);
+        this.temp2useTimes.put(temp, a + add);
+    }
+
     public String newLabel() {
         return "label" + (label++);
     }
@@ -49,7 +59,7 @@ public class IRTagManage {
      */
     public boolean delete(String str) {
         if (!temp2useTimes.containsKey(str)) {
-            UnExpect.tempNotInMemAndReg(str);
+            UnExpect.TempHasNoTimesToUse(str);
             return false;
         }
         int indexes = temp2useTimes.get(str);
@@ -60,6 +70,15 @@ public class IRTagManage {
             temp2useTimes.put(str, indexes - 1);
             return false;
         }
+    }
+
+    public boolean canDelete(String name) {
+        if (!temp2useTimes.containsKey(name)) {
+            UnExpect.TempHasNoTimesToUse(name);
+            return false;
+        }
+        int num = temp2useTimes.get(name);
+        return num == 1;
     }
 
 }

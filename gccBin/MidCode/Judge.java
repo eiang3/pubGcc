@@ -111,6 +111,27 @@ public class Judge {
         }
     }
 
+    /**
+     * 如果n是2的幂次（最小为1），则返回一个数字，代表幂次
+     * 否则返回-1
+     * 注意，负数会先转化为整数
+     *
+     * @param n *
+     * @return *
+     */
+    public static int isTimesTwo(int n) {
+        if (n < 0) n = n * -1;
+        if (!((n & (n - 1)) == 0)) {
+            return -1;
+        }
+        if (n == 0) return -1;
+        return Integer.toBinaryString(n).length() - 1;
+    }
+
+    public static boolean isDivOptimize(String op) {
+        return op.equals("**");
+    }
+
     public static boolean isPlus(String op) {
         return op.equals("+");
     }
@@ -139,7 +160,12 @@ public class Judge {
         return op.equals(">>");
     }
 
+    public static boolean isSra(String op) {
+        return op.equals(">>>");
+    }
+
     public static boolean isExp(String s) {
         return isTemp(s) || isNumber(s);
     }
+
 }

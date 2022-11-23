@@ -40,22 +40,27 @@ public class TempRegPool {
      * @param name 待分配的temp名
      * @return reg || null
      */
-    public Reg addToPool(String name) {
-        if (temp2Reg.containsKey(name)) {
-            return temp2Reg.get(name);
-        } else if (temp2off.containsKey(name)) {
-            return null;
+    public Reg addToPool(String name, Reg afloat) throws IOException {
+        addToPool(name);
+        if (inReg(name)) {
+            return getReg(name);
+        } else {
+            return afloat;
+        }
+    }
+
+    public void addToPool(String name) {
+        if (temp2Reg.containsKey(name) || temp2off.containsKey(name)) {
+            return;
         }
 
         if (hasRegToAllocate()) {
             HashSet<Reg> regs = new HashSet<>(temp2Reg.values());
             Reg reg = Reg.getFreeTempReg(regs);
             temp2Reg.put(name, reg);
-            return reg;
         } else {
             int ret = MemManager.getInstance().allocation_A_Temp_Mem();
             this.temp2off.put(name, ret);
-            return null;
         }
     }
 
@@ -64,6 +69,16 @@ public class TempRegPool {
      *
      * @param name temp name
      */
+    public void delete(String ans, String name) {
+        if (ans.equals(name)) return;
+        if (Judge.isTemp(name)) {
+            if (IRTagManage.getInstance().delete(name)) {
+                this.temp2off.remove(name);
+                temp2Reg.remove(name);
+            }
+        }
+    }
+
     public void delete(String name) {
         if (Judge.isTemp(name)) {
             if (IRTagManage.getInstance().delete(name)) {
@@ -125,25 +140,6 @@ public class TempRegPool {
     }
 
     /**
-     * 将寄存器从一个旧的变量分给一个新的变量
-     * ok
-     *
-     * @param temp 新的名字
-     * @param old  旧的变量
-     * @return temp reg
-     */
-    public Reg replace(String temp, String old) {
-        if (temp2Reg.containsKey(old)) {
-            Reg reg = temp2Reg.get(old);
-            temp2Reg.put(temp, reg);
-            return reg;
-        } else {
-            UnExpect.printf(old + " not in t-reg");
-            return null;
-        }
-    }
-
-    /**
      * 判断temp是否在t-reg里
      *
      * @param temp temp name
@@ -195,5 +191,32 @@ public class TempRegPool {
 
     public ArrayList<Reg> getTempRegInUse() {
         return new ArrayList<>(temp2Reg.values());
+    }
+
+    /**
+     * 为一个新的变量分配内存地址，并且将旧的变量复制一份过去
+     * afloat-use : Reg.r1
+     *
+     * @param temp new
+     * @param old  old
+     */
+    public void justCopy(String temp, String old) throws IOException {
+        Reg tempReg = addToPool(temp, Reg.r1);
+        if (temp2Reg.containsKey(old)) {
+            Reg reg = temp2Reg.get(old);
+            if (TempRegPool.tempRegPool.inReg(temp)) {
+                MipsIns.move_reg_reg(tempReg, reg);
+            } else {
+                storeToMem(reg, temp);
+            }
+        } else if (temp2off.containsKey(old)) {
+            int off = temp2off.get(old);
+            if (TempRegPool.tempRegPool.inReg(temp)) {
+                MipsIns.lw_ans_num_baseReg(tempReg, off, Reg.$fp);
+            } else {
+                MipsIns.lw_ans_num_baseReg(tempReg, off, Reg.$fp);
+                storeToMem(tempReg, temp);
+            }
+        }
     }
 }

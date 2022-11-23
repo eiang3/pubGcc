@@ -15,8 +15,6 @@ public class MainFuncDef extends TreeFatherNode {
         super();
         super.setLabel(Label.MainFuncDef);
     }
-
-
     @Override
     public void midCodeGen(FileWriter fileWriter, Param param) throws IOException {
         fileWriter.write("\nint main ()\n");

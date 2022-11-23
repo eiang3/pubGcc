@@ -2,6 +2,7 @@ package gccBin.MIPS.tool;
 
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.Judge;
+import gccBin.MidCode.Line.AssignLine;
 import gccBin.MidCode.LineManager;
 import gccBin.MidCode.original.IRTagManage;
 import gccBin.UnExpect;
@@ -103,12 +104,16 @@ public class MipsIns {
         write("sll " + ans + "," + regx + "," + number);
     }
 
-    public static void srl_ans_regx_num(Reg ans, Reg regx, int number) throws IOException {
-        write("srl " + ans + "," + regx + "," + number);
+    public static void sll_ans_regx_num(Reg ans, Reg regx, Reg r2) throws IOException {
+        write("sll " + ans + "," + regx + "," + r2);
     }
 
-    public static void not_ans_regx(Reg ans, Reg regx) throws IOException {
-        write("not " + ans + "," + regx);
+    public static void srl_ans_regx_numReg(Reg ans, Reg regx, Reg reg) throws IOException {
+        write("srl " + ans + "," + regx + "," + reg);
+    }
+
+    public static void srl_ans_regx_numReg(Reg ans, Reg regx, int number) throws IOException {
+        write("srl " + ans + "," + regx + "," + number);
     }
 
     public static void neg_ans_regx(Reg ans, Reg operand) throws IOException {
@@ -134,6 +139,17 @@ public class MipsIns {
         write("b " + labelEnd);
         write(labelLiOne + ":");
         write("li " + reg + ",1");
+        write(labelEnd + ":");
+    }
+
+    public static void not_ans_reg(Reg ans, Reg reg) throws IOException {
+        String labelLiOne = IRTagManage.getInstance().newLabel();
+        String labelEnd = IRTagManage.getInstance().newLabel();
+        write("beq " + Reg.$zero + "," + reg + "," + labelLiOne);
+        write("move " + ans + "," + Reg.$zero);
+        write("b " + labelEnd);
+        write(labelLiOne + ":");
+        write("li " + ans + ",1");
         write(labelEnd + ":");
     }
 
@@ -200,6 +216,15 @@ public class MipsIns {
         } else UnExpect.printf(op + " is not ! or -");
     }
 
+
+    public static void negOrNot_ans_reg(Reg ans, String op, Reg reg) throws IOException {
+        if (op.equals("-")) {
+            neg_ans_regx(ans, reg);
+        } else if (op.equals("!")) {
+            not_ans_reg(ans, reg);
+        } else UnExpect.printf(op + " is not ! or -");
+    }
+
     /**
      * compute
      *
@@ -220,31 +245,13 @@ public class MipsIns {
             div_ans_reg_reg(ans, temp1, temp2);
         } else if (Judge.isMod(op)) {
             mod_ans_reg_reg(ans, temp1, temp2);
+        } else if (Judge.isSra(op)) {
+            sra_ans_reg_numReg(ans, temp1, temp2);
+        } else if (Judge.isSrl(op)) {
+            srl_ans_regx_numReg(ans, temp1, temp2);
+        } else if (Judge.isSll(op)) {
+            sll_ans_regx_num(ans, temp1, temp2);
         }
-    }
-
-    /**
-     * compute and store to first
-     *
-     * @param op    operate +-*%<< >>/
-     * @param temp1 ans and op1
-     * @param temp2 op2
-     * @throws IOException e
-     */
-    public static void compute_first(String op, Reg temp1, Reg temp2) throws IOException {
-        compute_ans_r1_op_r2(temp1, temp1, op, temp2);
-    }
-
-    /**
-     * compute and store to second
-     *
-     * @param op    operate +-*%<< >>/
-     * @param temp1 ans and op1
-     * @param temp2 op2
-     * @throws IOException e
-     */
-    public static void compute_second(String op, Reg temp1, Reg temp2) throws IOException {
-        compute_ans_r1_op_r2(temp2, temp1, op, temp2);
     }
 
     /**
@@ -257,7 +264,7 @@ public class MipsIns {
      * @param number number
      * @throws IOException e
      */
-    public static void compute(Reg ans, Reg temp1, String op, int number, Reg afloat) throws IOException {
+    public static void compute_ans_reg_op_num(Reg ans, Reg temp1, String op, int number, Reg afloat) throws IOException {
         if (Judge.isPlus(op)) {
             add_ans_reg_regOrNum(ans, temp1, number);
         } else if (Judge.isMinus(op)) {
@@ -265,11 +272,78 @@ public class MipsIns {
         } else if (Judge.isSll(op)) {
             sll_ans_regx_num(ans, temp1, number);
         } else if (Judge.isSrl(op)) {
-            srl_ans_regx_num(ans, temp1, number);
-        } else {
+            srl_ans_regx_numReg(ans, temp1, number);
+        } else if (Judge.isSra(op)) {
+            sra_ans_reg_numReg(ans, temp1, number);
+        } else if (Judge.isDivOptimize(op)) {
+            divOptimize(ans, temp1, op, number, afloat);
+        } else { // * / %
             li_ans_num(afloat, number);
             compute_ans_r1_op_r2(ans, temp1, op, afloat);
         }
+    }
+
+    /**
+     * ans + " = " + t1 + " ** " + M;
+     * <p>
+     * if(M > 2^31 - 1) ans.hi32 += a
+     * <p>
+     * ans + " = " + ans + " >>>_/ " + (divOptimize.N + l);
+     * <p>
+     * 结果存在ans里，但是ans也可能是temp1相同
+     *
+     * @param ans    *
+     * @param temp1  *
+     * @param op     *
+     * @param number *
+     * @param afloat *
+     */
+    public static void divOptimize(Reg ans, Reg temp1, String op, int number, Reg afloat) throws IOException {
+        li_ans_num(afloat, number); // afloat = M
+        mul(temp1, afloat); // t1 * M
+
+        AssignLine assignLine = (AssignLine) LineManager.getInstance().nextLine();
+        int shift = Integer.parseInt(assignLine.getT2());
+
+        mfhi(afloat); // afloat = hi;
+        if (number < 0) {
+            add_ans_reg_regOrNum(afloat, afloat, temp1);
+        }
+        // 注意 ans 和 temp 很可能相同
+        if (shift >= 32) {
+            sra_ans_reg_numReg(ans, afloat, shift - 32);
+        } else if (shift == 31) {
+            sll_ans_regx_num(afloat, afloat, 1);
+            mflo(ans);
+            srl_ans_regx_numReg(ans, ans, 31);
+            or_ans_reg_reg(ans, afloat, ans);
+        } else {
+            UnExpect.unexpect("div optimize shift < 31 Error");
+        }
+    }
+
+    public static void or_ans_reg_reg(Reg ans, Reg r1, Reg r2) throws IOException {
+        write("or " + ans + "," + r1 + "," + r2);
+    }
+
+    public static void mul(Reg r1, Reg r2) throws IOException {
+        write("mult " + r1 + "," + r2);
+    }
+
+    public static void mfhi(Reg r1) throws IOException {
+        write("mfhi " + r1);
+    }
+
+    public static void mflo(Reg r1) throws IOException {
+        write("mflo " + r1);
+    }
+
+    public static void sra_ans_reg_numReg(Reg ans, Reg r1, int number) throws IOException {
+        write("sra " + ans + "," + r1 + "," + number);
+    }
+
+    public static void sra_ans_reg_numReg(Reg ans, Reg r1, Reg r2) throws IOException {
+        write("sra " + ans + "," + r1 + "," + r2);
     }
 
     /**
@@ -280,7 +354,7 @@ public class MipsIns {
      * @param number number
      */
     public static void compute_first(String op, Reg ans, int number, Reg afloat) throws IOException {
-        compute(ans, ans, op, number, afloat);
+        compute_ans_reg_op_num(ans, ans, op, number, afloat);
     }
 
     /**
@@ -291,7 +365,7 @@ public class MipsIns {
      */
     public static void address_srl_2(Reg ans, int off) throws IOException {
         add_ans_reg_regOrNum(ans, Reg.$fp, off);
-        srl_ans_regx_num(ans, ans, 2);
+        srl_ans_regx_numReg(ans, ans, 2);
     }
 
     public static void push(Reg reg) throws IOException {

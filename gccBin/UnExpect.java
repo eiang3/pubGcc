@@ -48,11 +48,11 @@ public class UnExpect {
         System.out.println(s + " is not a num");
     }
 
-    public static void NULL(){
+    public static void NULL() {
         System.out.println("null pointer");
     }
 
-    public static void TempHasNoIndexes(String str){
-        System.out.println("TempHasNoIndexes");
+    public static void TempHasNoTimesToUse(String str) {
+        System.out.println("TempHasNoTimesToUse:" + str);
     }
 }
