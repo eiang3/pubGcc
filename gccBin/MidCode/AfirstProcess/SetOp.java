@@ -1,4 +1,4 @@
-package gccBin.MidCode.firstProcess;
+package gccBin.MidCode.AfirstProcess;
 
 import java.util.BitSet;
 import java.util.HashSet;

@@ -5,8 +5,8 @@ import GramTree.Param;
 import GramTree.TreeElement;
 import GramTree.Word;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.IRGenerate;
-import gccBin.MidCode.original.PrintfFormatStringStore;
+import gccBin.MidCode.AoriginalProcess.IRGenerate;
+import gccBin.MidCode.AoriginalProcess.PrintfFormatStringStore;
 
 import java.io.FileWriter;
 import java.io.IOException;

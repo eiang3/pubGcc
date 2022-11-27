@@ -1,4 +1,4 @@
-package gccBin.MidCode.firstProcess;
+package gccBin.MidCode.AfirstProcess;
 
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.TableSymbol;

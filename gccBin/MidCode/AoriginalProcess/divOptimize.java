@@ -1,4 +1,4 @@
-package gccBin.MidCode.original;
+package gccBin.MidCode.AoriginalProcess;
 
 public class divOptimize {
     public static int N = 31; //正整数可以，那负数是需要特判还是没那种可能？

@@ -2,7 +2,7 @@ package gccBin.MidCode;
 
 import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Line.*;
-import gccBin.MidCode.firstProcess.IRFirst;
+import gccBin.MidCode.AfirstProcess.IRFirst;
 
 import java.io.FileWriter;
 import java.io.IOException;

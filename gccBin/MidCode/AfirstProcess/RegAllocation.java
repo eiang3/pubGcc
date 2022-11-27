@@ -1,4 +1,4 @@
-package gccBin.MidCode.firstProcess;
+package gccBin.MidCode.AfirstProcess;
 
 import gccBin.MIPS.tool.Reg;
 

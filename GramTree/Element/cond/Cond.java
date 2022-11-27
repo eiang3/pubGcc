@@ -1,8 +1,8 @@
 package GramTree.Element.cond;
 
 import GramTree.*;
-import gccBin.MidCode.original.IRGenerate;
-import gccBin.MidCode.original.IRTagManage;
+import gccBin.MidCode.AoriginalProcess.IRGenerate;
+import gccBin.MidCode.AoriginalProcess.IRTagManage;
 
 import java.io.FileWriter;
 import java.io.IOException;

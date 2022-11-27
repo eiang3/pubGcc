@@ -3,7 +3,7 @@ package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
 import gccBin.MidCode.Judge;
-import gccBin.MidCode.firstProcess.VarNodeManager;
+import gccBin.MidCode.AfirstProcess.VarNodeManager;
 
 /**
  * var int i

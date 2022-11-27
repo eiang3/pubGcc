@@ -1,11 +1,10 @@
-import SymbolTableBin.APIGramSymTable;
 import SymbolTableBin.APIIRSymTable;
 import gccBin.ERROR.ErrorHandle;
 import gccBin.Gram.Gram;
 import gccBin.Lex.Lex;
 import gccBin.MIPS.MIPS;
-import gccBin.MidCode.firstProcess.IRFirst;
-import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.AfirstProcess.IRFirst;
+import gccBin.MidCode.AoriginalProcess.IRGenerate;
 
 public class Compiler {
     public static void main(String[] args) {
@@ -38,6 +37,11 @@ public class Compiler {
             IRFirst.getInstance().open();
             IRFirst.getInstance().begin();
             IRFirst.getInstance().close();
+
+
+            //第二次处理IR，进行公共子表达式删除
+
+
 
             //对IR进行翻译//
             MIPS.getInstance().open();

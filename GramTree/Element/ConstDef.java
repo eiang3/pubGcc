@@ -4,7 +4,7 @@ import GramTree.*;
 import SymbolTableBin.TypeTable;
 import SymbolTableBin.Value;
 import gccBin.Lex.Symbol;
-import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.AoriginalProcess.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;

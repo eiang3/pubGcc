@@ -1,7 +1,6 @@
-package gccBin.MidCode.firstProcess;
+package gccBin.MidCode.AfirstProcess;
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MIPS.tool.MemManager;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
 

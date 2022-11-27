@@ -3,9 +3,8 @@ package SymbolTableBin;
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.Element.ElementVar;
 import gccBin.ERROR.ErrorHandle;
-import gccBin.MidCode.firstProcess.IRFirst;
+import gccBin.MidCode.AfirstProcess.IRFirst;
 
-import javax.xml.bind.Element;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;

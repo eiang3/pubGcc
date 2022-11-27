@@ -8,7 +8,7 @@ import gccBin.MIPS.tool.*;
 import gccBin.MidCode.Judge;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
-import gccBin.MidCode.original.PrintfFormatStringStore;
+import gccBin.MidCode.AoriginalProcess.PrintfFormatStringStore;
 import gccBin.UnExpect;
 
 import java.io.File;

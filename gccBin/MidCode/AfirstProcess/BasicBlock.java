@@ -1,4 +1,4 @@
-package gccBin.MidCode.firstProcess;
+package gccBin.MidCode.AfirstProcess;
 
 import gccBin.MidCode.Line.AssignLine;
 import gccBin.MidCode.Line.Line;

@@ -1,4 +1,4 @@
-package gccBin.MidCode.original;
+package gccBin.MidCode.AoriginalProcess;
 
 import GramTree.Element.Exp;
 import GramTree.Element.InitVal;

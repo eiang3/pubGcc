@@ -4,7 +4,7 @@ import gccBin.MIPS.MIPS;
 import gccBin.MidCode.Judge;
 import gccBin.MidCode.Line.AssignLine;
 import gccBin.MidCode.LineManager;
-import gccBin.MidCode.original.IRTagManage;
+import gccBin.MidCode.AoriginalProcess.IRTagManage;
 import gccBin.UnExpect;
 
 import java.io.IOException;

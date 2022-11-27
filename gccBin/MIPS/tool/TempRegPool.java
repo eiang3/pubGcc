@@ -2,7 +2,7 @@ package gccBin.MIPS.tool;
 
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.Judge;
-import gccBin.MidCode.original.IRTagManage;
+import gccBin.MidCode.AoriginalProcess.IRTagManage;
 import gccBin.UnExpect;
 
 import java.io.IOException;

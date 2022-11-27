@@ -5,7 +5,7 @@ import GramTree.Element.Exp;
 import GramTree.Element.LVal;
 import GramTree.Param;
 import GramTree.TreeElement;
-import gccBin.MidCode.original.IRGenerate;
+import gccBin.MidCode.AoriginalProcess.IRGenerate;
 
 import java.io.FileWriter;
 import java.io.IOException;
