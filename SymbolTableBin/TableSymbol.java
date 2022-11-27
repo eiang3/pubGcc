@@ -33,7 +33,6 @@ public class TableSymbol {
             APIErrorSymTable.getInstance().setFatherTable(this);
             APIGramSymTable.getInstance().setRootTable(this);
             APIIRSymTable.getInstance().setRootTable(this);
-            IRFirst.getInstance().setRootTable(this);
         } else {
             this.father.addChild(this);
         }

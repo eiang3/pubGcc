@@ -5,6 +5,7 @@ import gccBin.Lex.Lex;
 import gccBin.MIPS.MIPS;
 import gccBin.MidCode.AfirstProcess.IRFirst;
 import gccBin.MidCode.AoriginalProcess.IRGenerate;
+import gccBin.MidCode.AzeroProcess.IRZero;
 
 public class Compiler {
     public static void main(String[] args) {
@@ -22,16 +23,16 @@ public class Compiler {
             ErrorHandle.getInstance().close();
             //语法树构建完毕//
 
+
             //中间代码生成开始//
             IRGenerate.getInstance().open();
             IRGenerate.getInstance().begin();
             IRGenerate.getInstance().close();
 
-            //APIIRSymTable.getInstance().getRootTable();
 
+            //刷新一次符号表
             APIIRSymTable.getInstance().refreshTable();
 
-            //APIIRSymTable.getInstance().getRootTable();
 
             //第一次处理IR，得到全局寄存器分配，对符号表和一些变量进行重命名//
             IRFirst.getInstance().open();
@@ -39,8 +40,10 @@ public class Compiler {
             IRFirst.getInstance().close();
 
 
-            //第二次处理IR，进行公共子表达式删除
-
+            //第二次处理IR，进行公共子表达式删除，死代码删除
+            IRZero.getInstance().open();
+            IRZero.getInstance().begin();
+            IRZero.getInstance().close();
 
 
             //对IR进行翻译//

@@ -78,6 +78,7 @@ public class BasicBlock {
 
     /**
      * 分析以得到活跃变量分析里的use集和def集
+     * 不分析cmp，printf等的活跃变量，因为这里只针对寄存器分配分析
      * +
      * 得到def变量的活跃范围
      * pre:line 应该是顺序输入的
@@ -102,7 +103,7 @@ public class BasicBlock {
                 def_active.add(lineDef);
             }
             //debug
-            if(lineDef != null && lineDef.equals("num") || lineUse.contains("num")){
+            if (lineDef != null && lineDef.equals("num") || lineUse.contains("num")) {
                 int lalalala;
             }
             //对于只存在于基本块内的活跃变量分析
@@ -240,7 +241,7 @@ public class BasicBlock {
     public void finishKill_def() {
         for (String var : genVarNames) {
             BitSet varGen = VarNodeManager.getInstance().getOneVarGen(var);
-            varGen = SetOp.differenceSet(varGen,gen_def);
+            varGen = SetOp.differenceSet(varGen, gen_def);
             kill_def.or(varGen); //加入kill集
         }
     }
@@ -256,7 +257,7 @@ public class BasicBlock {
             int firstDef = varName2GenX.get(name).get(0);
             BitSet ret = (BitSet) sum.clone();
             int length = getEnd();
-            if(firstDef + 1 > length || firstDef + 1 < 0 || length < 0) {
+            if (firstDef + 1 > length || firstDef + 1 < 0 || length < 0) {
                 return new BitSet();
             }
             ret.clear(firstDef + 1, length);
@@ -270,13 +271,12 @@ public class BasicBlock {
      * 如果一个var在gen集中，找到这个def点（不包括）到
      * 下一个def点（包括）|结尾的位置集
      *
-     *
-     * @param var *
-      * @param index *
+     * @param var   *
+     * @param index *
      * @return *
      */
     public BitSet getUseFromMid(String var, int index) {
-        if(varName2GenX.containsKey(var)) {
+        if (varName2GenX.containsKey(var)) {
             BitSet ret = (BitSet) sum.clone();
             int start = ret.nextSetBit(0);
             int end = ret.length();
@@ -333,6 +333,7 @@ public class BasicBlock {
     /**
      * block只需要添加out-block
      * 相应的out-block直接添加in-block
+     *
      * @param block *
      */
     public void addOutBlock(BasicBlock block) {
@@ -401,6 +402,7 @@ public class BasicBlock {
     public String getRetFunc() {
         return retFunc;
     }
+
     public BitSet getIn_def() {
         return (BitSet) in_def.clone();
     }
@@ -418,18 +420,18 @@ public class BasicBlock {
     }
 
     //debug
-    public void printfInBlock(){
+    public void printfInBlock() {
         System.out.print("in-block:{");
-        for(BasicBlock block:inBlocks){
-            System.out.print(block.getIndex()+",");
+        for (BasicBlock block : inBlocks) {
+            System.out.print(block.getIndex() + ",");
         }
         System.out.println("}");
     }
 
-    public void printfOutBlock(){
+    public void printfOutBlock() {
         System.out.print("out-block:{");
-        for(BasicBlock block:outBlocks){
-            System.out.print(block.getIndex()+",");
+        for (BasicBlock block : outBlocks) {
+            System.out.print(block.getIndex() + ",");
         }
         System.out.println("}");
     }

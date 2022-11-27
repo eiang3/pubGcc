@@ -8,6 +8,7 @@ import SymbolTableBin.Element.ElementVar;
 import SymbolTableBin.TableSymbol;
 
 public class Judge {
+
     /**
      * 判断一个name是不是var节点
      * 需要讨论的var声明的局部变量

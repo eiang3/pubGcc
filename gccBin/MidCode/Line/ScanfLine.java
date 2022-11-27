@@ -11,6 +11,7 @@ public class ScanfLine extends Line {
     public ScanfLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
         t = ele[1];
+        super.addUse_Temp(t);
     }
 
     public String getT() {

@@ -3,7 +3,7 @@ package gccBin.MidCode.Line;
 import SymbolTableBin.TableSymbol;
 
 /**
- * cmp a 1
+ * cmp exp exp
  */
 public class CmpLine extends Line {
     private String t1;
@@ -17,6 +17,8 @@ public class CmpLine extends Line {
     private void parse(String[] ele) {
         t1 = ele[1];
         t2 = ele[2];
+        super.addUse_Temp(t1);
+        super.addUse_Temp(t2);
     }
 
     public String getT1() {

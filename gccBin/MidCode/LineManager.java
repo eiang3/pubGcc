@@ -1,13 +1,14 @@
 package gccBin.MidCode;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MidCode.AzeroProcess.IRZero;
 import gccBin.MidCode.Line.*;
-import gccBin.MidCode.AfirstProcess.IRFirst;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
+
 
 /**
  * ok
@@ -15,16 +16,15 @@ import java.util.BitSet;
  * 参数会和关键字重合吗？
  */
 public class LineManager {
-    private static LineManager midCodeLines;
-
+    private static LineManager lineManager;
 
     /**
      * lines: 第一次扫描之后的中间代码
      * numLine:lines的个数
      * ergodicIndex:遍历lines时使用的下标
      */
-
     private final ArrayList<Line> lines;
+
     private int numLine;
     private int ergodicIndex;
 
@@ -34,45 +34,10 @@ public class LineManager {
     }
 
     public static LineManager getInstance() {
-        if (midCodeLines == null) {
-            midCodeLines = new LineManager();
+        if (lineManager == null) {
+            lineManager = new LineManager();
         }
-        return midCodeLines;
-    }
-
-    /**
-     * 对line的一个遍历方法
-     */
-    public void beginErgodic() {
-        ergodicIndex = 0;
-    }
-
-    /**
-     * 下一条line
-     *
-     * @return 下一条line
-     */
-    public Line nextLine() {
-        return lines.get(ergodicIndex++);
-    }
-
-    public Line getNowLine(){
-        return lines.get(ergodicIndex-1);
-    }
-    /**
-     * 回退一条line
-     */
-    public void retract() {
-        ergodicIndex--;
-    }
-
-    /**
-     * 判断是否遍历完毕
-     *
-     * @return 返回是否遍历完毕
-     */
-    public boolean hasNext() {
-        return ergodicIndex < numLine;
+        return lineManager;
     }
 
     public Line addLines(String line, TableSymbol tableSymbol) {
@@ -86,10 +51,10 @@ public class LineManager {
             this.lines.add(a);
             return a;
         } else if (line.equals("{")) {
-            IRFirst.getInstance().inTableSymbol();
+            IRZero.getInstance().inTableSymbol();
             return null;
         } else if (line.equals("}")) {
-            IRFirst.getInstance().leaveTableSymbol();
+            IRZero.getInstance().leaveTableSymbol();
             return null;
         } else if (equ(2, elements, 0, "b", "bge", "ble", "bgt", "blt", "bne", "beq")) {
             BLine a = new BLine(line, numLine++, tableSymbol, elements);
@@ -140,6 +105,124 @@ public class LineManager {
         }
     }
 
+    public Line parseLines(String line, TableSymbol tableSymbol) {
+        String[] elements = line.split(" ");
+        if (equ(3, elements, 0, "&arr")) {
+            return new ArrayDefLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(3, elements, 0, "&var")) {
+            return new VarDeclLine(line, numLine++, tableSymbol, elements);
+        } else if (line.equals("{")) {
+            IRZero.getInstance().inTableSymbol();
+            return null;
+        } else if (line.equals("}")) {
+            IRZero.getInstance().leaveTableSymbol();
+            return null;
+        } else if (equ(2, elements, 0, "b", "bge", "ble", "bgt", "blt", "bne", "beq")) {
+            return new BLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(3, elements, 0, "&cmp")) {
+            return new CmpLine(line, numLine++, tableSymbol, elements);
+        } else if (elements.length == 1 && isLabel(line)) {
+            return new LabelLine(line, numLine++, tableSymbol, elements);
+        } else if (ifFuncDef(elements)) {
+            return new FuncDefLine(line, numLine++, tableSymbol, elements);
+        } else if (isFParam(elements)) {
+            return new FParamDefLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(2, elements, 0, "&push")) {
+            return new PushLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(2, elements, 0, "&call")) {
+            return new CallFuncLine(line, numLine++, tableSymbol, elements);
+        } else if (isRetLine(elements)) {
+            return new RetLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(2, elements, 0, "&scanf")) {
+            return new ScanfLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(2, elements, 0, "&printf")) {
+            return new PrintfLine(line, numLine++, tableSymbol, elements);
+        } else if (equ(elements, 1, "=")) {
+            return new AssignLine(line, numLine++, tableSymbol, elements);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 如果相应的bitset位为1，则更新该位对应的line的gen变量名字
+     */
+    public void reGenNameLine(BitSet a, String old, String name) {
+        int start = a.nextSetBit(0);
+        if (start < 0) return;
+        for (int i = start; i < a.length() && i >= 0; i++) {
+            if (a.get(i)) {
+                lines.get(i).renameGen(old, name);
+            }
+        }
+    }
+
+    /**
+     * 如果相应的bitset位为1，则更新该位对应的line的use变量名字
+     */
+    public void reUseNameLine(BitSet a, String old, String name) {
+        int start = a.nextSetBit(0);
+        for (int i = start; i < a.length() && i >= 0; i++) {
+            if (a.get(i)) {
+                lines.get(i).renameUse(old, name);
+            }
+        }
+    }
+    //----get方法-----------------------------------------------------------------------//
+    public Line getLine(int index) {
+        return lines.get(index);
+    }
+
+    //打印所有的lines
+    public void printfLines() throws IOException {
+        FileWriter fileWriter = new FileWriter("midcodeLinesSet.txt");
+        for (Line line : lines) {
+            fileWriter.write(line.getMidCodeLine() + "\n");
+        }
+        fileWriter.close();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    ///---对lines的一个遍历方法----//////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////
+    /**
+     * 对line的一个遍历方法
+     */
+    public void beginErgodic() {
+        ergodicIndex = 0;
+    }
+
+    /**
+     * 下一条line
+     *
+     * @return 下一条line
+     */
+    public Line nextLine() {
+        return lines.get(ergodicIndex++);
+    }
+
+    public Line getNowLine(){
+        return lines.get(ergodicIndex-1);
+    }
+    /**
+     * 回退一条line
+     */
+    public void retract() {
+        ergodicIndex--;
+    }
+
+    /**
+     * 判断是否遍历完毕
+     *
+     * @return 返回是否遍历完毕
+     */
+    public boolean hasNext() {
+        return ergodicIndex < numLine;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////一些判断方法//////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////
     public boolean equ(String[] arr, int pos, String... str) {
         if (arr.length - 1 < pos) {
             return false;
@@ -175,46 +258,5 @@ public class LineManager {
     private boolean isRetLine(String[] ele) {
         return equ(1, ele, 0, "&ret") ||
                 equ(2, ele, 0, "&ret");
-    }
-
-    /**
-     * 如果相应的bitset位为1，则更新该位对应的line的gen变量名字
-     */
-    public void reGenNameLine(BitSet a, String old, String name) {
-        int start = a.nextSetBit(0);
-        if (start < 0) return;
-        for (int i = start; i < a.length() && i >= 0; i++) {
-            if (a.get(i)) {
-                lines.get(i).renameGen(old, name);
-            }
-        }
-    }
-
-    /**
-     * 如果相应的bitset位为1，则更新该位对应的line的use变量名字
-     */
-    public void reUseNameLine(BitSet a, String old, String name) {
-        int start = a.nextSetBit(0);
-        for (int i = start; i < a.length() && i >= 0; i++) {
-            if (a.get(i)) {
-                lines.get(i).renameUse(old, name);
-            }
-        }
-    }
-
-    public Line getLine(int index) {
-        return lines.get(index);
-    }
-
-    public void printfLines() throws IOException {
-        FileWriter fileWriter = new FileWriter("midcodeLinesSet.txt");
-        for (Line line : lines) {
-            fileWriter.write(line.getMidCodeLine() + "\n");
-        }
-        fileWriter.close();
-    }
-
-    public int getErgodicIndex() {
-        return ergodicIndex;
     }
 }

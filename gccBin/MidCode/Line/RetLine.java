@@ -22,6 +22,7 @@ public class RetLine extends Line {
                 gotoExit = true;
             }
             exp = ele[1];
+            super.addUse_Temp(exp);
         }
     }
 
