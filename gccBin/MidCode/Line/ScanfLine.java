@@ -1,20 +1,29 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MidCode.Judge;
+
+import java.util.HashMap;
 
 /**
  * scanf $t1
  */
+//
 public class ScanfLine extends Line {
-    private final String t;
+    private String exp;
 
     public ScanfLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
-        t = ele[1];
-        super.addUse_Temp(t);
+        exp = ele[1];
+        super.addGenTemp_Zero(exp);
     }
 
-    public String getT() {
-        return t;
+    public String getExp() {
+        return exp;
+    }
+
+    @Override
+    public String getMidCodeLine() {
+        return "&scanf " + exp;
     }
 }

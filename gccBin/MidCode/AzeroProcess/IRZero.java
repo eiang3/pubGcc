@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+/**
+ * 复写传播，公共子表达式删除，
+ */
 public class IRZero {
     private static IRZero irZero;
 
@@ -26,7 +29,6 @@ public class IRZero {
 
     public void begin() throws IOException {
         readLine();
-
         //1 建立所有基本块
         while (rLine != null) {
             if (!isAnnotate()) {
@@ -35,15 +37,38 @@ public class IRZero {
             }
             readLine();
         }
+        optimize(); //优化
 
+        //6 将每个基本块的表达式送到LineManager里
+        LineManager.getInstance().clearLineManager();
+        ZeroBlockManager.getInstance().addLineToLIneManager();
+        //LineManager.getInstance().printfLines(1);
+    }
+
+    public void optimize() throws IOException {
         //2 进行基本块的连接
         ZeroBlockManager.getInstance().setBExit();
         ZeroBlockManager.getInstance().connectAll();
 
-        //3 进行基本块的活跃变量分析
-        ZeroBlockManager.getInstance().ActiveVarAnalysis();
+        ZeroBlockManager.getInstance().printfBlockAndActive("_original_");
 
-        //4 进行
+        //4 进行可用表达式分析 & 复写传播
+        ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
+        ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
+
+        ZeroBlockManager.getInstance().printfBlockAndActive("_afterUsable_");
+
+        //3 进行基本块的活跃变量分析&无用表达式删除
+        ZeroBlockManager.getInstance().ActiveVarAnalysis();
+        ZeroBlockManager.getInstance().deleteUselessExp();
+
+        ZeroBlockManager.getInstance().ActiveVarAnalysis();
+        ZeroBlockManager.getInstance().deleteUselessExp();
+
+        ZeroBlockManager.getInstance().ActiveVarAnalysis();
+        ZeroBlockManager.getInstance().deleteUselessExp();
+        //5 进行无用表达式删除
+        ZeroBlockManager.getInstance().printfBlockAndActive("_afterDelete_");
     }
 
     /////////////////////////////////////////////////////////////////////////

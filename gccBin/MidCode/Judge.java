@@ -169,4 +169,30 @@ public class Judge {
         return isTemp(s) || isNumber(s);
     }
 
+    /**
+     * 如果是temp临时变量的话，得到变量的下标。
+     *
+     * @param temp temp
+     * @return *
+     */
+    public static int getTempIndex(String temp) {
+        if (!isTemp(temp)) return -1;
+        String num = temp.substring(2);
+        if (Judge.isNumber(num)) {
+            return Integer.parseInt(num);
+        }
+        return -1;
+    }
+
+    public static boolean isZeroActive(String str) {
+        return !isNumber(str) && !isArrayValue(str) && !str.equals("$RET");
+    }
+
+    public static boolean isVarOrTemp(String str) {
+        return isTemp(str) || isVar(str);
+    }
+
+    public static boolean isExpOrTemp(String str) {
+        return isExp(str) || isVar(str);
+    }
 }

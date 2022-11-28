@@ -29,12 +29,11 @@ public class IRFirst {
      * @throws IOException *
      */
     public void begin() throws IOException {
-        while (rLine != null) {
-            if (!isAnnotate()) {
-                Line line = LineManager.getInstance().addLines(rLine, nowTable);
-                BasicBlockManager.getInstance().build_Block_And_Parse_def(line);
-                VarNodeManager.getInstance().distributeGenAndUseToVar(line);
-            }
+        LineManager.getInstance().beginErgodic();
+        while(LineManager.getInstance().hasNext()){
+            Line line = LineManager.getInstance().nextLine();
+            BasicBlockManager.getInstance().build_Block_And_Parse_def(line);
+            VarNodeManager.getInstance().distributeGenAndUseToVar(line);
         }
         //打印lines集
         //LineManager.getInstance().printfLines();
@@ -61,18 +60,18 @@ public class IRFirst {
         BasicBlockManager.getInstance().block_ActiveVarAnalysis();
 
         //debug
-        LineManager.getInstance().printfLines();
+        /*LineManager.getInstance().printfLines();
 
         BasicBlockManager.getInstance().printfBlockMessage();
 
         VarNodeManager.getInstance().printfVarNodeMessage();
-        VarNodeManager.getInstance().printfVarWebMassage();
+        VarNodeManager.getInstance().printfVarWebMassage();*/
 
         //新节点的活跃范围分析
-        //BasicBlockManager.getInstance().varNode_ActiveScopeAnalysis();
+        BasicBlockManager.getInstance().varNode_ActiveScopeAnalysis();
 
         //得到变量冲突图
-        //VarNodeManager.getInstance().getClashGraph();
+        VarNodeManager.getInstance().getClashGraph();
 
         //得到全局变量分配方案
 
@@ -82,6 +81,8 @@ public class IRFirst {
 
         //完成s-reg分配
         RegAllocation.getInstance().finishRegAllocation();
+
+        LineManager.getInstance().printfLines("_lineForTrans_");
     }
     /*public void begin() throws IOException {
         readLine();
@@ -140,7 +141,6 @@ public class IRFirst {
         //完成s-reg分配
         RegAllocation.getInstance().finishRegAllocation();
     }*/
-
 
 
     ////////////////////////////以下是单例模式基本功能////////////////////////////////////////////

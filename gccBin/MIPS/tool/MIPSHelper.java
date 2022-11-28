@@ -16,37 +16,54 @@ public class MIPSHelper {
      * 寄存器里，因为数字可以直接计算
      * 如果值是保存在寄存器里的，就输出寄存器，如果值是保存在
      * 内存里的，就先把值取到临时寄存器
+     * temp var number
      */
-    public static Reg getValueInReg(Reg ans, String s) throws IOException {
+    public static Reg getValueInReg_t_v_n(Reg ans, String s, TableSymbol tableSymbol) throws IOException {
         if (Judge.isNumber(s)) {
             MipsIns.li_ans_num(ans, Integer.parseInt(s));
             return ans;
-        } else if (Judge.isTemp(s)) {
-            return TempRegPool.getInstance().getTempInReg(ans, s);
+        } else if (Judge.isVarOrTemp(s)) {
+            return getValueInReg_t_v(ans, s, tableSymbol);
         }
         UnExpect.unexpect("not a exp getValueInReg");
         return null;
     }
 
-    // next is static handle for mips generate
-
-    /**
-     * t1 = a[exp]
-     *
-     * @param answer      *
-     * @param array       *
-     * @param tableSymbol *
-     */
-    public static void assignArrToTemp(String answer, String array, TableSymbol tableSymbol) throws IOException {
-        String arrName = SubOp.getArrName(array);
-        String arrSub = SubOp.getArrSubscript(array);
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
-        Reg obj = TempRegPool.getInstance().addToPool(answer, Reg.l1);
-        get_Array_Value_In_Reg(obj, array, elementTable); //
-        if (TempRegPool.getInstance().inMem(answer)) {
-            TempRegPool.getInstance().storeToMem(obj, answer); //
+    public static void getValueInSpecialReg_t_v_n(Reg ans, String s, TableSymbol tableSymbol) throws IOException {
+        Reg reg = getValueInReg_t_v_n(ans, s, tableSymbol);
+        //assert reg != null;
+        if (!reg.equals(ans)) {
+            MipsIns.move_reg_reg(ans, reg);
         }
-        TempRegPool.getInstance().delete(answer, arrSub);
+    }
+
+    public static void getValueInSpecialReg_t_v(Reg ans, String s, TableSymbol tableSymbol) throws IOException {
+        Reg reg = getValueInReg_t_v(ans, s, tableSymbol);
+        //assert reg != null;
+        if (!reg.equals(ans)) {
+            MipsIns.move_reg_reg(ans, reg);
+        }
+    }
+
+    public static Reg getValueInReg_t_v(Reg afloat, String var, TableSymbol tableSymbol) throws IOException {
+        if (Judge.isVar(var)) {
+            ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
+            if (elementTable.isHasReg()) {
+                return elementTable.getReg();
+            } else {
+                if (elementTable.isGlobal()) {
+                    MipsIns.lw_ans_label(afloat, var);
+                } else {
+                    int varOff = elementTable.getMemOff();
+                    MipsIns.lw_ans_num_baseReg(afloat, varOff, Reg.$fp);
+                }
+                return afloat;
+            }
+        } else if (Judge.isTemp(var)) {
+            return TempRegPool.getInstance().getTempInReg(afloat, var);
+        }
+        UnExpect.unexpect("not a exp getValueInReg");
+        return null;
     }
 
     /**
@@ -117,6 +134,27 @@ public class MIPSHelper {
         return ret;
     }
 
+    // next is static handle for mips generate
+
+    /**
+     * t1 = a[exp]
+     *
+     * @param answer      *
+     * @param array       *
+     * @param tableSymbol *
+     */
+    public static void assignArrToTemp(String answer, String array, TableSymbol tableSymbol) throws IOException {
+        String arrName = SubOp.getArrName(array);
+        String arrSub = SubOp.getArrSubscript(array);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
+        Reg obj = TempRegPool.getInstance().addToPool(answer, Reg.l1);
+        get_Array_Value_In_Reg(obj, array, elementTable); //
+        if (TempRegPool.getInstance().inMem(answer)) {
+            TempRegPool.getInstance().storeToMem(obj, answer); //
+        }
+        TempRegPool.getInstance().delete(answer, arrSub);
+    }
+
     /**
      * a[exp] = exp
      *
@@ -125,19 +163,12 @@ public class MIPSHelper {
      * @param tableSymbol *
      * @throws IOException *
      */
-    public static void assignExpToArr(String answer, String exp, TableSymbol tableSymbol) throws IOException {
-
+    public static void assignExpORVarToArr(String answer, String exp, TableSymbol tableSymbol) throws IOException {
         String arrName = SubOp.getArrName(answer);
         String arrSub = SubOp.getArrSubscript(answer);
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
         //get value in reg.r1
-        Reg value = null;
-        if (Judge.isTemp(exp)) {
-            value = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
-        } else if (Judge.isNumber(exp)) {
-            value = Reg.r1;
-            MipsIns.li_ans_num(Reg.r1, Integer.parseInt(exp));
-        } else UnExpect.unexpect("assignExpToArr 1");
+        Reg value = getValueInReg_t_v_n(Reg.r1, exp, tableSymbol);
 
         //getAddress
         if (elementTable.isGlobal()) {
@@ -182,37 +213,18 @@ public class MIPSHelper {
      * @param exp         *
      * @param tableSymbol *
      */
-    public static void assignExpToVar(String answer, String exp, TableSymbol tableSymbol) throws IOException {
+    public static void assignExpORVarToVar(String answer, String exp, TableSymbol tableSymbol) throws IOException {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
         if (elementTable.isHasReg()) {
             Reg ans = elementTable.getReg();
-            if (TempRegPool.getInstance().inReg(exp)) {
-                Reg t = TempRegPool.getInstance().getReg(exp);
-                MipsIns.move_reg_reg(ans, t);
-            } else if (TempRegPool.getInstance().inMem(exp)) {
-                int off = TempRegPool.getInstance().getOff(exp);
-                MipsIns.lw_ans_num_baseReg(ans, off, Reg.$fp);
-            } else if (Judge.isNumber(exp)) {
-                MipsIns.li_ans_num(ans, Integer.parseInt(exp));
-            } else UnExpect.unexpect("assignExpToVar 1");
+            getValueInReg_t_v_n(ans, exp, tableSymbol);
         } else {
+            Reg reg = getValueInReg_t_v_n(Reg.r1, exp, tableSymbol);
             if (elementTable.isGlobal()) {
-                if (Judge.isTemp(exp)) {
-                    Reg value = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
-                    MipsIns.sw_value_label(value, answer);
-                } else if (Judge.isNumber(exp)) {
-                    MipsIns.li_ans_num(Reg.r1, Integer.parseInt(exp));
-                    MipsIns.sw_value_label(Reg.r1, answer);
-                } else UnExpect.unexpect("assignExpToVar 2");
+                MipsIns.sw_value_label(reg, answer);
             } else {
                 int ansOff = elementTable.getMemOff();
-                if (Judge.isTemp(exp)) {
-                    Reg value = TempRegPool.getInstance().getTempInReg(Reg.r1, exp);
-                    MipsIns.sw_value_num_baseReg(value, ansOff, Reg.$fp);
-                } else if (Judge.isNumber(exp)) {
-                    MipsIns.li_ans_num(Reg.r1, Integer.parseInt(exp));
-                    MipsIns.sw_value_num_baseReg(Reg.r1, ansOff, Reg.$fp);
-                } else UnExpect.unexpect("assignExpToVar 1");
+                MipsIns.sw_value_num_baseReg(reg, ansOff, Reg.$fp);
             }
         }
         TempRegPool.getInstance().delete(answer, exp);
@@ -228,66 +240,35 @@ public class MIPSHelper {
      * @param var         *
      * @param tableSymbol *
      */
-    public static void assignVarToTemp(String temp, String var, TableSymbol tableSymbol) throws IOException {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
+    public static void assignVTN_ToTemp(String temp, String var, TableSymbol tableSymbol) throws IOException {
         TempRegPool.getInstance().addToPool(temp);
-        if (elementTable.isHasReg()) {
-            Reg varReg = elementTable.getReg();
-            if (TempRegPool.getInstance().inReg(temp)) {
-                Reg reg = TempRegPool.getInstance().getReg(temp);
-                MipsIns.move_reg_reg(reg, varReg);
-            } else if (TempRegPool.getInstance().inMem(temp)) {
-                TempRegPool.getInstance().storeToMem(varReg, temp);
-            } else UnExpect.unexpect("assignVarToTemp 1");
-        } else {
-            if (elementTable.isGlobal()) {
-                if (TempRegPool.getInstance().inReg(temp)) {
-                    Reg reg = TempRegPool.getInstance().getReg(temp);
-                    MipsIns.lw_ans_label(reg, var);
-                } else if (TempRegPool.getInstance().inMem(temp)) {
-                    MipsIns.lw_ans_label(Reg.r1, var);
-                    TempRegPool.getInstance().storeToMem(Reg.r1, temp);
-                } else UnExpect.unexpect("assignVarToTemp 1");
-            } else {
-                int varOff = elementTable.getMemOff();
-                if (TempRegPool.getInstance().inReg(temp)) {
-                    Reg reg = TempRegPool.getInstance().getReg(temp);
-                    MipsIns.lw_ans_num_baseReg(reg, varOff, Reg.$fp);
-                } else if (TempRegPool.getInstance().inMem(temp)) {
-                    MipsIns.lw_ans_num_baseReg(Reg.r1, varOff, Reg.$fp);
-                    TempRegPool.getInstance().storeToMem(Reg.r1, temp);
-                } else UnExpect.unexpect("assignVarToTemp 1");
-            }
-        }
+        if (TempRegPool.getInstance().inReg(temp)) {
+            Reg reg = TempRegPool.getInstance().getReg(temp);
+            Reg ret = getValueInReg_t_v_n(reg, var, tableSymbol);
+            if (!reg.equals(ret))
+                MipsIns.move_reg_reg(reg, ret);
+        } else if (TempRegPool.getInstance().inMem(temp)) {
+            Reg ret = getValueInReg_t_v_n(Reg.r1, var, tableSymbol);
+            TempRegPool.getInstance().storeToMem(ret, temp);
+        } else UnExpect.unexpect("assignVarToTemp 1");
     }
 
-    /**
-     * t = num
-     *
-     * @param ans temp
-     * @param num num
-     */
-    public static void assignNumberToTemp(String ans, int num) throws IOException {
-        Reg ansReg = TempRegPool.getInstance().addToPool(ans, Reg.l1);
-        MipsIns.li_ans_num(ansReg, num);
-        if (TempRegPool.getInstance().inMem(ans)) {
-            TempRegPool.getInstance().storeToMem(ansReg, ans);
-        }
-    }
     //*********************************************************************************/
 
     /**
      * ok
-     * temp1 = (-|!) temp2
+     * temp1 = (-|!) temp2|var
      *
      * @param answer temp1
      * @param op     -|!
-     * @param temp   temp2
+     * @param temp   temp2|var
      * @throws IOException e
      */
-    public static void assignOne(String answer, String op, String temp) throws IOException {
+    public static void assignOne(String answer, String op, String temp, TableSymbol tableSymbol) throws IOException {
         Reg ansReg = TempRegPool.getInstance().addToPool(answer, Reg.l1);
-        Reg reg = TempRegPool.getInstance().getTempInReg(Reg.r1, temp);
+
+        Reg reg = getValueInReg_t_v(Reg.r1, temp, tableSymbol);
+
         MipsIns.negOrNot_ans_reg(ansReg, op, reg);
         if (TempRegPool.getInstance().inMem(answer)) {
             TempRegPool.getInstance().storeToMem(ansReg, answer);
@@ -351,19 +332,20 @@ public class MIPSHelper {
             int num2 = (Judge.isNumber(temp2)) ? Integer.parseInt(temp2) : 0;
             if (Judge.isNumber(temp1) && Judge.isNumber(temp2)) {
                 assignTwo_TwoNumber(answer, num1, op, num2);
-            } else if (Judge.isTemp(temp1) && Judge.isNumber(temp2)) {
-                assignTwo_Temp_Number(answer, temp1, op, num2);
-            } else if (Judge.isNumber(temp1) && Judge.isTemp(temp2)) {
-                assignTwo_Number_Temp(answer, num1, op, temp2);
-            } else if (Judge.isTemp(temp1) && Judge.isTemp(temp2)) {
-                assignTwo_TwoTemp(answer, temp1, op, temp2);
+            } else if (Judge.isVarOrTemp(temp1) && Judge.isNumber(temp2)) {
+                assignTwo_Temp_Number(answer, temp1, op, num2, tableSymbol);
+            } else if (Judge.isNumber(temp1) && Judge.isVarOrTemp(temp2)) {
+                assignTwo_Number_Temp(answer, num1, op, temp2, tableSymbol);
+            } else if (Judge.isVarOrTemp(temp1) && Judge.isVarOrTemp(temp2)) {
+                assignTwo_TwoTemp(answer, temp1, op, temp2, tableSymbol);
             } else UnExpect.unexpect("assignTwo");
         }
     }
 
-    public static void assignTwo_TwoTemp(String answer, String temp1, String op, String temp2) throws IOException {
-        Reg t1 = TempRegPool.getInstance().getTempInReg(Reg.r1, temp1);
-        Reg t2 = TempRegPool.getInstance().getTempInReg(Reg.r2, temp2);
+    public static void assignTwo_TwoTemp(String answer, String temp1, String op, String temp2, TableSymbol tableSymbol) throws IOException {
+        Reg t1 = getValueInReg_t_v(Reg.r1, temp1, tableSymbol);
+        Reg t2 = getValueInReg_t_v(Reg.r2, temp2, tableSymbol);
+
         Reg ansReg = TempRegPool.getInstance().addToPool(answer, Reg.l1);
         MipsIns.compute_ans_r1_op_r2(ansReg, t1, op, t2);
         if (TempRegPool.getInstance().inMem(answer)) {
@@ -383,8 +365,9 @@ public class MIPSHelper {
     }
 
     //ok
-    public static void assignTwo_Temp_Number(String answer, String temp1, String op, int number) throws IOException {
-        Reg t1 = TempRegPool.getInstance().getTempInReg(Reg.r1, temp1);
+    public static void assignTwo_Temp_Number(String answer, String temp1, String op, int number, TableSymbol tableSymbol) throws IOException {
+        Reg t1 = getValueInReg_t_v(Reg.r1, temp1, tableSymbol);
+
         Reg ansReg = TempRegPool.getInstance().addToPool(answer, Reg.l1);
         MipsIns.compute_ans_reg_op_num(ansReg, t1, op, number, Reg.r2);
         if (TempRegPool.getInstance().inMem(answer)) {
@@ -393,17 +376,18 @@ public class MIPSHelper {
         TempRegPool.getInstance().delete(answer, temp1);
     }
 
-    public static void assignTwo_Number_Temp(String answer, int num1, String op, String temp2) throws IOException {
-        Reg t2 = TempRegPool.getInstance().getTempInReg(Reg.r2, temp2);
+    public static void assignTwo_Number_Temp(String answer, int num1, String op, String temp2, TableSymbol tableSymbol) throws IOException {
+        Reg t2 = getValueInReg_t_v(Reg.r2, temp2, tableSymbol);
+
         if (Judge.isPlus(op)) {
-            assignTwo_Temp_Number(answer, temp2, op, num1);
+            assignTwo_Temp_Number(answer, temp2, op, num1, tableSymbol);
         } else {
             MipsIns.li_ans_num(Reg.r1, num1);
             Reg ansReg = TempRegPool.getInstance().addToPool(answer, Reg.l1);
             MipsIns.compute_ans_r1_op_r2(ansReg, Reg.r1, op, t2);
             if (TempRegPool.getInstance().inMem(answer)) {
                 TempRegPool.getInstance().storeToMem(ansReg, answer);
-            } else UnExpect.tempNotInMemAndReg(answer);
+            }
         }
         TempRegPool.getInstance().delete(answer, temp2);
     }

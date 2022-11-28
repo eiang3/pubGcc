@@ -1,21 +1,21 @@
 package gccBin.MidCode.AzeroProcess;
 
 import gccBin.MidCode.AfirstProcess.SetOp;
+import gccBin.MidCode.Judge;
 import gccBin.MidCode.Line.AssignLine;
 import gccBin.MidCode.Line.Line;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 
 public class ZeroBlock {
     private final ArrayList<Line> lines; //基本块的所有lines
-
     private final int index; //基本块的索引
-
     private final ArrayList<ZeroBlock> inBlocks;  //该基本块的前继基本块
     private final ArrayList<ZeroBlock> outBlocks; //该基本块的后继基本块
     private boolean gotoExit; //基本块是否要跳到结尾基本块
-
     //活跃变量分析
     private final HashSet<String> use_active;
     private final HashSet<String> def_active;
@@ -33,7 +33,6 @@ public class ZeroBlock {
 
     public ZeroBlock(int index) {
         this.index = index;
-
         this.inBlocks = new ArrayList<>();
         this.outBlocks = new ArrayList<>();
         this.gotoExit = false;
@@ -46,17 +45,18 @@ public class ZeroBlock {
         this.lines = new ArrayList<>();
     }
 
-    /**
-     * 分析以得到活跃变量分析里的use集和def集
-     * +
-     * 得到def变量的活跃范围
-     * pre:line 应该是顺序输入的
-     */
-    public void parseLine_active() {
+    public void clear() {
+        this.use_active.clear();
+        this.def_active.clear();
+        this.in_active.clear();
+        this.out_active.clear();
+    }
+
+    //分析以得到活跃变量分析里的use集和def集
+    public void parseLines_use_def_act() {
         for (Line line : lines) {
-            String lineDef = line.getGen_tempVar();
-            HashSet<String> lineUse = line.getUse_tempVar();
-            //当一个var在line里既定义又使用，则先算使用的
+            String lineDef = line.getGen_zero();
+            HashSet<String> lineUse = line.getUse_zero();
             for (String var : lineUse) {
                 if (!def_active.contains(var)) {
                     use_active.add(var);
@@ -86,6 +86,7 @@ public class ZeroBlock {
         return !old.equals(in_active);
     }
 
+    //******************** get set 方法 *****************************//
 
     /**
      * block只需要添加out-block
@@ -102,7 +103,6 @@ public class ZeroBlock {
         this.inBlocks.add(block);
     }
 
-    //******************** get set 方法 *****************************//
     public void addLine(Line line) {
         this.lines.add(line);
     }
@@ -156,41 +156,87 @@ public class ZeroBlock {
         return in_active;
     }
 
+    public ArrayList<Line> getLines() {
+        return lines;
+    }
 
-    public void usableExp() {
+    public void usableExpAndCopyPropagation() {
         HashMap<String, AssignLine> A = new HashMap<>();//右部对应
+        ArrayList<AssignLine> B = new ArrayList<>();//顺序的全部
         for (Line line : lines) {
             if (line instanceof AssignLine) {
                 AssignLine assignLine = (AssignLine) line;
-                for (AssignLine o : A.values()) {
-                    //不按顺序，所以可能不是最棒的
-                    assignLine.judgeRightEqual_exchange(o);
+                //找到右部相同的替换
+                if (!Judge.isArrayValue(assignLine.getAns())) {
+                    for (AssignLine o : B) {
+                        if (o.getRight().equals(assignLine.getRight())
+                                && !Judge.isArrayValue(o.getAns())) {
+                            assignLine.exchange(o);
+                            break;
+                        }
+                    }
+                    AssignLine remove = A.remove(assignLine.getAns());
+                    B.remove(remove);
+
+                    A.put(assignLine.getAns(), assignLine);
+                    B.add(assignLine);
                 }
-                A.remove(assignLine.getAns());
-                A.put(assignLine.getAns(), assignLine);
             }
+            ZeroBlockManager.getInstance().exchange(line);
         }
     }
+
 
     public void deleteUselessExp() {
         HashSet<String> act = new HashSet<>(this.out_active);
         if (lines.size() == 0) return;
 
         ListIterator<Line> iterator = lines.listIterator();
-        Line line = null;
+        Line line;
 
-        if (iterator.hasNext()) line = iterator.next();
-        if (line == null) return;
+        while (iterator.hasNext()) iterator.next();
 
-        if (!act.contains(line.getGen())) iterator.remove();
-        act.remove(line.getGen_tempVar());
-        act.addAll(line.getUse_tempVar());
-
-        if (iterator.hasPrevious()) {
+        while (iterator.hasPrevious()) {
             line = iterator.previous();
-            if (!act.contains(line.getGen())) iterator.remove();
-            act.remove(line.getGen_tempVar());
-            act.addAll(line.getUse_tempVar());
+            if (!act.contains(line.getGen_zero()) && line instanceof AssignLine
+                    && !Judge.isArrayValue(((AssignLine) line).getAns())) {
+                iterator.remove();
+            }
+            act.remove(line.getGen_zero());
+            act.addAll(line.getUse_zero());
         }
+    }
+
+    public void printfZeroBlock(FileWriter fileWriter) throws IOException {
+        fileWriter.write("\n\n\nBlock " + index);
+
+        //in block message
+        fileWriter.write("\nin blocks:");
+        for (ZeroBlock zeroBlock : inBlocks) {
+            fileWriter.write(zeroBlock.index + " ");
+        }
+
+        fileWriter.write("\nin active:");
+        //in active
+        fileWriter.write(in_active.toString());
+
+
+        //lines
+        fileWriter.write("\nblock Lines:");
+        for (Line line : lines) {
+            fileWriter.write("\n" + line.getMidCodeLine());
+        }
+
+
+        //out block message
+        fileWriter.write("\nout blocks:");
+        for (ZeroBlock zeroBlock : outBlocks) {
+            fileWriter.write(zeroBlock.index + " ");
+        }
+
+        //out active
+        fileWriter.write("\nout active:");
+        //in active
+        fileWriter.write(out_active.toString());
     }
 }

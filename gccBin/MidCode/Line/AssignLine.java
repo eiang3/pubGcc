@@ -1,12 +1,16 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MIPS.SubOp;
+import gccBin.MidCode.AzeroProcess.ZeroBlockManager;
+import gccBin.MidCode.Judge;
 
-import java.util.HashSet;
+import java.util.HashMap;
 
 /**
  * 数组指针。
  * exp : 123 | $tx | a | a[$tx] | a[a] | a[123]
+ *
  * <p>
  * a[0] = exp
  * j = exp  【3】
@@ -16,7 +20,7 @@ import java.util.HashSet;
  * i = RET
  * z = a[x]
  */
-
+//
 public class AssignLine extends Line {
     private String t1;
     private String t2;
@@ -45,9 +49,19 @@ public class AssignLine extends Line {
         ans = ele[0];
         ansIsGen = super.addGen_both(ans);
         if (ele.length == 3) {
+            //a[exp] = exp
+            //temp = a[exp]
+            //需要把exp提出来
             pureAssign = true;
             t1 = ele[2];
             t1IsUse = super.addUse_both(t1);
+            t2 = null;
+
+            if (Judge.isArrayValue(ans)) t2 = SubOp.getArrSubscript(ans);
+            else if (Judge.isArrayValue(t1)) t2 = SubOp.getArrSubscript(t1);
+            if (t2 != null) {
+                super.addUseTemp_Zero(t2);
+            }
         } else if (ele.length == 4) {
             oneOpr = true;
             t1 = ele[3];
@@ -61,64 +75,7 @@ public class AssignLine extends Line {
             t1IsUse = super.addUse_both(t1);
             t2IsUse = super.addUse_both(t2);
         }
-    }
 
-    ///////////////////////////////////////////////////////////////////////
-    //             提前化简部分
-    //////////////////////////////////////////////////////////////////////
-
-    /**
-     * 判断两个AssignLine的右部是否相等
-     *
-     * @param assignLine *
-     */
-    public void judgeRightEqual_exchange(AssignLine assignLine) {
-        boolean ret = false;
-        if (this.isPureAssign() && assignLine.isPureAssign()) {
-            ret = this.t1.equals(assignLine.getT1());
-        } else if (this.isOneOpr() && assignLine.isOneOpr()) {
-            ret = this.op.equals(assignLine.getOp()) &&
-                    this.t1.equals(assignLine.getT1());
-        } else if (this.isTwoOpr() && assignLine.isTwoOpr()) {
-            ret = this.t1.equals(assignLine.getT1()) &&
-                    this.op.equals(assignLine.getOp()) &&
-                    this.t2.equals(assignLine.getT2());
-        }
-
-        if (ret) {
-            this.pureAssign = true;
-            this.oneOpr = false;
-            this.twoOpr = false;
-            this.t1 = assignLine.getAns();
-            super.clearUse();
-            t1IsUse = addUse_both(t1);
-            if (twoOpr) t2IsUse = addUse_both(t2);
-        }
-    }
-
-    public void exchangeRight(AssignLine assignLine) {
-        this.pureAssign = true;
-        this.oneOpr = false;
-        this.twoOpr = false;
-        this.t1 = assignLine.getAns();
-        super.clearUse();
-        t1IsUse = addUse_both(t1);
-        if (twoOpr) t2IsUse = addUse_both(t2);
-    }
-
-    /**
-     * 返回右边变量
-     *
-     * @return *
-     */
-    public String getRight() {
-        if (isPureAssign()) {
-            return t1;
-        } else if (isOneOpr()) {
-            return op + " " + t1;
-        } else {
-            return t1 + " " + op + " " + t2;
-        }
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -184,4 +141,69 @@ public class AssignLine extends Line {
     }
 
 
+    ///////////////////////////////////////////////////////////////////////
+    //             提前化简部分
+    //////////////////////////////////////////////////////////////////////
+
+    /**
+     * 前提:两个AssignLine的右部否相等
+     * 结果，把调用的line的右部换为被调用等右部
+     *
+     * @param assignLine *
+     */
+    public void exchange(AssignLine assignLine) {
+        // 如果已经替换过了，而且需要再次替换的比原先还晚，就不再替换了，不重复替换
+        String newT1 = assignLine.getAns();
+        if (Judge.isTemp(newT1) && isPureAssign() && Judge.isTemp(t1)) {
+            int newT1Index = Judge.getTempIndex(newT1);
+            int newT2Index = Judge.getTempIndex(t1);
+            if (newT1Index > newT2Index) return;
+        }
+        super.decreaseUseAllForAssign();
+        super.clearTwoUseSet();
+        this.pureAssign = true;
+        this.oneOpr = false;
+        this.twoOpr = false;
+        this.t1 = assignLine.getAns();
+        this.op = null;
+        this.t2 = null;
+        this.t2IsUse = false;
+        t1IsUse = addUse_both(t1);
+        super.increaseUse(t1);
+        //为了接下来的复写传播
+        ZeroBlockManager.getInstance().addCopy(ans, t1);
+    }
+
+    /**
+     * 返回右边变量
+     *
+     * @return *
+     */
+    public String getRight() {
+        if (isPureAssign()) {
+            return t1;
+        } else if (isOneOpr()) {
+            return op + " " + t1;
+        } else {
+            return t1 + " " + op + " " + t2;
+        }
+    }
+
+    @Override
+    public void copyPropagation(HashMap<String, String> copy) {
+        if (copy.containsKey(t1) && Judge.isTemp(t1)) {
+            super.decreaseUse(t1);
+            super.removeFromBothUse(t1);
+            t1 = copy.get(t1);
+            super.increaseUse(t1);
+            t1IsUse = addUse_both(t1);
+        }
+        if (twoOpr && copy.containsKey(t2) && Judge.isTemp(t2)) {
+            super.decreaseUse(t2);
+            super.removeFromBothUse(t2);
+            t2 = copy.get(t2);
+            super.increaseUse(t2);
+            t2IsUse = addUse_both(t2);
+        }
+    }
 }

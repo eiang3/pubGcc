@@ -1,6 +1,6 @@
 package gccBin.MidCode.AoriginalProcess;
 
-import gccBin.UnExpect;
+import gccBin.MidCode.Judge;
 
 import java.util.HashMap;
 
@@ -37,11 +37,19 @@ public class IRTagManage {
     }
 
     public void addUse(String temp) {
+        if (!Judge.isTemp(temp)) return;
+        if (!this.temp2useTimes.containsKey(temp)) {
+            this.temp2useTimes.put(temp, 1);
+        }
         int a = this.temp2useTimes.get(temp);
         this.temp2useTimes.put(temp, a + 1);
     }
 
     public void addUse(String temp, int add) {
+        if (!Judge.isTemp(temp)) return;
+        if (!this.temp2useTimes.containsKey(temp)) {
+            this.temp2useTimes.put(temp, add);
+        }
         int a = this.temp2useTimes.get(temp);
         this.temp2useTimes.put(temp, a + add);
     }
@@ -58,8 +66,8 @@ public class IRTagManage {
      * @return *
      */
     public boolean delete(String str) {
+        if (!Judge.isTemp(str)) return false;
         if (!temp2useTimes.containsKey(str)) {
-            UnExpect.TempHasNoTimesToUse(str);
             return false;
         }
         int indexes = temp2useTimes.get(str);
@@ -70,15 +78,6 @@ public class IRTagManage {
             temp2useTimes.put(str, indexes - 1);
             return false;
         }
-    }
-
-    public boolean canDelete(String name) {
-        if (!temp2useTimes.containsKey(name)) {
-            UnExpect.TempHasNoTimesToUse(name);
-            return false;
-        }
-        int num = temp2useTimes.get(name);
-        return num == 1;
     }
 
 }

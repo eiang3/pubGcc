@@ -144,6 +144,20 @@ public class LineManager {
         }
     }
 
+
+    public void clearLineManager() {
+        this.lines.clear();
+        this.numLine = 0;
+        this.ergodicIndex = 0;
+    }
+
+    public void addLineArray(ArrayList<Line> array) {
+        for (Line line : array) {
+            this.lines.add(line);
+            line.setIndex(numLine++);
+        }
+    }
+
     /**
      * 如果相应的bitset位为1，则更新该位对应的line的gen变量名字
      */
@@ -168,14 +182,15 @@ public class LineManager {
             }
         }
     }
+
     //----get方法-----------------------------------------------------------------------//
     public Line getLine(int index) {
         return lines.get(index);
     }
 
     //打印所有的lines
-    public void printfLines() throws IOException {
-        FileWriter fileWriter = new FileWriter("midcodeLinesSet.txt");
+    public void printfLines(String i) throws IOException {
+        FileWriter fileWriter = new FileWriter("midcodeLinesSet" + i + ".txt");
         for (Line line : lines) {
             fileWriter.write(line.getMidCodeLine() + "\n");
         }
@@ -185,6 +200,7 @@ public class LineManager {
     //////////////////////////////////////////////////////////////////////////////////
     ///---对lines的一个遍历方法----//////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////
+
     /**
      * 对line的一个遍历方法
      */
@@ -201,9 +217,10 @@ public class LineManager {
         return lines.get(ergodicIndex++);
     }
 
-    public Line getNowLine(){
-        return lines.get(ergodicIndex-1);
+    public Line getNowLine() {
+        return lines.get(ergodicIndex - 1);
     }
+
     /**
      * 回退一条line
      */

@@ -15,10 +15,7 @@ public class TempRegPool {
 
     private final HashMap<String, Reg> temp2Reg;
 
-    /**
-     * temp名以及它对应的在内存里的偏移
-     */
-    private final HashMap<String, Integer> temp2off;
+    private final HashMap<String, Integer> temp2off; //temp名以及它对应的在内存里的偏移
 
     private TempRegPool() {
         temp2Reg = new HashMap<>();
@@ -53,7 +50,6 @@ public class TempRegPool {
         if (temp2Reg.containsKey(name) || temp2off.containsKey(name)) {
             return;
         }
-
         if (hasRegToAllocate()) {
             HashSet<Reg> regs = new HashSet<>(temp2Reg.values());
             Reg reg = Reg.getFreeTempReg(regs);
@@ -67,14 +63,14 @@ public class TempRegPool {
     /**
      * 当一个temp在ir中被使用后，这个temp不再使用，需要被销毁
      *
-     * @param name temp name
+     * @param todelete temp name
      */
-    public void delete(String ans, String name) {
-        if (ans.equals(name)) return;
-        if (Judge.isTemp(name)) {
-            if (IRTagManage.getInstance().delete(name)) {
-                this.temp2off.remove(name);
-                temp2Reg.remove(name);
+    public void delete(String ans, String todelete) {
+        if (ans.equals(todelete)) return;
+        if (Judge.isTemp(todelete)) {
+            if (IRTagManage.getInstance().delete(todelete)) {
+                this.temp2off.remove(todelete);
+                temp2Reg.remove(todelete);
             }
         }
     }
@@ -197,26 +193,28 @@ public class TempRegPool {
      * 为一个新的变量分配内存地址，并且将旧的变量复制一份过去
      * afloat-use : Reg.r1
      *
-     * @param temp new
-     * @param old  old
+     * @param ans new
+     * @param temp  temp
      */
-    public void justCopy(String temp, String old) throws IOException {
-        Reg tempReg = addToPool(temp, Reg.r1);
-        if (temp2Reg.containsKey(old)) {
-            Reg reg = temp2Reg.get(old);
-            if (TempRegPool.tempRegPool.inReg(temp)) {
+    public void justCopy(String ans, String temp) throws IOException {
+        if (ans.equals(temp)) {
+            return;
+        }
+        Reg tempReg = addToPool(ans, Reg.r1);
+        if (temp2Reg.containsKey(temp)) {
+            Reg reg = temp2Reg.get(temp);
+            if (TempRegPool.tempRegPool.inReg(ans)) {
                 MipsIns.move_reg_reg(tempReg, reg);
             } else {
-                storeToMem(reg, temp);
+                storeToMem(reg, ans);
             }
-        } else if (temp2off.containsKey(old)) {
-            int off = temp2off.get(old);
-            if (TempRegPool.tempRegPool.inReg(temp)) {
-                MipsIns.lw_ans_num_baseReg(tempReg, off, Reg.$fp);
-            } else {
-                MipsIns.lw_ans_num_baseReg(tempReg, off, Reg.$fp);
-                storeToMem(tempReg, temp);
+        } else if (temp2off.containsKey(temp)) {
+            int off = temp2off.get(temp);
+            MipsIns.lw_ans_num_baseReg(tempReg, off, Reg.$fp);
+            if (TempRegPool.tempRegPool.inMem(ans)) {
+                storeToMem(tempReg, ans);
             }
         }
+        delete(ans,temp);
     }
 }

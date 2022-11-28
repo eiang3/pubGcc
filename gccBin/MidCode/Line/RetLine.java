@@ -1,12 +1,16 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MidCode.Judge;
+
+import java.util.HashMap;
 
 /**
  * ret t1
  * ret
  * ret main //main函数退出的时候
  */
+//
 public class RetLine extends Line {
     private String exp;
 
@@ -18,11 +22,11 @@ public class RetLine extends Line {
         super(s, line, tableSymbol);
         gotoExit = false;
         if (ele.length == 2) {
-            if(ele[1].equals("main")){
+            if (ele[1].equals("main")) {
                 gotoExit = true;
             }
             exp = ele[1];
-            super.addUse_Temp(exp);
+            super.addUseTemp_Zero(exp);
         }
     }
 
@@ -41,5 +45,21 @@ public class RetLine extends Line {
 
     public void setFuncName(String funcName) {
         this.funcName = funcName;
+    }
+
+    @Override
+    public void copyPropagation(HashMap<String, String> copy) {
+        if(Judge.isTemp(exp)) {
+            if (copy.containsKey(exp)) {
+                super.exchangeTempUseZero(copy.get(exp),exp);
+                exp = copy.get(exp);
+            }
+        }
+    }
+
+    @Override
+    public String getMidCodeLine() {
+        if (exp == null) return "&ret ";
+        return "&ret " + exp;
     }
 }

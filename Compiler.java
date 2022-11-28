@@ -33,17 +33,15 @@ public class Compiler {
             //刷新一次符号表
             APIIRSymTable.getInstance().refreshTable();
 
+            //第二次处理IR，进行公共子表达式删除，死代码删除
+            IRZero.getInstance().open();
+            IRZero.getInstance().begin();
+            IRZero.getInstance().close();
 
             //第一次处理IR，得到全局寄存器分配，对符号表和一些变量进行重命名//
             IRFirst.getInstance().open();
             IRFirst.getInstance().begin();
             IRFirst.getInstance().close();
-
-
-            //第二次处理IR，进行公共子表达式删除，死代码删除
-            IRZero.getInstance().open();
-            IRZero.getInstance().begin();
-            IRZero.getInstance().close();
 
 
             //对IR进行翻译//

@@ -1,22 +1,23 @@
 package gccBin.MidCode.AzeroProcess;
 
 import gccBin.MidCode.Line.*;
+import gccBin.MidCode.LineManager;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ZeroBlockManager {
     private static ZeroBlockManager zeroBlockManager;
 
+    //以下是基本块构建相关的变量
     private final HashMap<Integer, ZeroBlock> basicBlocks; //后续可能会删基本块
     private ZeroBlock bExit; //basicBlocks的最后一个
     private int basicBlockNum; //basicBlocks的数量
-
     private final HashMap<String, ZeroBlock> label2Block; // 唯一
     private final HashMap<String, ZeroBlock> funcName2Block; //唯一
     private final HashMap<String, ArrayList<Integer>> call2nextBlockId; //可能不唯一，call是block的最后一句
-
-
     private String funcName; //实时函数名字
     private ZeroBlock nowBlock; //实时基本块
 
@@ -35,6 +36,7 @@ public class ZeroBlockManager {
         return zeroBlockManager;
     }
 
+    //一个经过测试的基本块连接模块
     public void build_Block(Line line) {
         if (line == null || line.getLineLength() == 0) return;
         if (line instanceof LabelLine) { //以label开始的基本块
@@ -81,10 +83,7 @@ public class ZeroBlockManager {
         }
     }
 
-    /**
-     * 设置结束基本块
-     */
-    public void setBExit() {
+    public void setBExit() { // 设置结束基本块
         this.bExit = new ZeroBlock(basicBlockNum);
         basicBlocks.put(basicBlockNum++, bExit);
     }
@@ -126,14 +125,11 @@ public class ZeroBlockManager {
     }
 
 
-    /**
-     * 基本块进行活跃变量分析
-     */
-    public void ActiveVarAnalysis() {
+    public void ActiveVarAnalysis() { //基本块进行活跃变量分析
         for (ZeroBlock block : basicBlocks.values()) {
-            block.parseLine_active();
+            block.clear();
+            block.parseLines_use_def_act();
         }
-
         boolean myContinue = true;
         while (myContinue) {
             myContinue = false;
@@ -145,5 +141,47 @@ public class ZeroBlockManager {
         }
     }
 
+    public void usableExpAndCopyPropagation() {
+        this.name2copy.clear();
+        for (int index : basicBlocks.keySet()) {
+            ZeroBlock zeroBlock = basicBlocks.get(index);
+            zeroBlock.usableExpAndCopyPropagation();
+        }
+    }
+
+    public void deleteUselessExp() {
+        for (int index : basicBlocks.keySet()) {
+            ZeroBlock zeroBlock = basicBlocks.get(index);
+            zeroBlock.deleteUselessExp();
+        }
+    }
+
+    public void addLineToLIneManager() {
+        for (int index : basicBlocks.keySet()) {
+            ZeroBlock zeroBlock = basicBlocks.get(index);
+            LineManager.getInstance().addLineArray(zeroBlock.getLines());
+        }
+    }
+
+    public void printfBlockAndActive(String times) throws IOException {
+        FileWriter fileWriter = new FileWriter("zeroblock" + times + ".txt");
+        for (int index : basicBlocks.keySet()) {
+            ZeroBlock zeroBlock = basicBlocks.get(index);
+            zeroBlock.printfZeroBlock(fileWriter);
+        }
+        fileWriter.close();
+    }
+
+
+    //复写传播部分
+    private final HashMap<String, String> name2copy = new HashMap<>();//
+
+    public void addCopy(String ans, String copy) {
+        this.name2copy.put(ans, copy);
+    }
+
+    public void exchange(Line line){
+        line.copyPropagation(name2copy);
+    }
 
 }
