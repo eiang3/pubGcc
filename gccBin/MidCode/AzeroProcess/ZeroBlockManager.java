@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class ZeroBlockManager {
     private static ZeroBlockManager zeroBlockManager;
@@ -142,7 +143,6 @@ public class ZeroBlockManager {
     }
 
     public void usableExpAndCopyPropagation() {
-        this.name2copy.clear();
         for (int index : basicBlocks.keySet()) {
             ZeroBlock zeroBlock = basicBlocks.get(index);
             zeroBlock.usableExpAndCopyPropagation();
@@ -176,12 +176,20 @@ public class ZeroBlockManager {
     //复写传播部分
     private final HashMap<String, String> name2copy = new HashMap<>();//
 
+    public HashMap<String, String> getName2copy() {
+        return name2copy;
+    }
+
     public void addCopy(String ans, String copy) {
         this.name2copy.put(ans, copy);
     }
 
-    public void exchange(Line line){
-        line.copyPropagation(name2copy);
+    public void removeCopy(String ans) {
+        this.name2copy.remove(ans);
+    }
+
+    public void clearCopy(){
+        this.name2copy.clear();
     }
 
 }

@@ -26,7 +26,6 @@ public class RetLine extends Line {
                 gotoExit = true;
             }
             exp = ele[1];
-            super.addUseTemp_Zero(exp);
         }
     }
 
@@ -45,16 +44,6 @@ public class RetLine extends Line {
 
     public void setFuncName(String funcName) {
         this.funcName = funcName;
-    }
-
-    @Override
-    public void copyPropagation(HashMap<String, String> copy) {
-        if(Judge.isTemp(exp)) {
-            if (copy.containsKey(exp)) {
-                super.exchangeTempUseZero(copy.get(exp),exp);
-                exp = copy.get(exp);
-            }
-        }
     }
 
     @Override

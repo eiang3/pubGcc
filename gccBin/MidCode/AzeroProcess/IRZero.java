@@ -37,26 +37,27 @@ public class IRZero {
             }
             readLine();
         }
-        optimize(); //优化
-
-        //6 将每个基本块的表达式送到LineManager里
-        LineManager.getInstance().clearLineManager();
-        ZeroBlockManager.getInstance().addLineToLIneManager();
-        //LineManager.getInstance().printfLines(1);
-    }
-
-    public void optimize() throws IOException {
         //2 进行基本块的连接
         ZeroBlockManager.getInstance().setBExit();
         ZeroBlockManager.getInstance().connectAll();
-
         ZeroBlockManager.getInstance().printfBlockAndActive("_original_");
+
+        optimize(); //优化
+        //6 将每个基本块的表达式送到LineManager里
+        refreshAndPrintf("_for_mips_");
+    }
+
+    public void optimize() throws IOException {
 
         //4 进行可用表达式分析 & 复写传播
         ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
-        ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
+        ZeroBlockManager.getInstance().printfBlockAndActive("_copy1_");
 
-        ZeroBlockManager.getInstance().printfBlockAndActive("_afterUsable_");
+        ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
+        ZeroBlockManager.getInstance().printfBlockAndActive("_copy2_");
+
+        ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
+        ZeroBlockManager.getInstance().printfBlockAndActive("_copy3_");
 
         //3 进行基本块的活跃变量分析&无用表达式删除
         ZeroBlockManager.getInstance().ActiveVarAnalysis();
@@ -114,5 +115,11 @@ public class IRZero {
 
     public void readLine() throws IOException {
         rLine = this.bufferedReader.readLine();
+    }
+
+    public void refreshAndPrintf(String s) throws IOException {
+        LineManager.getInstance().clearLineManager();
+        ZeroBlockManager.getInstance().addLineToLIneManager();
+        LineManager.getInstance().printfLines(s);
     }
 }

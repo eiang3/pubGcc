@@ -79,7 +79,7 @@ public class MIPSHelper {
     public static void get_Array_Value_In_Reg(Reg ansReg, String array, ElementTable elementTable) throws IOException {
         String arrName = SubOp.getArrName(array);
         String arrSub = SubOp.getArrSubscript(array);
-        Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.r2, arrSub);
+        Reg subReg = TempRegPool.getInstance().getTempInSpecialReg(Reg.r2, arrSub);
 
         if (elementTable.isGlobal()) {
             if (Judge.isNumber(arrSub)) {
@@ -175,7 +175,7 @@ public class MIPSHelper {
             if (Judge.isNumber(arrSub)) {
                 MipsIns.sw_value_label_num(value, arrName, Integer.parseInt(arrSub) * 4);
             } else if (Judge.isTemp(arrSub)) {
-                Reg arrOff = TempRegPool.getInstance().getTempInReg(Reg.l1, arrSub);
+                Reg arrOff = TempRegPool.getInstance().getTempInSpecialReg(Reg.l1, arrSub);
                 MipsIns.sll_ans_regx_num(arrOff, arrOff, 2);//
                 MipsIns.sw_value_label_base(value, arrName, arrOff);
             } else UnExpect.unexpect("assignExpToArr 2");
@@ -185,7 +185,7 @@ public class MIPSHelper {
                 ansOff = ansOff + Integer.parseInt(arrSub) * 4;
                 MipsIns.sw_value_num_baseReg(value, ansOff, Reg.$fp);
             } else if (Judge.isTemp(arrSub)) {
-                Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.l1, arrSub);
+                Reg subReg = TempRegPool.getInstance().getTempInSpecialReg(Reg.l1, arrSub);
                 MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.add_ans_reg_regOrNum(subReg, subReg, Reg.$fp);
                 MipsIns.sw_value_num_baseReg(value, ansOff, subReg);
@@ -195,7 +195,7 @@ public class MIPSHelper {
             if (Judge.isNumber(arrSub)) {
                 MipsIns.sw_value_num_baseReg(value, Integer.parseInt(arrSub) * 4, address);
             } else if (Judge.isTemp(arrSub)) {
-                Reg subReg = TempRegPool.getInstance().getTempInReg(Reg.l2, arrSub);
+                Reg subReg = TempRegPool.getInstance().getTempInSpecialReg(Reg.l2, arrSub);
                 MipsIns.sll_ans_regx_num(subReg, subReg, 2);//
                 MipsIns.add_ans_reg_regOrNum(subReg, subReg, address);
                 MipsIns.sw_value_base(value, subReg);
@@ -217,7 +217,7 @@ public class MIPSHelper {
         ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
         if (elementTable.isHasReg()) {
             Reg ans = elementTable.getReg();
-            getValueInReg_t_v_n(ans, exp, tableSymbol);
+            getValueInSpecialReg_t_v_n(ans, exp, tableSymbol);
         } else {
             Reg reg = getValueInReg_t_v_n(Reg.r1, exp, tableSymbol);
             if (elementTable.isGlobal()) {

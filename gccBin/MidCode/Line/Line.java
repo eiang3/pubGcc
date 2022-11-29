@@ -1,10 +1,8 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
-import gccBin.MidCode.AoriginalProcess.IRTagManage;
 import gccBin.MidCode.Judge;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class Line {
@@ -26,13 +24,9 @@ public class Line {
         this.index = index;
         this.tableSymbol = tableSymbol;
         this.use = new HashSet<>();
-        this.use_zero = new HashSet<>();
     }
 
-    public boolean addGen_both(String name) {
-        if (Judge.isZeroActive(name)) {
-            this.gen_zero = name;
-        }
+    public boolean addGen_first(String name) {
         if (Judge.is_LocalVar(name, tableSymbol)) {
             this.gen = name;
             return true;
@@ -40,10 +34,7 @@ public class Line {
         return false;
     }
 
-    public boolean addUse_both(String name) {
-        if (Judge.isZeroActive(name)) {
-            this.use_zero.add(name);
-        }
+    public boolean addUse_first(String name) {
         if (Judge.is_LocalVar(name, tableSymbol)) {
             this.use.add(name);
             return true;
@@ -55,21 +46,12 @@ public class Line {
     //   一些乱七八糟但不能删的方法
     /////////////////////////////////////////////////////////////////////
 
-    /**
-     * 对gen重命名，注意一个line的gen只有一个
-     *
-     * @param name *
-     */
+    //对gen重命名，注意一个line的gen只有一个
     public void renameGen(String old, String name) {
 
     }
 
-    /**
-     * 对use重命名，因为一个lines的use可能有多个，所以需要和oldName比较
-     *
-     * @param old  *
-     * @param name *
-     */
+    //对use重命名，因为一个lines的use可能有多个，所以需要和oldName比较
     public void renameUse(String old, String name) {
 
     }
@@ -118,88 +100,13 @@ public class Line {
         return use;
     }
 
-///////////////////////////////////////////////////////////////////////////
-
-    private String gen_zero;
-    private final HashSet<String> use_zero;
-    //所有再活跃变量分析的时候会用到的变量。包括局部变量和临时变量
-
-    public void clearTwoUseSet() {
-        this.use.clear();
-        this.use_zero.clear();
-    }
-
-    public String getGen_zero() {
-        return gen_zero;
-    }
-
-    public HashSet<String> getUse_zero() {
-        return use_zero;
-    }
-
-    /**
-     * 仅调整temp变量的使用次数
-     */
-    public void decreaseUseAllForAssign() {
-        for (String str : use_zero) {
-            if (Judge.isTemp(str) && !gen_zero.equals(str)) {
-                IRTagManage.getInstance().delete(str);
-            }
-        }
-    }
-
-    public void decreaseUse(String str) {
-        if (Judge.isTemp(str) && !str.equals(gen_zero)) {
-            IRTagManage.getInstance().delete(str);
-        }
-    }
-
-
-    public void increaseUse(String str) {
-        if (Judge.isTemp(str) && !str.equals(gen_zero)) {
-            IRTagManage.getInstance().addUse(str);
-        }
-    }
-
-    //复写传播需要更改相关的使用变量，在所有line中，只有assignLine可能使用
-    //局部变量，其余均使用的是临时变量。
-    public void copyPropagation(HashMap<String, String> copy) {
-    }
-
-    /**
-     * 除AssignLine外的其余变量使用，仅有temp
-     *
-     * @param name temp
-     */
-    public void addUseTemp_Zero(String name) {
-        if (Judge.isTemp(name)) {
-            this.use_zero.add(name);
-        }
-    }
-
-    public void addGenTemp_Zero(String name) {
-        if (Judge.isTemp(name)) {
-            this.gen_zero = name;
-        }
-    }
-
-    //将一个TempUse改为另一个TempUse，并调整变量
-    // 这是为非AssignLine的Line准备的
-    public void exchangeTempUseZero(String n, String o) {
-        if (n.equals(o)) return;
-        decreaseUse(o); //将原来的删去
-        use_zero.remove(o); //必须的
-        increaseUse(n);
-        use_zero.add(n);
-    }
-
-    public void removeFromBothUse(String str) {
-        use.remove(str);
-        use_zero.remove(str);
-    }
-
+    ///////////////////////////////////////////////////////////////////////////
     @Override
     public String toString() {
         return getMidCodeLine();
+    }
+
+    public void removeUse(String s) {
+        this.use.remove(s);
     }
 }

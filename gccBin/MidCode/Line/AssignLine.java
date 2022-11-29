@@ -2,10 +2,12 @@ package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
 import gccBin.MIPS.SubOp;
+import gccBin.MidCode.AoriginalProcess.IRTagManage;
 import gccBin.MidCode.AzeroProcess.ZeroBlockManager;
 import gccBin.MidCode.Judge;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * 数组指针。
@@ -20,7 +22,7 @@ import java.util.HashMap;
  * i = RET
  * z = a[x]
  */
-//
+
 public class AssignLine extends Line {
     private String t1;
     private String t2;
@@ -28,55 +30,195 @@ public class AssignLine extends Line {
     private String ans;
 
     private boolean pureAssign; //x = y;
-    private boolean oneOpr; // x = - | ! y
-    private boolean twoOpr; // x = y (+-*/%>><<) w
+    private boolean oneAssign; // x = - | ! y
+    private boolean twoAssign; // x = y (+-*/%>><<) w
+
+    //gen and use ans ansIsUse t1|t2isUse 都是针对最后的局部变量寄存器分配的
+    //如果分配不完的话，针对这两个带数组的，均使得t2对应数组下标。
+    private boolean arrayRefresh; // a[vtn] = vtn
+    private boolean arrayValue; // vtn = a[vtn]
+    private String arrName;
 
     // 用来进行第二次复杂的分析的时候
     private boolean t1IsUse;
     private boolean t2IsUse;
     private boolean ansIsGen;
 
+    private final HashSet<String> use_zero;
+
     public AssignLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
+        t1 = null;
+        t2 = null;
+        ans = null;
+        op = null;
+
+        pureAssign = false;
+        oneAssign = false;
+        twoAssign = false;
+
+        arrName = null;
+        arrayRefresh = false;
+        arrayValue = false;
+
+        t1IsUse = false;
+        t2IsUse = false;
+        ansIsGen = false;
+
+        use_zero = new HashSet<>();
         parse(ele);
     }
 
     public void parse(String[] ele) {
-        pureAssign = false;
-        oneOpr = false;
-        twoOpr = false;
-
         ans = ele[0];
-        ansIsGen = super.addGen_both(ans);
+        ansIsGen = super.addGen_first(ans);
         if (ele.length == 3) {
-            //a[exp] = exp
-            //temp = a[exp]
-            //需要把exp提出来
             pureAssign = true;
             t1 = ele[2];
-            t1IsUse = super.addUse_both(t1);
-            t2 = null;
-
-            if (Judge.isArrayValue(ans)) t2 = SubOp.getArrSubscript(ans);
-            else if (Judge.isArrayValue(t1)) t2 = SubOp.getArrSubscript(t1);
-            if (t2 != null) {
-                super.addUseTemp_Zero(t2);
-            }
+            addT1();
+            judgeArray();
         } else if (ele.length == 4) {
-            oneOpr = true;
+            oneAssign = true;
             t1 = ele[3];
             op = ele[2];
-            t1IsUse = super.addUse_both(t1);
+            addT1();
         } else if (ele.length == 5) {
-            twoOpr = true;
+            twoAssign = true;
             t1 = ele[2];
             op = ele[3];
             t2 = ele[4];
-            t1IsUse = super.addUse_both(t1);
-            t2IsUse = super.addUse_both(t2);
+            addT1();
+            addT2();
         }
-
     }
+
+    public void addT1() {
+        if (Judge.isZeroActive(t1)) {
+            this.use_zero.add(t1);
+            if (Judge.isTemp(t1) && !t1.equals(ans)) {
+                IRTagManage.getInstance().addUse(t1);
+            }
+        }
+        t1IsUse = super.addUse_first(t1);
+    }
+
+    public void addT2() {
+        if (Judge.isZeroActive(t2)) {
+            this.use_zero.add(t2);
+            if (Judge.isTemp(t2) && !t2.equals(ans)) {
+                IRTagManage.getInstance().addUse(t2);
+            }
+        }
+        t2IsUse = super.addUse_first(t2);
+    }
+
+    public void deleteT1() {
+        super.removeUse(t1);
+        this.use_zero.remove(t1);
+        t1IsUse = false;
+        if (Judge.isTemp(t1) && !t1.equals(ans)) {
+            IRTagManage.getInstance().delete(t1);
+        }
+        t1 = null;
+    }
+
+    public void deleteT2() {
+        super.removeUse(t2);
+        this.use_zero.remove(t2);
+        t2IsUse = false;
+        if (Judge.isTemp(t2) && !t2.equals(ans)) {
+            IRTagManage.getInstance().delete(t2);
+        }
+        t2 = null;
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    //             提前化简部分
+    //////////////////////////////////////////////////////////////////////
+
+    /**
+     * 前提:两个AssignLine的右部否相等
+     * 结果，把调用的line的右部换为被调用等右部
+     */
+    public void commonExpSub(String newRight) {
+        // 如果已经替换过了，而且需要再次替换的比原先还晚，就不再替换了，不重复替换
+        if (Judge.isTemp(newRight) && isPureAssign() && Judge.isTemp(t1)) {
+            int newT1Index = Judge.getTempIndex(newRight);
+            int newT2Index = Judge.getTempIndex(t1);
+            if (newT1Index > newT2Index) return;
+        }
+        this.pureAssign = true;
+        this.oneAssign = false;
+        this.twoAssign = false;
+        deleteT1();
+        deleteT2();
+        this.t1 = newRight;
+        addT1();
+        this.op = null;
+        ZeroBlockManager.getInstance().addCopy(this.ans, t1);
+    }
+
+
+    public String getRight() {
+        if (arrayValue) {
+            return arrName + "[" + t2 + "]";
+        } else if (isPureAssign()) {
+            return t1;
+        } else if (isOneAssign()) {
+            return op + " " + t1;
+        } else {
+            return t1 + " " + op + " " + t2;
+        }
+    }
+
+    public void copyPropagation(HashMap<String, String> copy) {
+        if (copy.containsKey(t1)) {
+            deleteT1();
+            t1 = copy.get(t1);
+            addT1();
+        }
+        if (twoAssign && copy.containsKey(t2)) {
+            deleteT2();
+            t2 = copy.get(t2);
+            addT2();
+        }
+    }
+
+    public void judgeArray() {
+        if (Judge.isArrayValue(ans)) {
+            arrName = SubOp.getArrName(ans);
+            t2 = SubOp.getArrSubscript(ans);
+            addT2();
+            arrayRefresh = true;
+            arrayValue = false;
+        } else if (Judge.isArrayValue(t1)) {
+            arrName = SubOp.getArrName(t1);
+            t2 = SubOp.getArrSubscript(t1);
+            addT2();
+            arrayValue = true;
+            arrayRefresh = false;
+        } else {
+            arrayRefresh = false;
+            arrayValue = false;
+            arrName = null;
+        }
+    }
+
+    public boolean needCommonExpDelete() {
+        if (arrayRefresh) return false;
+        boolean allNum = false;
+        if (t1 != null && t2 != null) {
+            allNum = (Judge.isNumber(t1) && Judge.isNumber(t2));
+        }
+        if (t1 != null && t2 == null) {
+            allNum = Judge.isNumber(t1);
+        }
+        if (t1 == null && t2 != null) {
+            allNum = Judge.isNumber(t2);
+        }
+        return !allNum;
+    }
+
 
     /////////////////////////////////////////////////////////////////////////
     //正式分析的时候用到的
@@ -103,9 +245,13 @@ public class AssignLine extends Line {
 
     @Override
     public String getMidCodeLine() {
-        if (isPureAssign()) {
+        if (arrayRefresh) {
+            return arrName + "[" + t2 + "] = " + t1;
+        } else if (arrayValue) {
+            return ans + " = " + arrName + "[" + t2 + "]";
+        } else if (isPureAssign()) {
             return ans + " = " + t1;
-        } else if (isOneOpr()) {
+        } else if (isOneAssign()) {
             return ans + " = " + op + " " + t1;
         } else {
             return ans + " = " + t1 + " " + op + " " + t2;
@@ -125,85 +271,52 @@ public class AssignLine extends Line {
     }
 
     public String getAns() {
-        return ans;
+        if (arrayRefresh) return arrName + "[" + t2 + "]";
+        else return ans;
     }
 
     public boolean isPureAssign() {
         return pureAssign;
     }
 
-    public boolean isOneOpr() {
-        return oneOpr;
+    public boolean isOneAssign() {
+        return oneAssign;
     }
 
-    public boolean isTwoOpr() {
-        return twoOpr;
+    public boolean isTwoAssign() {
+        return twoAssign;
     }
 
 
-    ///////////////////////////////////////////////////////////////////////
-    //             提前化简部分
-    //////////////////////////////////////////////////////////////////////
-
-    /**
-     * 前提:两个AssignLine的右部否相等
-     * 结果，把调用的line的右部换为被调用等右部
-     *
-     * @param assignLine *
-     */
-    public void exchange(AssignLine assignLine) {
-        // 如果已经替换过了，而且需要再次替换的比原先还晚，就不再替换了，不重复替换
-        String newT1 = assignLine.getAns();
-        if (Judge.isTemp(newT1) && isPureAssign() && Judge.isTemp(t1)) {
-            int newT1Index = Judge.getTempIndex(newT1);
-            int newT2Index = Judge.getTempIndex(t1);
-            if (newT1Index > newT2Index) return;
-        }
-        super.decreaseUseAllForAssign();
-        super.clearTwoUseSet();
-        this.pureAssign = true;
-        this.oneOpr = false;
-        this.twoOpr = false;
-        this.t1 = assignLine.getAns();
-        this.op = null;
-        this.t2 = null;
-        this.t2IsUse = false;
-        t1IsUse = addUse_both(t1);
-        super.increaseUse(t1);
-        //为了接下来的复写传播
-        ZeroBlockManager.getInstance().addCopy(ans, t1);
+    public boolean isArrayRefresh() {
+        return arrayRefresh;
     }
 
-    /**
-     * 返回右边变量
-     *
-     * @return *
-     */
-    public String getRight() {
-        if (isPureAssign()) {
-            return t1;
-        } else if (isOneOpr()) {
-            return op + " " + t1;
-        } else {
-            return t1 + " " + op + " " + t2;
-        }
+    public boolean isArrayValue() {
+        return arrayValue;
     }
 
-    @Override
-    public void copyPropagation(HashMap<String, String> copy) {
-        if (copy.containsKey(t1) && Judge.isTemp(t1)) {
-            super.decreaseUse(t1);
-            super.removeFromBothUse(t1);
-            t1 = copy.get(t1);
-            super.increaseUse(t1);
-            t1IsUse = addUse_both(t1);
+    //普通判断 + x = a[exp](This), 但是exp = a
+    public boolean shouldDelete(String a) {
+        return a.equals(t1) || a.equals(t2);
+    }
+
+    public boolean shouldDelete(String arrName, String arrSub) {
+        if (arrayValue) {
+            if (Judge.isNumber(arrSub) == Judge.isNumber(this.t2)) {
+                return arrName.equals(this.arrName) && arrSub.equals(this.t2);
+            } else {
+                return arrName.equals(this.arrName);
+            }
         }
-        if (twoOpr && copy.containsKey(t2) && Judge.isTemp(t2)) {
-            super.decreaseUse(t2);
-            super.removeFromBothUse(t2);
-            t2 = copy.get(t2);
-            super.increaseUse(t2);
-            t2IsUse = addUse_both(t2);
-        }
+        return false;
+    }
+
+    public String getGen_zero() {
+        return ans;
+    }
+
+    public HashSet<String> getUse_zero() {
+        return use_zero;
     }
 }

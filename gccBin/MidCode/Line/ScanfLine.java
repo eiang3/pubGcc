@@ -10,12 +10,11 @@ import java.util.HashMap;
  */
 //
 public class ScanfLine extends Line {
-    private String exp;
+    private final String exp;
 
     public ScanfLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
         exp = ele[1];
-        super.addGenTemp_Zero(exp);
     }
 
     public String getExp() {

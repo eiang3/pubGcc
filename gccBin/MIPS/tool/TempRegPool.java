@@ -85,7 +85,7 @@ public class TempRegPool {
     }
 
     /**
-     * reg已经被定义过，这一次是被ir使用(也是最后一次使用)
+     * reg已经被定义过，这一次是被ir使用(也是最后一次使用) //BUG
      * <p>
      * 为了性能考虑，暂时不会删除
      *
@@ -97,6 +97,26 @@ public class TempRegPool {
     public Reg getTempInReg(Reg afloat, String temp) throws IOException {
         if (temp2Reg.containsKey(temp)) {
             return temp2Reg.get(temp);
+        } else if (temp2off.containsKey(temp)) {
+            MipsIns.lw_ans_num_baseReg(afloat, temp2off.get(temp), Reg.$fp);
+            return afloat;
+        } else return null;
+    }
+
+    /**
+     * reg已经被定义过，这一次是被ir使用(也是最后一次使用) //BUG
+     * <p>
+     * 为了性能考虑，暂时不会删除
+     *
+     * @param afloat 如果是temp是，存在内存中，则加载至此寄存器
+     * @param temp   temp name
+     * @return afloat || t-reg
+     * @throws IOException *
+     */
+    public Reg getTempInSpecialReg(Reg afloat, String temp) throws IOException {
+        if (temp2Reg.containsKey(temp)) {
+            MipsIns.move_reg_reg(afloat, temp2Reg.get(temp));
+            return afloat;
         } else if (temp2off.containsKey(temp)) {
             MipsIns.lw_ans_num_baseReg(afloat, temp2off.get(temp), Reg.$fp);
             return afloat;
@@ -193,8 +213,8 @@ public class TempRegPool {
      * 为一个新的变量分配内存地址，并且将旧的变量复制一份过去
      * afloat-use : Reg.r1
      *
-     * @param ans new
-     * @param temp  temp
+     * @param ans  new
+     * @param temp temp
      */
     public void justCopy(String ans, String temp) throws IOException {
         if (ans.equals(temp)) {
@@ -215,6 +235,6 @@ public class TempRegPool {
                 storeToMem(tempReg, ans);
             }
         }
-        delete(ans,temp);
+        delete(ans, temp);
     }
 }

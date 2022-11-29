@@ -275,13 +275,13 @@ public class MIPS {
             } else if (Judge.isTemp(ans) && Judge.isTemp(t1)) {
                 TempRegPool.getInstance().justCopy(ans, t1);
             }
-        } else if (assignLine.isOneOpr()) {
+        } else if (assignLine.isOneAssign()) {
             if (Judge.isVarOrTemp(t1)) {
                 MIPSHelper.assignOne(ans, op, t1, tableSymbol);
             } else if (Judge.isNumber(t1)) {
                 MIPSHelper.assignOne(ans, op, Integer.parseInt(t1));
             } else UnExpect.printf("assignOne error");
-        } else if (assignLine.isTwoOpr()) {
+        } else if (assignLine.isTwoAssign()) {
             MIPSHelper.assignTwo(ans, t1, op, t2, tableSymbol);
         }
     }
