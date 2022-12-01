@@ -1,5 +1,7 @@
 package gccBin.MidCode.AzeroProcess;
 
+import gccBin.MIPS.SubOp;
+import gccBin.MidCode.Judge;
 import gccBin.MidCode.Line.*;
 import gccBin.MidCode.LineManager;
 
@@ -173,7 +175,7 @@ public class ZeroBlockManager {
     }
 
 
-    //复写传播部分
+    //复写传播部分    ok
     private final HashMap<String, String> name2copy = new HashMap<>();//
 
     public HashMap<String, String> getName2copy() {
@@ -181,14 +183,58 @@ public class ZeroBlockManager {
     }
 
     public void addCopy(String ans, String copy) {
+        if (Judge.isArrayValue(copy)) {
+            return;
+        }
         this.name2copy.put(ans, copy);
     }
 
+
+    /**
+     * ok
+     * 每一个新的赋值语句，都要检查一下是否改变了name2copy
+     * 即 ans 是否和 name2copy 的 key 或 value 重合
+     * value不可能是数组
+     *
+     * @param ans a[vtn] 或者是 vtn
+     */
     public void removeCopy(String ans) {
-        this.name2copy.remove(ans);
+        ArrayList<String> keys = new ArrayList<>(name2copy.keySet());
+        //检查是否是数组
+        boolean isArray = Judge.isArrayValue(ans);
+        String name = null, sub = null;
+        if (isArray) {
+            name = SubOp.getArrName(ans);
+            sub = SubOp.getArrSubscript(ans);
+        }
+
+        name2copy.remove(ans); //只针对普通变量。
+        for (String key : keys) {
+            //如果ans是a[vtn],则其改变数组值，即只能改变对应的key。
+            if (isArray && Judge.isArrayValue(key)) {
+                String keyName = SubOp.getArrName(key);
+                String keySub = SubOp.getArrSubscript(key);
+                if (Judge.isNumber(keySub) && Judge.isNumber(sub)) {
+                    if (key.equals(ans)) {
+                        name2copy.remove(key);
+                    }
+                } else if (keyName.equals(name)) {
+                    name2copy.remove(key);
+                }
+            } //如果a[t]的t被改变，需要删
+            else if (Judge.isArrayValue(key)) {
+                if (SubOp.getArrSubscript(key).equals(ans)) {
+                    name2copy.remove(key);
+                }
+            } //如果传进来的是var，需要改变
+            else if (!isArray) {
+                String copy = name2copy.get(key);
+                if (ans.equals(copy)) name2copy.remove(key);
+            }
+        }
     }
 
-    public void clearCopy(){
+    public void clearCopy() {
         this.name2copy.clear();
     }
 

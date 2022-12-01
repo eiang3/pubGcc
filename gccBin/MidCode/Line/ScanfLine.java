@@ -15,6 +15,7 @@ public class ScanfLine extends Line {
     public ScanfLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
         exp = ele[1];
+        super.setGen_zero(exp);
     }
 
     public String getExp() {

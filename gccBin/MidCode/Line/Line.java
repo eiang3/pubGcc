@@ -1,6 +1,8 @@
 package gccBin.MidCode.Line;
 
 import SymbolTableBin.TableSymbol;
+import gccBin.MIPS.SubOp;
+import gccBin.MidCode.AoriginalProcess.IRTagManage;
 import gccBin.MidCode.Judge;
 
 import java.util.HashSet;
@@ -100,13 +102,61 @@ public class Line {
         return use;
     }
 
+
+    public void removeUse(String s) {
+        this.use.remove(s);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     @Override
     public String toString() {
         return getMidCodeLine();
     }
 
-    public void removeUse(String s) {
-        this.use.remove(s);
+
+    private final HashSet<String> use_zero = new HashSet<>();
+    private String gen_zero;
+
+    public void setGen_zero(String gen_zero) {
+        this.gen_zero = gen_zero;
     }
+
+    public void addUse_Zero(String vtn) {
+        if (Judge.isZeroActive(vtn)) {
+            this.use_zero.add(vtn);
+            if (Judge.isTemp(vtn) && !vtn.equals(gen_zero)) {
+                IRTagManage.getInstance().addUse(vtn);
+            }
+        }
+    }
+
+    public void removeUse_Zero(String vtn) {
+        this.use_zero.remove(vtn);
+    }
+
+    public void addUse_Zero_firstTime(String t2) {
+        if (Judge.isZeroActive(t2)) {
+            this.use_zero.add(t2);
+        }
+    }
+
+    public String getGen_zero() {
+        if (gen_zero!=null && Judge.isArrayValue(gen_zero)) {
+            return SubOp.getArrName(gen_zero);
+        }
+        return gen_zero;
+    }
+
+    public HashSet<String> getUse_zero() {
+        HashSet<String> ret = new HashSet<>();
+        for (String ans : use_zero) {
+            if (Judge.isArrayValue(ans)) {
+                ret.add(SubOp.getArrName(ans));
+            } else {
+                ret.add(ans);
+            }
+        }
+        return ret;
+    }
+
 }

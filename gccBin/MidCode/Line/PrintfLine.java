@@ -8,20 +8,21 @@ import SymbolTableBin.TableSymbol;
  */
 
 public class PrintfLine extends Line {
-    private final String t;
+    private final String exp;
 
     public PrintfLine(String s, int line, TableSymbol tableSymbol, String[] ele) {
         super(s, line, tableSymbol);
-        t = ele[1];
+        exp = ele[1];
+        super.addUse_Zero_firstTime(exp);
     }
 
-    public String getT() {
-        return t;
+    public String getExp() {
+        return exp;
     }
 
     @Override
     public String getMidCodeLine() {
-        return "&printf " + t;
+        return "&printf " + exp;
     }
 
 }

@@ -56,18 +56,15 @@ public class ZeroBlock {
     //分析以得到活跃变量分析里的use集和def集
     public void parseLines_use_def_act() {
         for (Line line : lines) {
-            if(line instanceof AssignLine) {
-                AssignLine assignLine = (AssignLine) line;
-                String lineDef = assignLine.getGen_zero();
-                HashSet<String> lineUse = assignLine.getUse_zero();
-                for (String var : lineUse) {
-                    if (!def_active.contains(var)) {
-                        use_active.add(var);
-                    }
+            String lineDef = line.getGen_zero();
+            HashSet<String> lineUse = line.getUse_zero();
+            for (String var : lineUse) {
+                if (!def_active.contains(var)) {
+                    use_active.add(var);
                 }
-                if (lineDef != null && !use_active.contains(lineDef)) {
-                    def_active.add(lineDef);
-                }
+            }
+            if (lineDef != null && !use_active.contains(lineDef)) {
+                def_active.add(lineDef);
             }
         }
     }
@@ -165,62 +162,80 @@ public class ZeroBlock {
     }
 
     public void usableExpAndCopyPropagation() {
+        if (index == 14) {
+            int a = 1;
+        }
+
         ZeroBlockManager.getInstance().clearCopy();
+
         HashMap<String, AssignLine> A = new HashMap<>(); // name -> assignLine
         HashMap<String, String> B = new HashMap<>(); //right.first  -> name
         for (Line line : lines) {
             if (line instanceof AssignLine) {
                 AssignLine assignLine = (AssignLine) line;
 
-                //如果的左部是数组变量的话，则认为所有右部有关的数组被改变了
+                //a[vtn] = vtn 不需要进行公共子表达式删除，但是需要更新据此AB中的右值，
                 if (assignLine.isArrayRefresh()) {
+                    //  不需要进行公共子表达式删除
+                    //  复写传播
+                    assignLine.copyPropagation(ZeroBlockManager.getInstance().getName2copy());
+
                     String refreshArrName = SubOp.getArrName(assignLine.getAns());
                     String refreshArrSub = SubOp.getArrSubscript(assignLine.getAns());
+                    //  更新复写传播 删 + 增
+                    ZeroBlockManager.getInstance().removeCopy(assignLine.getAns());
+                    ZeroBlockManager.getInstance().addCopy(assignLine.getAns(), assignLine.getRight());
+                    // 更新公共子表达式 删 + 不用增
                     ArrayList<String> keys = new ArrayList<>(A.keySet());
                     for (String key : keys) {
                         AssignLine assignA = A.get(key);
                         if (assignA.shouldDelete(refreshArrName, refreshArrSub)) {
                             A.remove(key);
-                            B.remove(assignA.getRight());
+                            if (B.containsKey(assignA.getRight()) && B.get(assignA.getRight()).equals(assignA.getAns()))
+                                B.remove(assignA.getRight());
                         }
                     }
-                    continue;
-                }
-
-                if (assignLine.needCommonExpDelete()) {
+                } else if (assignLine.needCommonExpAnalysis()) {
+                    if ("$t47 = i$1".equals(assignLine.toString())) {
+                        int a = 1;
+                    }
                     String lineAns = assignLine.getAns();
                     String lineRight = assignLine.getRight();
-                    //每一个新赋值，都会更新目前已有的copy赋值。
-                    //ZeroBlockManager.getInstance().removeCopy(lineAns);
 
-                    //公共子表达式删除工作
+                    //公共子表达删除
                     if (B.containsKey(lineRight)) assignLine.commonExpSub(B.get(lineRight));
+                    //复写传播
+                    assignLine.copyPropagation(ZeroBlockManager.getInstance().getName2copy());
 
+                    lineAns = assignLine.getAns();
+                    lineRight = assignLine.getRight();
+
+                    //更新复写传播 删 + 增
+                    if (assignLine.isPureAssign()) {
+                        ZeroBlockManager.getInstance().removeCopy(lineAns);
+                        ZeroBlockManager.getInstance().addCopy(lineAns, lineRight);
+                    }
+
+                    //更新公共子表达式  删 + 增
                     ArrayList<String> keys = new ArrayList<>(A.keySet());
                     for (String key : keys) {
                         AssignLine assignA = A.get(key);
                         if (assignA.shouldDelete(lineAns)) {
                             A.remove(key);
-                            B.remove(assignA.getRight());
+                            if (B.containsKey(assignA.getRight())
+                                    && B.get(assignA.getRight()).equals(assignA.getAns()))
+                                B.remove(assignA.getRight());
                         }
                     }
-
-                    AssignLine r = A.remove(lineAns);
-                    String rRight = (r != null) ? r.getRight() : null;
-                    if (rRight != null && B.containsKey(rRight) && B.get(rRight).equals(lineAns))
-                        B.remove(rRight);
                     A.put(lineAns, assignLine);
                     if (!B.containsKey(lineRight)) B.put(lineRight, lineAns);
                 }
-                //复写传播，常数传播
-                //assignLine.copyPropagation(ZeroBlockManager.getInstance().getName2copy());
             }
         }
     }
 
-
     public void deleteUselessExp() {
-        HashSet<String> act = new HashSet<>(this.out_active);
+        HashSet<String> active = new HashSet<>(this.out_active);
         if (lines.size() == 0) return;
 
         ListIterator<Line> iterator = lines.listIterator();
@@ -230,15 +245,16 @@ public class ZeroBlock {
 
         while (iterator.hasPrevious()) {
             line = iterator.previous();
-            if(line instanceof AssignLine) {
+            if (line instanceof AssignLine) {
                 AssignLine assignLine = (AssignLine) line;
-                if (!act.contains(assignLine.getGen_zero())
+                if (!active.contains(assignLine.getGen_zero())
                         && !Judge.isArrayValue(assignLine.getAns())) {
+                    assignLine.deleteAllT();
                     iterator.remove();
                 }
-                act.remove(assignLine.getGen_zero());
-                act.addAll(assignLine.getUse_zero());
             }
+            active.remove(line.getGen_zero());
+            active.addAll(line.getUse_zero());
         }
     }
 

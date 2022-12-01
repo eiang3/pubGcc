@@ -32,10 +32,10 @@ public class TempRegPool {
     /**
      * 将一个变量存进常量池，
      * 如果有空闲的t-reg，则返回这个t-reg，
-     * 否则返回null
+     * 否则返回afloat
      *
      * @param name 待分配的temp名
-     * @return reg || null
+     * @return reg || afloat
      */
     public Reg addToPool(String name, Reg afloat) throws IOException {
         addToPool(name);
@@ -44,6 +44,16 @@ public class TempRegPool {
         } else {
             return afloat;
         }
+    }
+
+    public void addV0ToTemp(String ans) throws IOException {
+        TempRegPool.getInstance().addToPool(ans);
+        if (TempRegPool.getInstance().inReg(ans)) {
+            Reg t = TempRegPool.getInstance().getReg(ans);
+            MipsIns.move_reg_reg(t, Reg.$v0);
+        } else if (TempRegPool.getInstance().inMem(ans)) {
+            TempRegPool.getInstance().storeToMem(Reg.$v0, ans);
+        } else UnExpect.tempNotInMemAndReg(ans);
     }
 
     public void addToPool(String name) {
@@ -85,38 +95,14 @@ public class TempRegPool {
     }
 
     /**
-     * reg已经被定义过，这一次是被ir使用(也是最后一次使用) //BUG
-     * <p>
-     * 为了性能考虑，暂时不会删除
-     *
      * @param afloat 如果是temp是，存在内存中，则加载至此寄存器
      * @param temp   temp name
      * @return afloat || t-reg
      * @throws IOException *
      */
-    public Reg getTempInReg(Reg afloat, String temp) throws IOException {
+    public Reg temp_in_Reg(Reg afloat, String temp) throws IOException {
         if (temp2Reg.containsKey(temp)) {
             return temp2Reg.get(temp);
-        } else if (temp2off.containsKey(temp)) {
-            MipsIns.lw_ans_num_baseReg(afloat, temp2off.get(temp), Reg.$fp);
-            return afloat;
-        } else return null;
-    }
-
-    /**
-     * reg已经被定义过，这一次是被ir使用(也是最后一次使用) //BUG
-     * <p>
-     * 为了性能考虑，暂时不会删除
-     *
-     * @param afloat 如果是temp是，存在内存中，则加载至此寄存器
-     * @param temp   temp name
-     * @return afloat || t-reg
-     * @throws IOException *
-     */
-    public Reg getTempInSpecialReg(Reg afloat, String temp) throws IOException {
-        if (temp2Reg.containsKey(temp)) {
-            MipsIns.move_reg_reg(afloat, temp2Reg.get(temp));
-            return afloat;
         } else if (temp2off.containsKey(temp)) {
             MipsIns.lw_ans_num_baseReg(afloat, temp2off.get(temp), Reg.$fp);
             return afloat;
@@ -237,4 +223,6 @@ public class TempRegPool {
         }
         delete(ans, temp);
     }
+
+
 }

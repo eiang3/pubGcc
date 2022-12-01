@@ -192,7 +192,7 @@ public class Judge {
         return isTemp(str) || isVar(str);
     }
 
-    public static boolean isExpOrTemp(String str) {
+    public static boolean isVTN(String str) {
         return isExp(str) || isVar(str);
     }
 }

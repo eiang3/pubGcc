@@ -26,6 +26,7 @@ public class RetLine extends Line {
                 gotoExit = true;
             }
             exp = ele[1];
+            super.addUse_Zero_firstTime(exp);
         }
     }
 

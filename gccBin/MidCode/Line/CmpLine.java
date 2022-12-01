@@ -18,6 +18,8 @@ public class CmpLine extends Line {
     private void parse(String[] ele) {
         t1 = ele[1];
         t2 = ele[2];
+        super.addUse_Zero_firstTime(t1);
+        super.addUse_Zero_firstTime(t2);
     }
 
     public String getT1() {

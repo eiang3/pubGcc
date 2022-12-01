@@ -173,7 +173,7 @@ public class MIPS {
     }
 
     public void printfLineTrans(PrintfLine printfLine, TableSymbol tableSymbol) throws IOException {
-        String s = printfLine.getT();
+        String s = printfLine.getExp();
         if (Judge.isTemp(s)) {
             Reg reg = MIPSHelper.getValueInReg_t_v(Reg.r1, s, tableSymbol);
             MipsIns.printfExp(reg);
@@ -257,19 +257,19 @@ public class MIPS {
         String op = assignLine.getOp();
         if (assignLine.isPureAssign()) {
             if (Judge.isRET(t1)) {
-                TempRegPool.getInstance().addToPool(ans);
-                if (TempRegPool.getInstance().inReg(ans)) {
-                    Reg t = TempRegPool.getInstance().getReg(ans);
-                    MipsIns.move_reg_reg(t, Reg.$v0);
-                } else if (TempRegPool.getInstance().inMem(ans)) {
-                    TempRegPool.getInstance().storeToMem(Reg.$v0, ans);
-                } else UnExpect.tempNotInMemAndReg(ans);
-            } else if (Judge.isVar(ans) && Judge.isExpOrTemp(t1)) { // v = t v n
-                MIPSHelper.assignExpORVarToVar(ans, t1, tableSymbol);
+                if (Judge.isTemp(ans)) {
+                    TempRegPool.getInstance().addV0ToTemp(ans);
+                } else if (Judge.isArrayValue(ans)) {
+                    MIPSHelper.assignVTNToArr(ans, "$RET", tableSymbol);
+                } else if (Judge.isVar(ans)) {
+                    MIPSHelper.assignVTNToVar(ans, "$RET", tableSymbol);
+                }
+            } else if (Judge.isVar(ans) && Judge.isVTN(t1)) { // v = t v n
+                MIPSHelper.assignVTNToVar(ans, t1, tableSymbol);
             } else if (Judge.isTemp(ans) && (Judge.isVar(t1) || Judge.isNumber(t1))) { // t = v n
                 MIPSHelper.assignVTN_ToTemp(ans, t1, tableSymbol);
-            } else if (Judge.isArrayValue(ans) && Judge.isExpOrTemp(t1)) { //a[] = t v n
-                MIPSHelper.assignExpORVarToArr(ans, t1, tableSymbol);
+            } else if (Judge.isArrayValue(ans) && Judge.isVTN(t1)) { //a[] = t v n
+                MIPSHelper.assignVTNToArr(ans, t1, tableSymbol);
             } else if (Judge.isTemp(ans) && Judge.isArrayValue(t1)) { //t = a[]
                 MIPSHelper.assignArrToTemp(ans, t1, tableSymbol);
             } else if (Judge.isTemp(ans) && Judge.isTemp(t1)) {

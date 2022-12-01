@@ -30,12 +30,6 @@ public class IRTagManage {
         return ret;
     }
 
-    public String newVar(int useTimes) {
-        String ret = "$t" + (count++);
-        this.temp2useTimes.put(ret, useTimes);
-        return ret;
-    }
-
     public void addUse(String temp) {
         if (!Judge.isTemp(temp)) return;
         if (!this.temp2useTimes.containsKey(temp)) {
@@ -79,5 +73,4 @@ public class IRTagManage {
             return false;
         }
     }
-
 }
