@@ -173,7 +173,9 @@ public class ZeroBlock {
         for (Line line : lines) {
             if (line instanceof AssignLine) {
                 AssignLine assignLine = (AssignLine) line;
-
+                if(assignLine.toString().equals("m = 0")){
+                    int a = 0;
+                }
                 //a[vtn] = vtn 不需要进行公共子表达式删除，但是需要更新据此AB中的右值，
                 if (assignLine.isArrayRefresh()) {
                     //  不需要进行公共子表达式删除
@@ -196,9 +198,6 @@ public class ZeroBlock {
                         }
                     }
                 } else if (assignLine.needCommonExpAnalysis()) {
-                    if ("$t47 = i$1".equals(assignLine.toString())) {
-                        int a = 1;
-                    }
                     String lineAns = assignLine.getAns();
                     String lineRight = assignLine.getRight();
 
@@ -229,6 +228,14 @@ public class ZeroBlock {
                     }
                     A.put(lineAns, assignLine);
                     if (!B.containsKey(lineRight)) B.put(lineRight, lineAns);
+                } else { //复写传播更新，右侧是数字
+                    String lineAns = assignLine.getAns();
+                    String lineRight = assignLine.getRight();
+                    //更新复写传播 删 + 增
+                    if (assignLine.isPureAssign()) {
+                        ZeroBlockManager.getInstance().removeCopy(lineAns);
+                        ZeroBlockManager.getInstance().addCopy(lineAns, lineRight);
+                    }
                 }
             }
         }

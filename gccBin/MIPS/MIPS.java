@@ -251,6 +251,9 @@ public class MIPS {
 
     //不涉及数组指针操作
     private void assignLineTrans(TableSymbol tableSymbol, AssignLine assignLine) throws IOException {
+        if (assignLine.toString().equals("m = 0")) {
+            int a = 1;
+        }
         String ans = assignLine.getAns();
         String t1 = assignLine.getT1();
         String t2 = assignLine.getT2();

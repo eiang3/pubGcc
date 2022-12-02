@@ -42,7 +42,7 @@ public class MemManager {
             MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
-        for(Reg reg:tempRegInUse){
+        for (Reg reg : tempRegInUse) {
             MipsIns.sw_value_num_baseReg(reg, count * 4, Reg.$sp);
             count++;
         }
@@ -85,7 +85,8 @@ public class MemManager {
      * @param tableSymbol *
      */
     public void allocationArrMem(String name, int size, TableSymbol tableSymbol) {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+        //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(name);
         if (elementTable != null) {
             elementTable.setMemOff(fpOff);
             addFpOff(size);

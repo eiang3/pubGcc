@@ -73,4 +73,8 @@ public class IRTagManage {
             return false;
         }
     }
+
+    public int getTempTimes(String s){
+        return temp2useTimes.get(s);
+    }
 }

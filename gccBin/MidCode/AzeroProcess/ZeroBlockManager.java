@@ -183,7 +183,7 @@ public class ZeroBlockManager {
     }
 
     public void addCopy(String ans, String copy) {
-        if (Judge.isArrayValue(copy)) {
+        if (Judge.isArrayValue(copy) || copy.equals("$RET")) {
             return;
         }
         this.name2copy.put(ans, copy);

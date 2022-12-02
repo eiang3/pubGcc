@@ -3,7 +3,6 @@ package SymbolTableBin;
 import SymbolTableBin.Element.ElementTable;
 import SymbolTableBin.Element.ElementVar;
 import gccBin.ERROR.ErrorHandle;
-import gccBin.MidCode.AfirstProcess.IRFirst;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,8 +35,14 @@ public class TableSymbol {
         } else {
             this.father.addChild(this);
         }
-
         this.level = (father == null) ? 0 : father.getLevel() + 1;
+    }
+
+    public TableSymbol() {
+        this.elements = new HashMap<>();
+        this.children = new ArrayList<>();
+        this.father = null;
+        this.level = 0;
     }
 
     //向符号表中添加元素
@@ -89,14 +94,30 @@ public class TableSymbol {
             return ret;
         }
 
-        for(ElementTable element : elements.values()){
-            if(element instanceof ElementVar){
+        for (ElementTable element : elements.values()) {
+            if (element instanceof ElementVar) {
                 ElementVar elementVar = (ElementVar) element;
-                if(old.equals(elementVar.getOldName())){
+                if (old.equals(elementVar.getOldName())) {
                     ret.add(elementVar);
                 }
             }
         }
         return ret;
+    }
+
+    public HashMap<String, ElementTable> getElements() {
+        return elements;
+    }
+
+    public void putAll(HashMap<String, ElementTable> ans) {
+        elements.putAll(ans);
+    }
+
+    public ArrayList<TableSymbol> getChildren() {
+        return children;
+    }
+
+    public void clearTable() {
+        this.elements.clear();
     }
 }

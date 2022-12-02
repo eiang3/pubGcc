@@ -22,7 +22,9 @@ public class Judge {
      */
     public static boolean is_LocalVar(String name, TableSymbol tableSymbol) { //isVarNode
         if (name == null || name.length() == 0) return false;
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+        //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, name);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(name);
+
         if (elementTable != null && !elementTable.isGlobal() && !(name.charAt(0) == '$')) {
             //不是根节点/不是全局变量  + 不是临时变量
             return elementTable instanceof ElementVar;

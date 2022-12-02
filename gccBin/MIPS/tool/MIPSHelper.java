@@ -21,11 +21,13 @@ public class MIPSHelper {
     public static Reg getValueInReg_t_v(Reg afloat, String var, TableSymbol tableSymbol) throws IOException {
         if (var.equals("$RET")) return Reg.$v0;
         if (Judge.isVar(var)) {
-            if(var.equals("tmp$0")){
+            if (var.equals("tmp$0")) {
                 int b = 1;
             }
-            ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
-            if(elementTable == null){
+            //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, var);
+            ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(var);
+
+            if (elementTable == null) {
                 int a = 1;
             }
             if (elementTable.isHasReg()) {
@@ -158,7 +160,9 @@ public class MIPSHelper {
     public static void assignArrToTemp(String answer, String array, TableSymbol tableSymbol) throws IOException {
         String arrName = SubOp.getArrName(array);
         String arrSub = SubOp.getArrSubscript(array);
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
+        //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(arrName);
+
         Reg obj = TempRegPool.getInstance().addToPool(answer, Reg.l1);
         get_Array_Value_In_Reg(obj, array, elementTable, tableSymbol); //
         if (TempRegPool.getInstance().inMem(answer)) {
@@ -178,7 +182,9 @@ public class MIPSHelper {
     public static void assignVTNToArr(String answer, String exp, TableSymbol tableSymbol) throws IOException {
         String arrName = SubOp.getArrName(answer);
         String arrSub = SubOp.getArrSubscript(answer);
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
+        //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, arrName);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(arrName);
+
         //get value in reg.r1
         Reg value = getValueInReg_t_v_n(Reg.r1, exp, tableSymbol);
         //getAddress
@@ -225,7 +231,9 @@ public class MIPSHelper {
      * @param tableSymbol *
      */
     public static void assignVTNToVar(String answer, String exp, TableSymbol tableSymbol) throws IOException {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
+        //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, answer);
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(answer);
+
         if (elementTable.isHasReg()) {
             Reg ans = elementTable.getReg();
             getValueInSpecialReg_t_v_n(ans, exp, tableSymbol);
@@ -263,6 +271,7 @@ public class MIPSHelper {
     }
 
     //*********************************************************************************/
+
     /**
      * ok
      * temp1 = (-|!) vtn
@@ -318,8 +327,11 @@ public class MIPSHelper {
      * @throws IOException e
      */
     public static void assignTwo(String answer, String temp1, String op, String temp2, TableSymbol tableSymbol) throws IOException {
-        ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, temp1);
-
+        //ElementTable elementTable = APIIRSymTable.getInstance().findElementRecur(tableSymbol, temp1);
+        if(answer.equals("$t5")){
+            int a = 0;
+        }
+        ElementTable elementTable = APIIRSymTable.getInstance().findElementInSumTable(temp1);
         if (Judge.isAddress(elementTable, temp1)) { //assert ans = address >> 2
             Reg ansReg = TempRegPool.getInstance().addToPool(answer, Reg.l1);
             if (elementTable.isGlobal()) { //全局数组传参，是个人才
@@ -388,6 +400,7 @@ public class MIPSHelper {
         Reg t2 = getValueInReg_t_v(Reg.r2, temp2, tableSymbol);
         if (Judge.isPlus(op)) {
             assignTwo_VT_Number(answer, temp2, op, num1, tableSymbol);
+            return;
         } else {
             MipsIns.li_ans_num(Reg.r1, num1);
             Reg ansReg = TempRegPool.getInstance().addToPool(answer, Reg.l1);

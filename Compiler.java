@@ -29,11 +29,18 @@ public class Compiler {
             IRGenerate.getInstance().begin();
             IRGenerate.getInstance().close();
 
-
-            //刷新一次符号表
+            //刷新一次符号表,进行变量重命名
             APIIRSymTable.getInstance().refreshTable();
 
-            //第二次处理IR，进行公共子表达式删除，死代码删除
+            //中间代码优化需要查总符号表,如果对变量再次重命名的话，还是需要查全局符号表
+            //翻译也需要查总符号表
+
+            // 得到没有重名的全局符号表
+            // 因为要进行多次复写传播,
+            // 所以这只能查总符号表,
+            APIIRSymTable.getInstance().getSumTableSym();
+
+            //第一次处理IR，进行公共子表达式删除，死代码删除,这次处理之后，会遇见
             IRZero.getInstance().open();
             IRZero.getInstance().begin();
             IRZero.getInstance().close();
@@ -43,6 +50,8 @@ public class Compiler {
             IRFirst.getInstance().begin();
             IRFirst.getInstance().close();
 
+            //得到没有重名的全局符号表
+            APIIRSymTable.getInstance().getSumTableSym();
 
             //对IR进行翻译//
             MIPS.getInstance().open();

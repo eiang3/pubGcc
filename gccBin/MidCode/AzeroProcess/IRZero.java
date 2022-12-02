@@ -3,6 +3,7 @@ package gccBin.MidCode.AzeroProcess;
 import SymbolTableBin.APIIRSymTable;
 import SymbolTableBin.TableSymbol;
 
+import gccBin.MidCode.AoriginalProcess.IRTagManage;
 import gccBin.MidCode.Line.Line;
 import gccBin.MidCode.LineManager;
 
@@ -59,6 +60,9 @@ public class IRZero {
         ZeroBlockManager.getInstance().usableExpAndCopyPropagation();
         ZeroBlockManager.getInstance().printfBlockAndActive("_copy3_");
 
+        //DEBUG
+        //IRTagManage.getInstance().newVar();
+
         //3 进行基本块的活跃变量分析&无用表达式删除
         ZeroBlockManager.getInstance().ActiveVarAnalysis();
         ZeroBlockManager.getInstance().deleteUselessExp();
@@ -68,6 +72,10 @@ public class IRZero {
 
         ZeroBlockManager.getInstance().ActiveVarAnalysis();
         ZeroBlockManager.getInstance().deleteUselessExp();
+
+        //DEBUG
+        //IRTagManage.getInstance().newVar();
+
         //5 进行无用表达式删除
         ZeroBlockManager.getInstance().printfBlockAndActive("_afterDelete_");
     }

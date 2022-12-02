@@ -34,9 +34,7 @@ public class APIIRSymTable {
         this.redefineElement.put(elementTable, tableSymbol);
     }
 
-    /**
-     * 刷新符号表项，把重定义的变量重命名
-     */
+    //刷新符号表项，把重定义的变量重命名
     public void refreshTable() throws IOException {
         for (ElementTable elementVar : redefineElement.keySet()) {
             elementVar.refreshName(redefineElement.get(elementVar));
@@ -51,9 +49,7 @@ public class APIIRSymTable {
         this.funs.put(str, tableSymbol);
     }
 
-    /**
-     * 得到符号表中函数类型表项，默认一定是函数
-     */
+    // 得到符号表中函数类型表项，默认一定是函数
     public ElementFunc getFuncElement(String funcName) {
         return (ElementFunc)
                 this.rootTable.getElement(funcName);
@@ -111,12 +107,6 @@ public class APIIRSymTable {
         return rootTable.getElement(str);
     }
 
-    /*public int findAddress(TableSymbol tableSymbol,String name){
-        ElementTable elementTable = findTableElementRecur(tableSymbol,name);
-        if(elementTable == null) return 0;
-        return elementTable.getPosition().getNum();
-    }*/
-
     /**
      * 判断变量是否是0维常量
      */
@@ -160,7 +150,7 @@ public class APIIRSymTable {
      * @return
      */
     public int findValue(TableSymbol table, String str, int falseRow) {
-        ElementTable elementTable = findElementIRGen(table, str,falseRow);
+        ElementTable elementTable = findElementIRGen(table, str, falseRow);
         if (elementTable instanceof ElementConst)
             return ((ElementConst) elementTable).getValue().getNum();
         return -1;
@@ -175,7 +165,7 @@ public class APIIRSymTable {
      * @return
      */
     public int findValue(TableSymbol table, String str, int oneDim, int falseRow) {
-        ElementConstArray elementArray = (ElementConstArray) findElementIRGen(table, str,falseRow);
+        ElementConstArray elementArray = (ElementConstArray) findElementIRGen(table, str, falseRow);
         if (elementArray != null) return elementArray.getConstArrValue(oneDim);
         else return -1;
     }
@@ -190,7 +180,7 @@ public class APIIRSymTable {
      * @return
      */
     public int findValue(TableSymbol table, String str, int oneDim, int twoDim, int falseRow) {
-        ElementConstArray elementArray = (ElementConstArray) findElementIRGen(table, str,falseRow);
+        ElementConstArray elementArray = (ElementConstArray) findElementIRGen(table, str, falseRow);
         if (elementArray != null) return elementArray.getConstArrValue(oneDim, twoDim);
         else return -1;
     }
@@ -198,5 +188,32 @@ public class APIIRSymTable {
 
     public TableSymbol getRootTable() {
         return rootTable;
+    }
+
+
+    private final TableSymbol sumTableSym = new TableSymbol();
+
+    /**
+     * 从此符号表向上递归查找表项
+     */
+    public ElementTable findElementInSumTable(String str) {
+        if (sumTableSym.contain(str)) {
+            return sumTableSym.getElement(str);
+        }
+        return null;
+    }
+
+    private void search_to_getSumTableSym(TableSymbol tableSymbol) {
+        sumTableSym.putAll(tableSymbol.getElements());
+        if (tableSymbol.getChildren().size() != 0) {
+            for (TableSymbol child : tableSymbol.getChildren()) {
+                search_to_getSumTableSym(child);
+            }
+        }
+    }
+
+    public void getSumTableSym() {
+        sumTableSym.clearTable();
+        search_to_getSumTableSym(rootTable);
     }
 }
